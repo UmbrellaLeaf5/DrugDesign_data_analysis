@@ -19,3 +19,8 @@
   * Requests VS Aiohttp | Ускоряем HTTP запросы на максимум. — Текст : электронный // YouTube : [сайт](https://www.youtube.com/watch?v=8_NfLSw79fY) // RickTube : [сайт](https://ricktube.ru/video?q=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3D8_NfLSw79fY)
   * Всегда проверяйте наличие скрытого API при парсинге сайтов. — Текст : электронный // YouTube : [сайт](https://www.youtube.com/watch?v=b9UuGxfvgAY) // RickTube : [сайт](https://ricktube.ru/video?q=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3Db9UuGxfvgAY)
   * Учим парсинг на python и bs4 Курс по парсингу веб сайтов на python с нуля профессия backend аналитик. — Текст : электронный // YouTube : [сайт](https://www.youtube.com/watch?v=lOfm04oLD1U) // RickTube : [сайт](https://ricktube.ru/video?q=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DlOfm04oLD1U)
+
+<hr></hr>
+
+  * PubChemPy documentation. — Текст : электронный // Read the Docs : [сайт](https://pubchempy.readthedocs.io/en/latest/)
+  * Requests: HTTP for Humans™. — Текст : электронный // Read the Docs : [сайт](https://requests.readthedocs.io/en/latest/)
