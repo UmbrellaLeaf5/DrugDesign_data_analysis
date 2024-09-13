@@ -24,3 +24,4 @@
 
   * PubChemPy documentation. — Текст : электронный // Read the Docs : [сайт](https://pubchempy.readthedocs.io/en/latest/)
   * Requests: HTTP for Humans™. — Текст : электронный // Read the Docs : [сайт](https://requests.readthedocs.io/en/latest/)
+  * A python client for accessing ChEMBL web services / Michal. — Текст : электронный // The ChEMBL-og : [сайт](https://chembl.blogspot.com/2014/05/a-python-client-for-accessing-chembl.html)
