@@ -1,3 +1,4 @@
 requests
 pubchempy
 chembl-webresource-client
+pandas
