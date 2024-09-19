@@ -6,7 +6,7 @@ import pandas as pd
 def QuerySetMWRangeFilter(less_limit: int = 0, greater_limit: int = 12_546_42) -> QuerySet:
     """      
     QuerySetMolecularWeightRangeFilter - функция, которая выполняет фильтрацию по базе ChEMBL
-    по диапазону молекулярного веса (обе границы включительно)
+    по диапазону ( [): полуинтервалу) молекулярного веса
 
     Args:
         less_limit (int, optional): нижняя граница. Defaults to 0
@@ -28,7 +28,7 @@ def QuerySetMWRangeFilter(less_limit: int = 0, greater_limit: int = 12_546_42) -
         raise ValueError(
             "QuerySetMWRangeFilter: greater_limit should be greater than less_limit")
 
-    return new_client.molecule.filter(molecule_properties__mw_freebase__lte=greater_limit,  # type: ignore
+    return new_client.molecule.filter(molecule_properties__mw_freebase__lt=greater_limit,  # type: ignore
                                       molecule_properties__mw_freebase__gte=less_limit)
 
 

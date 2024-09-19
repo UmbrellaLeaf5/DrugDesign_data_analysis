@@ -14,22 +14,22 @@ logger.add(sink=sys.stderr,
 
 def DownloadMWRange(less_limit: int = 0, greater_limit: int = 12_546_42):
     """
-    DownloadMolecularWeightRange - функция, которая скачивает молекулы в .csv файл с выводом информации
-    из базы ChEMBL по диапазону молекулярного веса (обе границы включительно)
+    DownloadMolecularWeightRange - функция, которая скачивает молекулы в .csv файл с выводом 
+    информации из базы ChEMBL по диапазону ( [): полуинтервалу) молекулярного веса
 
     Args:
-        less_limit (int, optional): нижняя граница. Defaults to 0.
-        greater_limit (int, optional): верхняя граница. Defaults to 12_546_42.
+        less_limit (int, optional): нижняя граница. Defaults to 0
+        greater_limit (int, optional): верхняя граница. Defaults to 12_546_42
     """
 
     try:
         logger.info(
-            f"Downloading molecules with molecular weight in range [{less_limit}, {greater_limit}]...")
+            f"Downloading molecules with molecular weight in range [{less_limit}, {greater_limit})...")
         mw_mols_in_range: QuerySet = QuerySetMWRangeFilter(
             less_limit, greater_limit)
         logger.info(f"Amount: {len(mw_mols_in_range)}")  # type: ignore
         logger.success(
-            f"Downloading molecules with molecular weight in range [{less_limit}, {greater_limit}]: SUCCESS")
+            f"Downloading molecules with molecular weight in range [{less_limit}, {greater_limit}): SUCCESS")
 
         try:
             logger.info("Collecting molecules to pandas.DataFrame()...")
