@@ -34,7 +34,8 @@ def DownloadMWRange(less_limit: int = 0, greater_limit: int = 12_546_42):
         try:
             logger.info("Collecting molecules to pandas.DataFrame()...")
             data = pd.DataFrame(mw_mols_in_range)  # type: ignore
-            logger.success("Collecting molecules pandas.DataFrame(): SUCCESS")
+            logger.success(
+                "Collecting molecules to pandas.DataFrame(): SUCCESS")
 
             logger.info(
                 "Collecting molecules from pandas.DataFrame to .csv file in results...")
@@ -55,6 +56,7 @@ def DownloadMWRange(less_limit: int = 0, greater_limit: int = 12_546_42):
 
 
 def Download_ChEMBL():
+    logger.info(f"{'-' * 20} ChEMBL downloading for DrugDesign {'-' * 20}")
     try:
         logger.info("Creating folder 'results'...")
         mkdir("results")
@@ -63,6 +65,8 @@ def Download_ChEMBL():
     except Exception as exception:
         logger.error(exception)
 
+    logger.info(f"{'-' * 75}")
+
     mw_ranges: list[tuple[int, int]] = [(0, 100), (100, 200), (200, 300),
                                         (300, 400), (400, 500), (500, 600),
                                         (600, 700), (700, 800), (800, 900),
@@ -70,6 +74,9 @@ def Download_ChEMBL():
 
     for less_limit, greater_limit in mw_ranges:
         DownloadMWRange(less_limit, greater_limit)
+        logger.info(f"{'-' * 75}")
+
+    logger.success("")
 
 
 if __name__ == "__main__":
