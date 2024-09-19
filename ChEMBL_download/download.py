@@ -1,6 +1,6 @@
 # from icecream import ic
 from os import mkdir
-from functions import *
+from ChEMBL_download.functions import *  # from functions import *
 from loguru import logger
 import sys
 
