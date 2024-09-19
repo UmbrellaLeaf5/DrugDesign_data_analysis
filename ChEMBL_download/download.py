@@ -8,7 +8,7 @@ import sys
 # Loguru settings
 logger.remove()
 logger.add(sink=sys.stderr,
-           format="<level>{level}</level>: <yellow>ChEMBL_download:</yellow> <white>{message}</white>")
+           format="[{time:DD.MM.YYYY HH:mm:ss}] <level>{level}</level>: <yellow>ChEMBL_download:</yellow> <white>{message}</white>")
 # ic.disable()
 
 
@@ -56,7 +56,7 @@ def DownloadMWRange(less_limit: int = 0, greater_limit: int = 12_546_42):
 
 
 def Download_ChEMBL():
-    logger.info(f"{'-' * 20} ChEMBL downloading for DrugDesign {'-' * 20}")
+    logger.info(f"{'-' * 25} ChEMBL downloading for DrugDesign {'-' * 25}")
     try:
         logger.info("Creating folder 'results'...")
         mkdir("results")
@@ -65,7 +65,7 @@ def Download_ChEMBL():
     except Exception as exception:
         logger.error(exception)
 
-    logger.info(f"{'-' * 75}")
+    logger.info(f"{'-' * 85}")
 
     mw_ranges: list[tuple[int, int]] = [(0, 100), (100, 200), (200, 300),
                                         (300, 400), (400, 500), (500, 600),
@@ -74,7 +74,7 @@ def Download_ChEMBL():
 
     for less_limit, greater_limit in mw_ranges:
         DownloadMWRange(less_limit, greater_limit)
-        logger.info(f"{'-' * 75}")
+        logger.info(f"{'-' * 85}")
 
     logger.success("")
 
