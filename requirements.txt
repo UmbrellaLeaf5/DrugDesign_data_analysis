@@ -2,3 +2,5 @@ requests
 pubchempy
 chembl-webresource-client
 pandas
+icecream
+loguru

@@ -167,3 +167,6 @@ cython_debug/
 # Own files
 pip.txt
 temp.py
+
+# Own folders
+results/
