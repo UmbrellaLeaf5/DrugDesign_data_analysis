@@ -26,7 +26,7 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
     logger.remove()
     logger.add(sink=sys.stderr,
                format="[{time:DD.MM.YYYY HH:mm:ss}]" +
-                      " <cyan>ChEMBL_analysis:</cyan>" +
+                      " <magenta>ChEMBL_analysis:</magenta>" +
                       " <white>{message}</white>" +
                       " [<level>{level}</level>]")
 
