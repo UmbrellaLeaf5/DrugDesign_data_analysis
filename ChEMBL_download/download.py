@@ -42,8 +42,8 @@ def DownloadMWRange(less_limit: int = 0, greater_limit: int = 12_546_42, analysi
             data = ExpandedFLDF(data)
 
             if (analysis_turn_on):
-                DataAnalysisByColumns(data, f"Molecules with molecular weight in range [{
-                                      less_limit}, {greater_limit})")
+                DataAnalysisByColumns(data, f"mols_with_mw_in_range_{less_limit}_{greater_limit}",
+                                      print_to_console=False, save_to_csv=True)
                 LoggerFormatUpdate()
 
             file_name: str = f"results/range_{
@@ -61,6 +61,12 @@ def DownloadMWRange(less_limit: int = 0, greater_limit: int = 12_546_42, analysi
 
 
 def Download_ChEMBL(analysis_turn_on: bool = False):
+    """
+    Download_ChEMBL - функция, которая скачивает необходимые для DrugDesign данные из базы ChEMBL
+
+    Args:
+        analysis_turn_on (bool, optional): необходимость вывода анализа в консоль. Defaults to False.
+    """
     LoggerFormatUpdate()
 
     logger.info(f"{'-' * 25} ChEMBL downloading for DrugDesign {'-' * 25}")
