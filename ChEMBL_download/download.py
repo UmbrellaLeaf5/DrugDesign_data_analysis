@@ -9,12 +9,12 @@ from ChEMBL_download.analysis import *
 def LoggerFormatUpdate() -> None:
     logger.remove()
     logger.add(sink=sys.stderr,
-               format="[{time:DD.MM.YYYY HH:mm:ss}] <level>{level}</level>: <yellow>ChEMBL_download:</yellow> <white>{message}</white>")
+               format="[{time:DD.MM.YYYY HH:mm:ss}] <yellow>ChEMBL_download:</yellow> <white>{message}</white> [<level>{level}</level>]")
 
 
 def DownloadMWRange(less_limit: int = 0, greater_limit: int = 12_546_42, analysis_turn_on: bool = False):
     """
-    DownloadMolecularWeightRange - функция, которая скачивает молекулы в .csv файл с выводом 
+    DownloadMolecularWeightRange - функция, которая скачивает молекулы в .csv файл с выводом
     информации из базы ChEMBL по диапазону ( [): полуинтервалу) молекулярного веса
 
     Args:
@@ -24,21 +24,24 @@ def DownloadMWRange(less_limit: int = 0, greater_limit: int = 12_546_42, analysi
 
     try:
         logger.info(
-            f"Downloading molecules with molecular weight in range [{less_limit}, {greater_limit})...")
+            f"Downloading molecules with mw in range [{less_limit}, {greater_limit})...".ljust(75))
         mw_mols_in_range: QuerySet = QuerySetMWRangeFilter(
             less_limit, greater_limit)
-        logger.info(f"Amount: {len(mw_mols_in_range)}")  # type: ignore
+
+        logger.info(("Amount:" +
+                    f"{len(mw_mols_in_range)}").ljust(75))  # type: ignore
         logger.success(
-            f"Downloading molecules with molecular weight in range [{less_limit}, {greater_limit}): SUCCESS")
+            f"Downloading molecules with mw in range [{less_limit}, {greater_limit}): SUCCESS".ljust(75))
 
         try:
-            logger.info("Collecting molecules to pandas.DataFrame()...")
+            logger.info(
+                "Collecting molecules to pandas.DataFrame()...".ljust(75))
             data = pd.DataFrame(mw_mols_in_range)  # type: ignore
             logger.success(
-                "Collecting molecules to pandas.DataFrame(): SUCCESS")
+                "Collecting molecules to pandas.DataFrame(): SUCCESS".ljust(75))
 
             logger.info(
-                "Collecting molecules from pandas.DataFrame to .csv file in results...")
+                "Collecting molecules from pandas.DataFrame to .csv file in results...".ljust(75))
             data = ExpandedFLDF(data)
 
             if (analysis_turn_on):
@@ -51,13 +54,13 @@ def DownloadMWRange(less_limit: int = 0, greater_limit: int = 12_546_42, analysi
 
             data.to_csv(file_name, index=False)
             logger.success(
-                "Collecting molecules from pandas.DataFrame to .csv file in results: SUCCESS")
+                "Collecting molecules to .csv file in results: SUCCESS".ljust(75))
 
         except Exception as exception:
-            logger.error(exception)
+            logger.error(f"{exception}".ljust(75))
 
     except Exception as exception:
-        logger.error(exception)
+        logger.error(f"{exception}".ljust(75))
 
 
 def Download_ChEMBL(analysis_turn_on: bool = False):
@@ -69,16 +72,16 @@ def Download_ChEMBL(analysis_turn_on: bool = False):
     """
     LoggerFormatUpdate()
 
-    logger.info(f"{'-' * 25} ChEMBL downloading for DrugDesign {'-' * 25}")
+    logger.info(f"{'-' * 20} ChEMBL downloading for DrugDesign {'-' * 20}")
     try:
-        logger.info("Creating folder 'results'...")
+        logger.info("Creating folder 'results'...".ljust(75))
         mkdir("results")
-        logger.success("Creating folder 'results': SUCCESS")
+        logger.success("Creating folder 'results': SUCCESS".ljust(75))
 
     except Exception as exception:
-        logger.warning(exception)
+        logger.warning(f"{exception}".ljust(75))
 
-    logger.info(f"{'-' * 85}")
+    logger.info(f"{'-' * 75}")
 
     mw_ranges: list[tuple[int, int]] = [
         (0, 100),
@@ -90,9 +93,9 @@ def Download_ChEMBL(analysis_turn_on: bool = False):
 
     for less_limit, greater_limit in mw_ranges:
         DownloadMWRange(less_limit, greater_limit, analysis_turn_on)
-        logger.info(f"{'-' * 85}")
+        logger.info(f"{'-' * 75}")
 
-    logger.success(f"{'-' * 23} ChEMBL downloading for DrugDesign {'-' * 24}")
+    logger.success(f"{'-' * 20} ChEMBL downloading for DrugDesign {'-' * 20}")
 
 
 if __name__ == "__main__":

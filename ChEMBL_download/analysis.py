@@ -23,9 +23,9 @@ def DataAnalysisByColumns(data: pd.DataFrame, data_name: str,
 
     logger.remove()
     logger.add(sink=sys.stderr,
-               format="[{time:DD.MM.YYYY HH:mm:ss}] <level>{level}</level>: <cyan>ChEMBL_analysis:</cyan> <white>{message}</white>")
+               format="[{time:DD.MM.YYYY HH:mm:ss}] <cyan>ChEMBL_analysis:</cyan> <white>{message}</white> [<level>{level}</level>]")
 
-    logger.info(f"Start analysis of '{data_name}'...")
+    logger.info(f"Start analysis of '{data_name}'...".ljust(75))
 
     summary: dict = {'Column': [],
                      'Data type': [],
@@ -35,9 +35,10 @@ def DataAnalysisByColumns(data: pd.DataFrame, data_name: str,
                      'Min value': []}
 
     for column in data.columns:
+        # имя столбца
         if print_to_console:
             logger.info("-" * 85)
-            logger.info(f"Column                     : {column}")
+            logger.info(f"{"Column".ljust(30)}: {column}".ljust(75))
 
         if save_to_csv:
             summary['Column'].append(column)
@@ -47,14 +48,16 @@ def DataAnalysisByColumns(data: pd.DataFrame, data_name: str,
             data_type = data[column].dtype
 
             if print_to_console:
-                logger.info(f"Type of data               : {data_type}")
+                logger.info(f"{"Type of data".ljust(30)}: {
+                            data_type}".ljust(75))
 
             if save_to_csv:
                 summary['Data type'].append(data_type)
 
         except Exception as exception:
             if print_to_console:
-                logger.warning(f"Type of data:EXCEPTION     : {exception}")
+                logger.warning(
+                    f"{"Type of data:EXCEPTION".ljust(30)}: {exception}".ljust(75))
 
             if save_to_csv:
                 summary['Data type'].append("EXCEPTION")
@@ -66,7 +69,8 @@ def DataAnalysisByColumns(data: pd.DataFrame, data_name: str,
                 non_null_count += 1
 
         if print_to_console:
-            logger.info(f"Non-empty strings          : {non_null_count}")
+            logger.info(f"{"Non-empty strings".ljust(30)
+                           }: {non_null_count}".ljust(75))
 
         if save_to_csv:
             summary['Non-empty strings'].append(non_null_count)
@@ -81,14 +85,16 @@ def DataAnalysisByColumns(data: pd.DataFrame, data_name: str,
                 common_value = ""
 
             if print_to_console:
-                logger.info(f"Common value               : {common_value}")
+                logger.info(f"{"Common value".ljust(30)}: {
+                            common_value}".ljust(75))
 
             if save_to_csv:
                 summary['Common value'].append(common_value)
 
         except Exception as exception:
             if print_to_console:
-                logger.warning(f"Common value:EXCEPTION     : {exception}")
+                logger.warning(
+                    f"{"Common value:EXCEPTION".ljust(30)}: {exception}".ljust(75))
 
             if save_to_csv:
                 summary['Common value'].append("")
@@ -114,8 +120,8 @@ def DataAnalysisByColumns(data: pd.DataFrame, data_name: str,
                             min_value = value
 
             if print_to_console:
-                logger.info(f"Max value                  : {max_value}")
-                logger.info(f"Min value                  : {min_value}")
+                logger.info(f"{"Max value".ljust(30)}: {max_value}".ljust(75))
+                logger.info(f"{"Min value".ljust(30)}: {min_value}".ljust(75))
 
             if save_to_csv:
                 summary['Max value'].append(max_value)
@@ -123,33 +129,35 @@ def DataAnalysisByColumns(data: pd.DataFrame, data_name: str,
 
         except Exception as exception:
             if print_to_console:
-                logger.warning(f"Max value:EXCEPTION        : {exception}")
-                logger.warning(f"Min value:EXCEPTION        : {exception}")
+                logger.warning(
+                    f"{"Max value:EXCEPTION".ljust(30)}: {exception}".ljust(75))
+                logger.warning(
+                    f"{"Min value:EXCEPTION".ljust(30)}: {exception}".ljust(75))
 
             if save_to_csv:
-                summary['Max value'].append("EXCEPTION")
-                summary['Min value'].append("EXCEPTION")
+                summary['Max value'].append("")
+                summary['Min value'].append("")
 
     if save_to_csv:
         try:
-            logger.info("Creating folder 'analysis'...")
+            logger.info("Creating folder 'analysis'...".ljust(75))
             mkdir("analysis")
-            logger.success("Creating folder 'analysis': SUCCESS")
+            logger.success("Creating folder 'analysis': SUCCESS".ljust(75))
 
         except Exception as exception:
-            if print_to_console:
-                logger.warning(exception)
+            logger.warning(f"{exception}".ljust(75))
 
         try:
-            logger.info("Saving summary analysis to .csv file...")
+            logger.info("Saving summary analysis to .csv file...".ljust(75))
 
             file_name: str = f"analysis/{data_name}_analysis.csv"
 
             pd.DataFrame(summary).to_csv(file_name, index=False)
 
-            logger.success("Saving summary analysis to .csv file: SUCCESS")
+            logger.success(
+                "Saving summary analysis to .csv file: SUCCESS".ljust(75))
 
         except Exception as exception:
-            logger.error(exception)
+            logger.error(f"{exception}".ljust(75))
 
-    logger.success(f"End analysis of '{data_name}'")
+    logger.success(f"End analysis of '{data_name}'".ljust(75))
