@@ -32,9 +32,9 @@ def QuerySetMWRangeFilter(less_limit: int = 0, greater_limit: int = 12_546_42) -
                                       molecule_properties__mw_freebase__gte=less_limit)
 
 
-def ExpandedFLDF(data: pd.DataFrame) -> pd.DataFrame:
+def FreedFromDictionaryColumnsDF(data: pd.DataFrame) -> pd.DataFrame:
     """
-    ExpandedFromListsDataFrame - функция, которая переписывает словари и списки словарей 
+    FreedFromDictionaryColumnsDataFrame - функция, которая переписывает словари и списки словарей 
     в таблице в отдельные столбцы
 
     Args:
