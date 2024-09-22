@@ -145,22 +145,15 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
 
     if should_save_to_csv:
         try:
-            logger.info("Creating folder 'analysis'...".ljust(75))
-            mkdir("analysis")
-            logger.success("Creating folder 'analysis': SUCCESS".ljust(75))
-
-        except Exception as exception:
-            logger.warning(f"{exception}".ljust(75))
-
-        try:
-            logger.info("Saving summary analysis to .csv file...".ljust(75))
+            logger.info(
+                "Saving summary analysis to .csv file in 'analysis'...".ljust(75))
 
             file_name: str = f"analysis/{data_name}_analysis.csv"
 
             pd.DataFrame(summary).to_csv(file_name, index=False)
 
             logger.success(
-                "Saving summary analysis to .csv file: SUCCESS".ljust(75))
+                "Saving summary analysis to .csv file in 'analysis': SUCCESS".ljust(75))
 
         except Exception as exception:
             logger.error(f"{exception}".ljust(75))

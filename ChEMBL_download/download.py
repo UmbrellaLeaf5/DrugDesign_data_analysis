@@ -47,7 +47,7 @@ def DownloadMWRange(less_limit: int = 0,
                 "Collecting molecules to pandas.DataFrame(): SUCCESS".ljust(75))
 
             logger.info(
-                "Collecting molecules to .csv file in results/...".ljust(75))
+                "Collecting molecules to .csv file in 'results'...".ljust(75))
 
             if (need_analysis):
                 DataAnalysisByColumns(data_frame,
@@ -59,7 +59,7 @@ def DownloadMWRange(less_limit: int = 0,
 
             data_frame.to_csv(file_name, index=False)
             logger.success(
-                "Collecting molecules to .csv file in results/: SUCCESS".ljust(75))
+                "Collecting molecules to .csv file in 'results': SUCCESS".ljust(75))
 
         except Exception as exception:
             logger.error(f"{exception}".ljust(75))
@@ -85,6 +85,16 @@ def DownloadChEMBL(need_analysis: bool = False):
 
     except Exception as exception:
         logger.warning(f"{exception}".ljust(75))
+
+    if (need_analysis):
+        try:
+            logger.info("Creating folder 'analysis'...".ljust(75))
+            mkdir("analysis")
+            logger.success(
+                "Creating folder 'analysis': SUCCESS".ljust(75))
+
+        except Exception as exception:
+            logger.warning(f"{exception}".ljust(75))
 
     logger.info(f"{'-' * 75}")
 
