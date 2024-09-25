@@ -3,14 +3,11 @@ import pandas as pd
 from loguru import logger
 import sys
 
-from os import mkdir
-
 
 def DataAnalysisByColumns(data_frame: pd.DataFrame,
                           data_name: str,
                           should_print_to_console: bool = False,
-                          should_save_to_csv: bool = True,
-                          need_column_name: bool = True) -> None:
+                          should_save_to_csv: bool = True) -> None:
     """
     DataAnalysisByColumns - функция, которая выводит в консоль краткую сводку о столбцах pandas.DataFrame()
     в консоль и сохраняет ее в .csv файл по следующим признакам: тип данных, количество ненулевых строк,
@@ -30,7 +27,7 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
                       " <white>{message}</white>" +
                       " [<level>{level}</level>]")
 
-    logger.info(f"Start analysis of '{data_name}'...".ljust(75))
+    logger.info(f"Start analysis of '{data_name}'...".ljust(77))
 
     summary: dict = {'Column':            [],
                      'Data type':         [],
@@ -43,7 +40,7 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
         # имя столбца
         if should_print_to_console:
             logger.info("-" * 85)
-            logger.info(f"{"Column".ljust(30)}: {column}".ljust(75))
+            logger.info(f"{"Column".ljust(30)}: {column}".ljust(77))
 
         if should_save_to_csv:
             summary['Column'].append(column)
@@ -54,7 +51,7 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
 
             if should_print_to_console:
                 logger.info(f"{"Type of data".ljust(30)}: {
-                            data_type}".ljust(75))
+                            data_type}".ljust(77))
 
             if should_save_to_csv:
                 summary['Data type'].append(data_type)
@@ -62,7 +59,7 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
         except Exception as exception:
             if should_print_to_console:
                 logger.warning(
-                    f"{"Data type:EXCEPTION".ljust(30)}: {exception}".ljust(75))
+                    f"{"Data type:EXCEPTION".ljust(30)}: {exception}".ljust(77))
 
             if should_save_to_csv:
                 summary['Data type'].append("")
@@ -75,7 +72,7 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
 
         if should_print_to_console:
             logger.info(f"{"Non-empty strings".ljust(30)
-                           }: {non_null_count}".ljust(75))
+                           }: {non_null_count}".ljust(77))
 
         if should_save_to_csv:
             summary['Non-empty strings'].append(non_null_count)
@@ -91,7 +88,7 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
 
             if should_print_to_console:
                 logger.info(f"{"Common value".ljust(30)}: {
-                            common_value}".ljust(75))
+                            common_value}".ljust(77))
 
             if should_save_to_csv:
                 summary['Common value'].append(common_value)
@@ -99,7 +96,7 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
         except Exception as exception:
             if should_print_to_console:
                 logger.warning(
-                    f"{"Common value:EXCEPTION".ljust(30)}: {exception}".ljust(75))
+                    f"{"Common value:EXCEPTION".ljust(30)}: {exception}".ljust(77))
 
             if should_save_to_csv:
                 summary['Common value'].append("")
@@ -125,8 +122,8 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
                             min_value = value
 
             if should_print_to_console:
-                logger.info(f"{"Max value".ljust(30)}: {max_value}".ljust(75))
-                logger.info(f"{"Min value".ljust(30)}: {min_value}".ljust(75))
+                logger.info(f"{"Max value".ljust(30)}: {max_value}".ljust(77))
+                logger.info(f"{"Min value".ljust(30)}: {min_value}".ljust(77))
 
             if should_save_to_csv:
                 summary['Max value'].append(max_value)
@@ -135,9 +132,9 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
         except Exception as exception:
             if should_print_to_console:
                 logger.warning(
-                    f"{"Max value:EXCEPTION".ljust(30)}: {exception}".ljust(75))
+                    f"{"Max value:EXCEPTION".ljust(30)}: {exception}".ljust(77))
                 logger.warning(
-                    f"{"Min value:EXCEPTION".ljust(30)}: {exception}".ljust(75))
+                    f"{"Min value:EXCEPTION".ljust(30)}: {exception}".ljust(77))
 
             if should_save_to_csv:
                 summary['Max value'].append("")
@@ -146,16 +143,16 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
     if should_save_to_csv:
         try:
             logger.info(
-                "Saving summary analysis to .csv file in 'analysis'...".ljust(75))
+                "Saving summary analysis to .csv file in 'analysis'...".ljust(77))
 
             file_name: str = f"analysis/{data_name}_analysis.csv"
 
             pd.DataFrame(summary).to_csv(file_name, index=False)
 
             logger.success(
-                "Saving summary analysis to .csv file in 'analysis': SUCCESS".ljust(75))
+                "Saving summary analysis to .csv file in 'analysis': SUCCESS".ljust(77))
 
         except Exception as exception:
-            logger.error(f"{exception}".ljust(75))
+            logger.error(f"{exception}".ljust(77))
 
-    logger.success(f"End analysis of '{data_name}'".ljust(75))
+    logger.success(f"End analysis of '{data_name}'".ljust(77))

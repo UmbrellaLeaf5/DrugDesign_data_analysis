@@ -1,7 +1,15 @@
+# type: ignore
+
 # from icecream import ic
 from os import mkdir
-from ChEMBL_download.functions import *  # from functions import *
-from ChEMBL_download.analysis import *   # from analysis import *
+
+if __name__ == "__main__":
+    from functions import *
+    from analysis import *
+else:
+    from ChEMBL_download.functions import *
+    from ChEMBL_download.analysis import *
+
 
 # ic.disable()
 
@@ -29,25 +37,25 @@ def DownloadMWRange(less_limit: int = 0,
 
     try:
         logger.info(
-            f"Downloading molecules with mw in range [{less_limit}, {greater_limit})...".ljust(75))
+            f"Downloading molecules with mw in range [{less_limit}, {greater_limit})...".ljust(77))
         mols_in_mw_range: QuerySet = QuerySetMWRangeFilter(
             less_limit, greater_limit)
 
-        logger.info(("Amount:" +
-                     f"{len(mols_in_mw_range)}").ljust(75))  # type: ignore
+        logger.info(
+            ("Amount:" + f"{len(mols_in_mw_range)}").ljust(77))
         logger.success(
-            f"Downloading molecules with mw in range [{less_limit}, {greater_limit}): SUCCESS".ljust(75))
+            f"Downloading molecules with mw in range [{less_limit}, {greater_limit}): SUCCESS".ljust(77))
 
         try:
             logger.info(
-                "Collecting molecules to pandas.DataFrame()...".ljust(75))
+                "Collecting molecules to pandas.DataFrame()...".ljust(77))
             data_frame = FreedFromDictionaryColumnsDF(pd.DataFrame(
-                mols_in_mw_range))  # type: ignore
+                mols_in_mw_range))
             logger.success(
-                "Collecting molecules to pandas.DataFrame(): SUCCESS".ljust(75))
+                "Collecting molecules to pandas.DataFrame(): SUCCESS".ljust(77))
 
             logger.info(
-                "Collecting molecules to .csv file in 'results'...".ljust(75))
+                "Collecting molecules to .csv file in 'results'...".ljust(77))
 
             if (need_analysis):
                 DataAnalysisByColumns(data_frame,
@@ -59,13 +67,13 @@ def DownloadMWRange(less_limit: int = 0,
 
             data_frame.to_csv(file_name, index=False)
             logger.success(
-                "Collecting molecules to .csv file in 'results': SUCCESS".ljust(75))
+                "Collecting molecules to .csv file in 'results': SUCCESS".ljust(77))
 
         except Exception as exception:
-            logger.error(f"{exception}".ljust(75))
+            logger.error(f"{exception}".ljust(77))
 
     except Exception as exception:
-        logger.error(f"{exception}".ljust(75))
+        logger.error(f"{exception}".ljust(77))
 
 
 def DownloadChEMBL(need_analysis: bool = False):
@@ -77,26 +85,28 @@ def DownloadChEMBL(need_analysis: bool = False):
     """
     LoggerFormatUpdate()
 
-    logger.info(f"{'-' * 20} ChEMBL downloading for DrugDesign {'-' * 20}")
+    logger.info(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
     try:
-        logger.info("Creating folder 'results'...".ljust(75))
+        logger.info("Creating folder 'results'...".ljust(77))
         mkdir("results")
-        logger.success("Creating folder 'results': SUCCESS".ljust(75))
+        logger.success("Creating folder 'results': SUCCESS".ljust(77))
 
     except Exception as exception:
-        logger.warning(f"{exception}".ljust(75))
+        logger.warning(f"{exception}".ljust(77))
 
     if (need_analysis):
         try:
-            logger.info("Creating folder 'analysis'...".ljust(75))
+            logger.info("Creating folder 'analysis'...".ljust(77))
             mkdir("analysis")
             logger.success(
-                "Creating folder 'analysis': SUCCESS".ljust(75))
+                "Creating folder 'analysis': SUCCESS".ljust(77))
 
         except Exception as exception:
-            logger.warning(f"{exception}".ljust(75))
+            logger.warning(f"{exception}".ljust(77))
 
-    logger.info(f"{'-' * 75}")
+    logger.info(f"{'-' * 77}")
+
+    # mw_ranges: list[tuple[int, int]] = [(0, 50)]
 
     mw_ranges: list[tuple[int, int]] = [
         (000, 190), (190, 215), (215, 230), (230, 240),
@@ -122,10 +132,10 @@ def DownloadChEMBL(need_analysis: bool = False):
 
     for less_limit, greater_limit in mw_ranges:
         DownloadMWRange(less_limit, greater_limit, need_analysis)
-        logger.info(f"{'-' * 75}")
+        logger.info(f"{'-' * 77}")
 
-    logger.success(f"{'-' * 20} ChEMBL downloading for DrugDesign {'-' * 20}")
+    logger.success(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
 
 
 if __name__ == "__main__":
-    DownloadChEMBL()
+    DownloadChEMBL(need_analysis=True)
