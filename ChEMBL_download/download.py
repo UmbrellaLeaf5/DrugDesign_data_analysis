@@ -3,10 +3,11 @@
 # from icecream import ic
 from os import mkdir
 
-if __name__ == "__main__":
+try:
     from functions import *
     from analysis import *
-else:
+
+except ImportError:
     from ChEMBL_download.functions import *
     from ChEMBL_download.analysis import *
 
