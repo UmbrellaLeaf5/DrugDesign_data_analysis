@@ -77,7 +77,8 @@ def DownloadMWRange(less_limit: int = 0,
         logger.error(f"{exception}".ljust(77))
 
 
-def DownloadChEMBL(need_analysis: bool = False):
+def DownloadChEMBL(need_analysis: bool = False,
+                   testing_flag: bool = False):
     """
     DownloadChEMBL - функция, которая скачивает необходимые для DrugDesign данные из базы ChEMBL
 
@@ -107,8 +108,6 @@ def DownloadChEMBL(need_analysis: bool = False):
 
     logger.info(f"{'-' * 77}")
 
-    # mw_ranges: list[tuple[int, int]] = [(0, 50)]
-
     mw_ranges: list[tuple[int, int]] = [
         (000, 190), (190, 215), (215, 230), (230, 240),
         (240, 250), (250, 260), (260, 267), (267, 273),
@@ -130,6 +129,9 @@ def DownloadChEMBL(need_analysis: bool = False):
         (552, 565), (565, 579), (579, 596), (596, 617),
         (617, 648), (648, 693), (693, 758), (758, 868),
         (868, 1101), (868, 1200), (1200, 12_546_42)]
+
+    if testing_flag:
+        mw_ranges = [(0, 50), (50, 75)]
 
     for less_limit, greater_limit in mw_ranges:
         DownloadMWRange(less_limit, greater_limit, need_analysis)
