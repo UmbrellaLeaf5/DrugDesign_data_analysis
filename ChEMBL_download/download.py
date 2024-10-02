@@ -84,6 +84,7 @@ def DownloadMWRange(less_limit: int = 0,
 def DownloadChEMBL(need_primary_analysis: bool = False,
                    need_combining: bool = True,
                    delete_downloaded_after_combining: bool = True,
+                   skip_downloaded_files: bool = False,
                    testing_flag: bool = False):
     """
     DownloadChEMBL - функция, которая скачивает необходимые для DrugDesign данные из базы ChEMBL
@@ -92,8 +93,10 @@ def DownloadChEMBL(need_primary_analysis: bool = False,
         need_primary_analysis (bool, optional): нужен ли первичный анализ скачанных файлов. Defaults to False.
         need_combining (bool, optional): нужно ли собирать все скачанные файлы в один. Defaults to True.
         delete_downloaded_after_combining (bool, optional): нужно ли удалять все скачанные файлы после комбинирования. Defaults to True.
+        skip_downloaded_files (bool, optional): нужно ли пропустить уже скачанные файлы в папке results. Defaults to False.
         testing_flag (bool, optional): [скачивание только двух таблиц для тестирования функционала]. Defaults to False.
     """
+
     if delete_downloaded_after_combining and not need_combining:
         raise ValueError(
             "DownloadChEMBL: delete_downloaded_after_combining=True but need_combine=False")
@@ -149,7 +152,13 @@ def DownloadChEMBL(need_primary_analysis: bool = False,
         mw_ranges = [(0, 50), (50, 75)]
 
     for less_limit, greater_limit in mw_ranges:
-        DownloadMWRange(less_limit, greater_limit, need_primary_analysis)
+        if not skip_downloaded_files or not IsFileInFolder(f"{results_folder_name}",
+                                                           f"range_{less_limit}_{greater_limit}_mw_mols.csv"):
+            DownloadMWRange(less_limit, greater_limit, need_primary_analysis)
+        else:
+            logger.warning(f"Molecules with mw in range [{less_limit}, {
+                           greater_limit}) is already downloaded, skip".ljust(77))
+
         logger.info(f"{'-' * 77}")
 
     if need_combining:

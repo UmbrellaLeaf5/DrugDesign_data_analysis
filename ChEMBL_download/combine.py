@@ -55,12 +55,12 @@ def CombineChEMBL() -> None:
             logger.info(f"{'-' * 77}")
 
     logger.info(
-        "Collecting molecules to .csv file in 'results'...".ljust(77))
+        "Collecting molecules to combined .csv file in 'results'...".ljust(77))
     try:
         combined_df.to_csv(
             f"{folder_path}combined_data_from_ChEMBL.csv", index=False)
         logger.success(
-            f"Collecting molecules to .csv file in 'results': SUCCESS".ljust(77))
+            f"Collecting molecules to combined .csv file in 'results': SUCCESS".ljust(77))
 
     except Exception as exception:
         logger.error(f"{exception}".ljust(77))
