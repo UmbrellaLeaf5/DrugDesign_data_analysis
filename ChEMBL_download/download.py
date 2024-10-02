@@ -15,6 +15,9 @@ except ImportError:
 
 # ic.disable()
 
+results_folder_name: str = "results"
+primary_analysis_folder_name: str = "primary_analysis"
+
 
 def LoggerFormatUpdate() -> None:
     logger.remove()
@@ -57,19 +60,19 @@ def DownloadMWRange(less_limit: int = 0,
                 "Collecting molecules to pandas.DataFrame(): SUCCESS".ljust(77))
 
             logger.info(
-                "Collecting molecules to .csv file in 'results'...".ljust(77))
+                f"Collecting molecules to .csv file in '{results_folder_name}'...".ljust(77))
 
             if need_analysis:
                 DataAnalysisByColumns(data_frame,
                                       f"mols_in_mw_range_{less_limit}_{greater_limit}")
                 LoggerFormatUpdate()
 
-            file_name: str = f"results/range_{
+            file_name: str = f"{results_folder_name}/range_{
                 less_limit}_{greater_limit}_mw_mols.csv"
 
             data_frame.to_csv(file_name, index=False)
             logger.success(
-                "Collecting molecules to .csv file in 'results': SUCCESS".ljust(77))
+                f"Collecting molecules to .csv file in '{results_folder_name}': SUCCESS".ljust(77))
 
         except Exception as exception:
             logger.error(f"{exception}".ljust(77))
@@ -79,31 +82,41 @@ def DownloadMWRange(less_limit: int = 0,
 
 
 def DownloadChEMBL(need_primary_analysis: bool = False,
-                   need_combine: bool = True,
+                   need_combining: bool = True,
+                   delete_downloaded_after_combining: bool = True,
                    testing_flag: bool = False):
     """
     DownloadChEMBL - функция, которая скачивает необходимые для DrugDesign данные из базы ChEMBL
 
     Args:
-        is_analysis_needed (bool, optional): необходимость вывода анализа в консоль. Defaults to False.
+        need_primary_analysis (bool, optional): нужен ли первичный анализ скачанных файлов. Defaults to False.
+        need_combining (bool, optional): нужно ли собирать все скачанные файлы в один. Defaults to True.
+        delete_downloaded_after_combining (bool, optional): нужно ли удалять все скачанные файлы после комбинирования. Defaults to True.
+        testing_flag (bool, optional): [скачивание только двух таблиц для тестирования функционала]. Defaults to False.
     """
+    if delete_downloaded_after_combining and not need_combining:
+        raise ValueError(
+            "DownloadChEMBL: delete_downloaded_after_combining=True but need_combine=False")
+
     LoggerFormatUpdate()
 
     logger.info(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
     try:
-        logger.info("Creating folder 'results'...".ljust(77))
-        os.mkdir("results")
-        logger.success("Creating folder 'results': SUCCESS".ljust(77))
+        logger.info(f"Creating folder '{results_folder_name}'...".ljust(77))
+        os.mkdir(results_folder_name)
+        logger.success(f"Creating folder '{
+                       results_folder_name}': SUCCESS".ljust(77))
 
     except Exception as exception:
         logger.warning(f"{exception}".ljust(77))
 
-    if (need_primary_analysis):
+    if need_primary_analysis:
         try:
-            logger.info("Creating folder 'primary_analysis'...".ljust(77))
-            os.mkdir("results/primary_analysis")
+            logger.info(f"Creating folder '{
+                        primary_analysis_folder_name}'...".ljust(77))
+            os.mkdir(f"{results_folder_name}/{primary_analysis_folder_name}")
             logger.success(
-                "Creating folder 'primary_analysis': SUCCESS".ljust(77))
+                f"Creating folder '{primary_analysis_folder_name}': SUCCESS".ljust(77))
 
         except Exception as exception:
             logger.warning(f"{exception}".ljust(77))
@@ -139,9 +152,22 @@ def DownloadChEMBL(need_primary_analysis: bool = False,
         DownloadMWRange(less_limit, greater_limit, need_primary_analysis)
         logger.info(f"{'-' * 77}")
 
-    if need_combine:
+    if need_combining:
         CombineChEMBL()
         LoggerFormatUpdate()
+
+    if delete_downloaded_after_combining:
+        logger.info(f"Deleting files after combining in '{
+                    results_folder_name}'...".ljust(77))
+
+        try:
+            DeleteFilesInFolder(results_folder_name,
+                                "combined_data_from_ChEMBL.csv")
+            logger.success(
+                f"Deleting files after combining in '{results_folder_name}'".ljust(77))
+
+        except Exception as exception:
+            logger.error(f"{exception}".ljust(77))
 
     logger.success(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
 

@@ -1,6 +1,7 @@
 from chembl_webresource_client.new_client import new_client
 from chembl_webresource_client.query_set import QuerySet
 import pandas as pd
+import os
 
 
 def QuerySetMWRangeFilter(less_limit: int = 0, greater_limit: int = 12_546_42) -> QuerySet:
@@ -92,3 +93,19 @@ def FreedFromDictionaryColumnsDF(data: pd.DataFrame) -> pd.DataFrame:
                      'molecule_properties', 'molecule_structures', 'molecule_synonyms'], axis=1)
 
     return pd.concat([data, exposed_data], axis=1)
+
+
+def DeleteFilesInFolder(folder_path: str, except_files: list[str]):
+    """
+    Удаляет все файлы в указанной папке, кроме файлов в списке исключений.
+
+    Args:
+        folder_path (str): путь к папке.
+        except_files (list[str]): список имен файлов, которые нужно исключить из удаления.
+    """
+
+    for file_name in os.listdir(folder_path):
+        full_file_path = os.path.join(folder_path, file_name)
+
+        if os.path.isfile(full_file_path) and file_name not in except_files:
+            os.remove(full_file_path)
