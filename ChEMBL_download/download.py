@@ -4,12 +4,12 @@
 
 try:
     from functions import *
-    from analysis import *
+    from primary_analysis import *
     from combine import *
 
 except ImportError:
     from ChEMBL_download.functions import *
-    from ChEMBL_download.analysis import *
+    from ChEMBL_download.primary_analysis import *
     from ChEMBL_download.combine import *
 
 
@@ -78,7 +78,7 @@ def DownloadMWRange(less_limit: int = 0,
         logger.error(f"{exception}".ljust(77))
 
 
-def DownloadChEMBL(need_analysis: bool = False,
+def DownloadChEMBL(need_primary_analysis: bool = False,
                    need_combine: bool = True,
                    testing_flag: bool = False):
     """
@@ -98,12 +98,12 @@ def DownloadChEMBL(need_analysis: bool = False,
     except Exception as exception:
         logger.warning(f"{exception}".ljust(77))
 
-    if (need_analysis):
+    if (need_primary_analysis):
         try:
-            logger.info("Creating folder 'analysis'...".ljust(77))
-            os.mkdir("analysis")
+            logger.info("Creating folder 'primary_analysis'...".ljust(77))
+            os.mkdir("results/primary_analysis")
             logger.success(
-                "Creating folder 'analysis': SUCCESS".ljust(77))
+                "Creating folder 'primary_analysis': SUCCESS".ljust(77))
 
         except Exception as exception:
             logger.warning(f"{exception}".ljust(77))
@@ -136,7 +136,7 @@ def DownloadChEMBL(need_analysis: bool = False,
         mw_ranges = [(0, 50), (50, 75)]
 
     for less_limit, greater_limit in mw_ranges:
-        DownloadMWRange(less_limit, greater_limit, need_analysis)
+        DownloadMWRange(less_limit, greater_limit, need_primary_analysis)
         logger.info(f"{'-' * 77}")
 
     if need_combine:
@@ -147,4 +147,4 @@ def DownloadChEMBL(need_analysis: bool = False,
 
 
 if __name__ == "__main__":
-    DownloadChEMBL(need_analysis=True)
+    DownloadChEMBL(need_primary_analysis=True)

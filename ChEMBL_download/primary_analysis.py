@@ -143,14 +143,15 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
     if should_save_to_csv:
         try:
             logger.info(
-                "Saving summary analysis to .csv file in 'analysis'...".ljust(77))
+                "Saving primary analysis to .csv file...".ljust(77))
 
-            file_name: str = f"analysis/{data_name}_analysis.csv"
+            file_name: str = f"results/primary_analysis/{
+                data_name}_analysis.csv"
 
             pd.DataFrame(summary).to_csv(file_name, index=False)
 
             logger.success(
-                "Saving summary analysis to .csv file in 'analysis': SUCCESS".ljust(77))
+                "Saving primary analysis to .csv file: SUCCESS".ljust(77))
 
         except Exception as exception:
             logger.error(f"{exception}".ljust(77))
