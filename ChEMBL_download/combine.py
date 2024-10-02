@@ -18,14 +18,12 @@ def CombineChEMBL() -> None:
                " <white>{message}</white>" +
                " [<level>{level}</level>]")
 
-    logger.info(
-        f"{'-' * 22} ChEMBL combining for DrugDesign {'-' * 22}")
+    logger.info(f"Start combining all downloads...".ljust(77))
+    logger.info(f"{' ' * 77}")
 
     folder_path: str = f"results/"
 
     combined_df = pd.DataFrame()
-
-    logger.info(f"{'-' * 77}")
 
     for file_name in os.listdir(folder_path):
         if file_name.endswith('.csv') and file_name != f"combined_data_from_ChEMBL.csv":
@@ -67,8 +65,8 @@ def CombineChEMBL() -> None:
     except Exception as exception:
         logger.error(f"{exception}".ljust(77))
 
-    logger.info(
-        f"{'-' * 22} ChEMBL combining for DrugDesign {'-' * 22}")
+    logger.info(f"{' ' * 77}")
+    logger.success(f"End combining all downloads".ljust(77))
 
 
 if __name__ == "__main__":

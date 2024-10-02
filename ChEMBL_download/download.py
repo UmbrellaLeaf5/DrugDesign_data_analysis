@@ -1,15 +1,16 @@
 # type: ignore
 
 # from icecream import ic
-from os import mkdir
 
 try:
     from functions import *
     from analysis import *
+    from combine import *
 
 except ImportError:
     from ChEMBL_download.functions import *
     from ChEMBL_download.analysis import *
+    from ChEMBL_download.combine import *
 
 
 # ic.disable()
@@ -58,7 +59,7 @@ def DownloadMWRange(less_limit: int = 0,
             logger.info(
                 "Collecting molecules to .csv file in 'results'...".ljust(77))
 
-            if (need_analysis):
+            if need_analysis:
                 DataAnalysisByColumns(data_frame,
                                       f"mols_in_mw_range_{less_limit}_{greater_limit}")
                 LoggerFormatUpdate()
@@ -78,6 +79,7 @@ def DownloadMWRange(less_limit: int = 0,
 
 
 def DownloadChEMBL(need_analysis: bool = False,
+                   need_combine: bool = True,
                    testing_flag: bool = False):
     """
     DownloadChEMBL - функция, которая скачивает необходимые для DrugDesign данные из базы ChEMBL
@@ -90,7 +92,7 @@ def DownloadChEMBL(need_analysis: bool = False,
     logger.info(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
     try:
         logger.info("Creating folder 'results'...".ljust(77))
-        mkdir("results")
+        os.mkdir("results")
         logger.success("Creating folder 'results': SUCCESS".ljust(77))
 
     except Exception as exception:
@@ -99,7 +101,7 @@ def DownloadChEMBL(need_analysis: bool = False,
     if (need_analysis):
         try:
             logger.info("Creating folder 'analysis'...".ljust(77))
-            mkdir("analysis")
+            os.mkdir("analysis")
             logger.success(
                 "Creating folder 'analysis': SUCCESS".ljust(77))
 
@@ -136,6 +138,10 @@ def DownloadChEMBL(need_analysis: bool = False,
     for less_limit, greater_limit in mw_ranges:
         DownloadMWRange(less_limit, greater_limit, need_analysis)
         logger.info(f"{'-' * 77}")
+
+    if need_combine:
+        CombineChEMBL()
+        LoggerFormatUpdate()
 
     logger.success(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
 
