@@ -8,14 +8,14 @@ try:
     from combine import *
 
 except ImportError:
-    from ChEMBL_download.functions import *
-    from ChEMBL_download.primary_analysis import *
-    from ChEMBL_download.combine import *
+    from ChEMBL_download_compounds.functions import *
+    from ChEMBL_download_compounds.primary_analysis import *
+    from ChEMBL_download_compounds.combine import *
 
 
 # ic.disable()
 
-results_folder_name: str = "results"
+results_folder_name: str = "compounds_results"
 primary_analysis_folder_name: str = "primary_analysis"
 
 
@@ -28,9 +28,9 @@ def LoggerFormatUpdate() -> None:
                       " [<level>{level}</level>]")
 
 
-def DownloadMWRange(less_limit: int = 0,
-                    greater_limit: int = 12_546_42,
-                    need_analysis: bool = False):
+def DownloadMWRangeCompounds(less_limit: int = 0,
+                             greater_limit: int = 12_546_42,
+                             need_analysis: bool = False):
     """
     DownloadMolecularWeightRange - функция, которая скачивает молекулы в .csv файл с выводом
     информации из базы ChEMBL по диапазону ( [): полуинтервалу) молекулярного веса
@@ -43,7 +43,7 @@ def DownloadMWRange(less_limit: int = 0,
     try:
         logger.info(
             f"Downloading molecules with mw in range [{less_limit}, {greater_limit})...".ljust(77))
-        mols_in_mw_range: QuerySet = QuerySetMWRangeFilter(
+        mols_in_mw_range: QuerySet = QuerySetMWRangeFilterCompounds(
             less_limit, greater_limit)
 
         logger.info(
@@ -54,7 +54,7 @@ def DownloadMWRange(less_limit: int = 0,
         try:
             logger.info(
                 "Collecting molecules to pandas.DataFrame()...".ljust(77))
-            data_frame = FreedFromDictionaryColumnsDF(pd.DataFrame(
+            data_frame = ExpandedFromDictionaryColumnsDFCompounds(pd.DataFrame(
                 mols_in_mw_range))
             logger.success(
                 "Collecting molecules to pandas.DataFrame(): SUCCESS".ljust(77))
@@ -81,11 +81,11 @@ def DownloadMWRange(less_limit: int = 0,
         logger.error(f"{exception}".ljust(77))
 
 
-def DownloadChEMBL(need_primary_analysis: bool = False,
-                   need_combining: bool = True,
-                   delete_downloaded_after_combining: bool = True,
-                   skip_downloaded_files: bool = False,
-                   testing_flag: bool = False):
+def DownloadChEMBLCompounds(need_primary_analysis: bool = False,
+                            need_combining: bool = True,
+                            delete_downloaded_after_combining: bool = True,
+                            skip_downloaded_files: bool = False,
+                            testing_flag: bool = False):
     """
     DownloadChEMBL - функция, которая скачивает необходимые для DrugDesign данные из базы ChEMBL
 
@@ -93,7 +93,7 @@ def DownloadChEMBL(need_primary_analysis: bool = False,
         need_primary_analysis (bool, optional): нужен ли первичный анализ скачанных файлов. Defaults to False.
         need_combining (bool, optional): нужно ли собирать все скачанные файлы в один. Defaults to True.
         delete_downloaded_after_combining (bool, optional): нужно ли удалять все скачанные файлы после комбинирования. Defaults to True.
-        skip_downloaded_files (bool, optional): нужно ли пропустить уже скачанные файлы в папке results. Defaults to False.
+        skip_downloaded_files (bool, optional): нужно ли пропустить уже скачанные файлы в папке compounds_results. Defaults to False.
         testing_flag (bool, optional): [скачивание только двух таблиц для тестирования функционала]. Defaults to False.
     """
 
@@ -154,7 +154,8 @@ def DownloadChEMBL(need_primary_analysis: bool = False,
     for less_limit, greater_limit in mw_ranges:
         if not skip_downloaded_files or not IsFileInFolder(f"{results_folder_name}",
                                                            f"range_{less_limit}_{greater_limit}_mw_mols.csv"):
-            DownloadMWRange(less_limit, greater_limit, need_primary_analysis)
+            DownloadMWRangeCompounds(
+                less_limit, greater_limit, need_primary_analysis)
         else:
             logger.warning(f"Molecules with mw in range [{less_limit}, {
                            greater_limit}) is already downloaded, skip".ljust(77))
@@ -162,7 +163,7 @@ def DownloadChEMBL(need_primary_analysis: bool = False,
         logger.info(f"{'-' * 77}")
 
     if need_combining:
-        CombineChEMBL()
+        CombineChEMBLCompounds()
         LoggerFormatUpdate()
 
     if delete_downloaded_after_combining:
@@ -171,7 +172,7 @@ def DownloadChEMBL(need_primary_analysis: bool = False,
 
         try:
             DeleteFilesInFolder(results_folder_name,
-                                "combined_data_from_ChEMBL.csv")
+                                "combined_compounds_data_from_ChEMBL.csv")
             logger.success(
                 f"Deleting files after combining in '{results_folder_name}'".ljust(77))
 
@@ -182,4 +183,4 @@ def DownloadChEMBL(need_primary_analysis: bool = False,
 
 
 if __name__ == "__main__":
-    DownloadChEMBL(need_primary_analysis=True)
+    DownloadChEMBLCompounds(need_primary_analysis=True)

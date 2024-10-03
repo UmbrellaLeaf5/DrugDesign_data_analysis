@@ -145,7 +145,7 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
             logger.info(
                 "Saving primary analysis to .csv file...".ljust(77))
 
-            file_name: str = f"results/primary_analysis/{
+            file_name: str = f"compounds_results/primary_analysis/{
                 data_name}_analysis.csv"
 
             pd.DataFrame(summary).to_csv(file_name, index=False)

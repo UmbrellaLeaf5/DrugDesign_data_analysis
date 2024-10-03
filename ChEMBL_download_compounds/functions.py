@@ -4,7 +4,7 @@ import pandas as pd
 import os
 
 
-def QuerySetMWRangeFilter(less_limit: int = 0, greater_limit: int = 12_546_42) -> QuerySet:
+def QuerySetMWRangeFilterCompounds(less_limit: int = 0, greater_limit: int = 12_546_42) -> QuerySet:
     """      
     QuerySetMolecularWeightRangeFilter - функция, которая выполняет фильтрацию по базе ChEMBL
     по диапазону ( [): полуинтервалу) молекулярного веса
@@ -33,9 +33,9 @@ def QuerySetMWRangeFilter(less_limit: int = 0, greater_limit: int = 12_546_42) -
                                       molecule_properties__mw_freebase__gte=less_limit)
 
 
-def FreedFromDictionaryColumnsDF(data: pd.DataFrame) -> pd.DataFrame:
+def ExpandedFromDictionaryColumnsDFCompounds(data: pd.DataFrame) -> pd.DataFrame:
     """
-    FreedFromDictionaryColumnsDataFrame - функция, которая переписывает словари и списки словарей 
+    ExpandedFromDictionaryColumnsDataFrame - функция, которая переписывает словари и списки словарей 
     в таблице в отдельные столбцы
 
     Args:

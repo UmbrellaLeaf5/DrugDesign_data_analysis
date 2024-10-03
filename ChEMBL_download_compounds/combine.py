@@ -5,7 +5,7 @@ from loguru import logger
 import sys
 
 
-def CombineChEMBL() -> None:
+def CombineChEMBLCompounds() -> None:
     """
     CombineChEMBL - функция, которая объединяет все .csv файлы в один
     """
@@ -21,12 +21,12 @@ def CombineChEMBL() -> None:
     logger.info(f"Start combining all downloads...".ljust(77))
     logger.info(f"{' ' * 77}")
 
-    folder_path: str = f"results/"
+    folder_path: str = f"compounds_results/"
 
     combined_df = pd.DataFrame()
 
     for file_name in os.listdir(folder_path):
-        if file_name.endswith('.csv') and file_name != f"combined_data_from_ChEMBL.csv":
+        if file_name.endswith('.csv') and file_name != f"combined_compounds_data_from_ChEMBL.csv":
 
             logger.info(f"Opening '{file_name}'...".ljust(77))
             file_path: str = os.path.join(folder_path, file_name)
@@ -58,7 +58,7 @@ def CombineChEMBL() -> None:
         "Collecting molecules to combined .csv file in 'results'...".ljust(77))
     try:
         combined_df.to_csv(
-            f"{folder_path}combined_data_from_ChEMBL.csv", index=False)
+            f"{folder_path}combined_compounds_data_from_ChEMBL.csv", index=False)
         logger.success(
             f"Collecting molecules to combined .csv file in 'results': SUCCESS".ljust(77))
 
@@ -70,4 +70,4 @@ def CombineChEMBL() -> None:
 
 
 if __name__ == "__main__":
-    CombineChEMBL()
+    CombineChEMBLCompounds()

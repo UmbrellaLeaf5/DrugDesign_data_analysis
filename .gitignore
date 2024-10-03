@@ -169,5 +169,5 @@ pip.txt
 temp.py
 
 # Own folders
-results/
-analysis/
+compounds_results/
+targets_results/
