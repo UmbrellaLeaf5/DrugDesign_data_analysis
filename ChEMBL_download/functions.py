@@ -45,6 +45,8 @@ def FreedFromDictionaryColumnsDF(data: pd.DataFrame) -> pd.DataFrame:
         pd.DataFrame: "раскрытая" таблица
     """
 
+    # cSpell:disable
+
     exposed_data = pd.DataFrame({
         #! cross_references
         'xref_id':                     data['cross_references'].apply(lambda x: [d['xref_id'] for d in x] if x else []),
@@ -91,6 +93,8 @@ def FreedFromDictionaryColumnsDF(data: pd.DataFrame) -> pd.DataFrame:
 
     data = data.drop(['cross_references', 'molecule_hierarchy',
                      'molecule_properties', 'molecule_structures', 'molecule_synonyms'], axis=1)
+
+    # cSpell:enable
 
     return pd.concat([data, exposed_data], axis=1)
 
