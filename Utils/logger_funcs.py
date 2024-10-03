@@ -4,6 +4,13 @@ import sys
 
 
 def LoggerFormatUpdate(logger_label: str, color: str) -> None:
+    """
+    Обновляет формат вывода логирования
+
+    Args:
+        logger_label (str): текст заголовка для логирования
+        color (str): цвет заголовка для логирования
+    """
 
     logger.remove()
     logger.add(sink=sys.stdout,

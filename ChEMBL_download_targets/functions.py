@@ -8,16 +8,40 @@ from Utils.primary_analysis import *
 
 
 def QuerySetAllTargets() -> QuerySet:
+    """
+    Возвращает все цели из базы ChEMBL
+
+    Returns:
+        QuerySet: набор всех целей
+    """
 
     return new_client.target.filter()
 
 
 def QuerySetTargetsFromIdList(target_chembl_id_list: list[str]) -> QuerySet:
+    """
+    Возвращает цели по списку id из базы ChEMBL
+
+    Args:
+        target_chembl_id_list (list[str]): список id
+
+    Returns:
+        QuerySet: набор целей по списку id
+    """
 
     return new_client.target.filter(target_chembl_id__in=target_chembl_id_list)
 
 
 def ExpandedFromDictionaryColumnsDFTargets(data: pd.DataFrame) -> pd.DataFrame:
+    """
+    Избавляет pd.DataFrame от словарей и списков словарей в столбцах, разбивая их на подстолбцы
+
+    Args:
+        data (pd.DataFrame): исходный pd.DataFrame
+
+    Returns:
+        pd.DataFrame: "раскрытый" pd.DataFrame
+    """
 
     def ExtractedValuesFromColumn(df: pd.DataFrame, column_name: str, key: str) -> pd.Series:
         return df[column_name].apply(lambda x: [d[key] for d in x] if x else [])
@@ -58,6 +82,15 @@ def DownloadTargetsFromIdList(target_chembl_id_list: list[str],
                               results_folder_name: str = "targets_results",
                               primary_analysis_folder_name: str = "primary_analysis",
                               need_primary_analysis: bool = False):
+    """
+    Скачивает цели по списку id из базы ChEMBL, сохраняя их в .csv файл
+
+    Args:
+        target_chembl_id_list (list[str]): список id
+        results_folder_name (str, optional): имя папки для закачки. Defaults to "targets_results".
+        primary_analysis_folder_name (str, optional): имя папки для сохранения данных о первичном анализе. Defaults to "primary_analysis".
+        need_primary_analysis (bool, optional): нужно ли проводить первичный анализ. Defaults to False.
+    """
 
     try:
         logger.info(
@@ -105,6 +138,14 @@ def DownloadTargetsFromIdList(target_chembl_id_list: list[str],
 def DownloadAllTargets(results_folder_name: str = "targets_results",
                        primary_analysis_folder_name: str = "primary_analysis",
                        need_primary_analysis: bool = False):
+    """
+    Скачивает все цели из базы ChEMBL
+
+    Args:
+        results_folder_name (str, optional): имя папки для закачки. Defaults to "targets_results".
+        primary_analysis_folder_name (str, optional): имя папки для сохранения данных о первичном анализе. Defaults to "primary_analysis".
+        need_primary_analysis (bool, optional): нужно ли проводить первичный анализ. Defaults to False.
+    """
 
     try:
         logger.info(

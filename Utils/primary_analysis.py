@@ -15,6 +15,17 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
                           logger_label: str = "ChEMBL_analysis",
                           should_print_to_console: bool = False,
                           should_save_to_csv: bool = True) -> None:
+    """
+    Проводит первичный анализ pd.DataFrame с возможностью вывода в консоль и сохранения в .csv файл
+
+    Args:
+        data_frame (pd.DataFrame): исходный pd.DataFrame
+        data_name (str): имя исходных данных (нужно для логирования)
+        folder_name (str): имя папки, куда сохранять .csv файл
+        logger_label (str, optional): текст заголовка логирования. Defaults to "ChEMBL_analysis".
+        should_print_to_console (bool, optional): нужно ли выводить информацию в консоль. Defaults to False.
+        should_save_to_csv (bool, optional): нужно ли сохранять информацию в .csv файл. Defaults to True.
+    """
 
     LoggerFormatUpdate(logger_label, "magenta")
 

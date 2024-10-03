@@ -12,6 +12,14 @@ except ImportError:
 
 def CombineCSVInFolder(folder_name: str, combined_file_name: str,
                        logger_label: str = "ChEMBL__combine") -> None:
+    """
+    Склеивает все .csv файлы в папке в один
+
+    Args:
+        folder_name (str): имя папки с .csv файлами
+        combined_file_name (str): имя склеенного .csv файла
+        logger_label (str, optional): текст заголовка для логирования. Defaults to "ChEMBL__combine".
+    """
 
     LoggerFormatUpdate(logger_label, "blue")
 

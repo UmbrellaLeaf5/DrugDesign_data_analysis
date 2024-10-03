@@ -44,14 +44,14 @@ def DownloadChEMBLCompounds(need_primary_analysis: bool = False,
                             skip_downloaded_files: bool = False,
                             testing_flag: bool = False):
     """
-    DownloadChEMBL - функция, которая скачивает необходимые для DrugDesign данные из базы ChEMBL
+    Скачивает необходимые молекулы из базы ChEMBL
 
     Args:
         need_primary_analysis (bool, optional): нужен ли первичный анализ скачанных файлов. Defaults to False.
         need_combining (bool, optional): нужно ли собирать все скачанные файлы в один. Defaults to True.
         delete_downloaded_after_combining (bool, optional): нужно ли удалять все скачанные файлы после комбинирования. Defaults to True.
-        skip_downloaded_files (bool, optional): нужно ли пропустить уже скачанные файлы в папке compounds_results. Defaults to False.
-        testing_flag (bool, optional): [скачивание только двух таблиц для тестирования функционала]. Defaults to False.
+        skip_downloaded_files (bool, optional): пропускать ли уже скачанные файлы. Defaults to False.
+        testing_flag (bool, optional): спец. флаг для тестирования функционала. Defaults to False.
     """
 
     if delete_downloaded_after_combining and not need_combining:

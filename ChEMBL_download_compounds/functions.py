@@ -9,6 +9,20 @@ from Utils.primary_analysis import *
 
 
 def QuerySetMWRangeFilterCompounds(less_limit: int = 0, greater_limit: int = 12_546_42) -> QuerySet:
+    """
+    Возвращает молекулы в диапазоне молекулярной массы [less_limit; greater_limit) из базы ChEMBL
+
+    Args:
+        less_limit (int, optional): нижняя граница. Defaults to 0.
+        greater_limit (int, optional): верхняя граница. Defaults to 12_546_42.
+
+    Raises:
+        ValueError: границы должны быть больше нуля
+        ValueError: greater_limit должен быть больше less_limit
+
+    Returns:
+        QuerySet: набор молекул в диапазоне
+    """
 
     if greater_limit < 0 or less_limit < 0:
         raise ValueError(
@@ -23,6 +37,15 @@ def QuerySetMWRangeFilterCompounds(less_limit: int = 0, greater_limit: int = 12_
 
 
 def ExpandedFromDictionaryColumnsDFCompounds(data: pd.DataFrame) -> pd.DataFrame:
+    """
+    Избавляет pd.DataFrame от словарей и списков словарей в столбцах, разбивая их на подстолбцы
+
+    Args:
+        data (pd.DataFrame): исходный pd.DataFrame
+
+    Returns:
+        pd.DataFrame: "раскрытый" pd.DataFrame
+    """
 
     def ExtractedValuesFromColumn(df: pd.DataFrame, column_name: str,
                                   key: str, is_list: bool = True) -> pd.Series:
@@ -89,6 +112,17 @@ def DownloadMWRangeCompounds(less_limit: int = 0,
                              results_folder_name: str = "compounds_results",
                              primary_analysis_folder_name: str = "primary_analysis",
                              need_primary_analysis: bool = False):
+    """
+    Возвращает молекулы в диапазоне молекулярной массы [less_limit; greater_limit) из базы ChEMBL, 
+    сохраняя их в .csv файл
+
+    Args:
+        less_limit (int, optional): нижняя граница. Defaults to 0.
+        greater_limit (int, optional): верхняя граница. Defaults to 12_546_42.
+        results_folder_name (str, optional): имя папки для закачки. Defaults to "targets_results".
+        primary_analysis_folder_name (str, optional): имя папки для сохранения данных о первичном анализе. Defaults to "primary_analysis".
+        need_primary_analysis (bool, optional): нужно ли проводить первичный анализ. Defaults to False.
+    """
 
     try:
         logger.info(

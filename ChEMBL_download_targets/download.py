@@ -20,6 +20,15 @@ def DownloadChEMBLTargets(need_primary_analysis: bool = False,
                           skip_downloaded_files: bool = False,
                           download_all: bool = False,
                           testing_flag: bool = False):
+    """
+    Скачивает необходимые цели из базы ChEMBL
+
+    Args:
+        need_primary_analysis (bool, optional): нужен ли первичный анализ скачанных файлов. Defaults to False.
+        skip_downloaded_files (bool, optional): пропускать ли уже скачанные файлы. Defaults to False.
+        download_all (bool, optional): скачивать ли все цели (или использовать только те, что из списка). Defaults to False.
+        testing_flag (bool, optional): спец. флаг для тестирования функционала. Defaults to False.
+    """
 
     LoggerFormatUpdate(logger_label, "yellow")
 
