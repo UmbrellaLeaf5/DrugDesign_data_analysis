@@ -2,46 +2,22 @@
 
 from chembl_webresource_client.new_client import new_client
 from chembl_webresource_client.query_set import QuerySet
-import pandas as pd
-import os
+
+from Utils.logger_funcs import *
+from Utils.primary_analysis import *
 
 
 def QuerySetAllTargets() -> QuerySet:
-    """      
-    QuerySetAllTargets
-
-    Returns:
-        QuerySet: список всех целей
-    """
 
     return new_client.target.filter()
 
 
 def QuerySetTargetsFromIdList(target_chembl_id_list: list[str]) -> QuerySet:
-    """
-    QuerySetTargetsFromIdList - функция, которая возвращает QuerySet по целям 
-    с target_chembl_id из списка
 
-    Args:
-        target_chembl_id_list (list[str]): список id
-
-    Returns:
-        QuerySet: список целей
-    """
     return new_client.target.filter(target_chembl_id__in=target_chembl_id_list)
 
 
 def ExpandedFromDictionaryColumnsDFTargets(data: pd.DataFrame) -> pd.DataFrame:
-    """
-    ExpandedFromDictionaryColumnsDFTargets - функция, которая переписывает словари и списки 
-    словарей в таблице в отдельные столбцы
-
-    Args:
-        data (pd.DataFrame): изначальная таблица
-
-    Returns:
-        pd.DataFrame: "раскрытая" таблица
-    """
 
     def ExtractedValuesFromColumn(df: pd.DataFrame, column_name: str, key: str) -> pd.Series:
         return df[column_name].apply(lambda x: [d[key] for d in x] if x else [])
@@ -76,35 +52,3 @@ def ExpandedFromDictionaryColumnsDFTargets(data: pd.DataFrame) -> pd.DataFrame:
 
     data = data.drop(['cross_references', 'target_components'], axis=1)
     return pd.concat([data, exposed_data, target_components_data], axis=1)
-
-
-def DeleteFilesInFolder(folder_path: str, except_files: list[str]) -> None:
-    """
-    Удаляет все файлы в указанной папке, кроме файлов в списке исключений.
-
-    Args:
-        folder_path (str): путь к папке.
-        except_files (list[str]): список имен файлов, которые нужно исключить из удаления.
-    """
-
-    for file_name in os.listdir(folder_path):
-        full_file_path = os.path.join(folder_path, file_name)
-
-        if os.path.isfile(full_file_path) and file_name not in except_files:
-            os.remove(full_file_path)
-
-
-def IsFileInFolder(folder_path: str, file_name: str) -> bool:
-    """
-    Проверяет, существует ли файл в указанной папке.
-
-    Args:
-      file_name: путь к файлу, который нужно проверить.
-      folder_path: путь к папке, в которой нужно проверить наличие файла.
-
-    Returns:
-      True, если файл существует в папке, в противном случае False.
-    """
-
-    full_file_path = os.path.join(folder_path, file_name)
-    return os.path.exists(full_file_path)

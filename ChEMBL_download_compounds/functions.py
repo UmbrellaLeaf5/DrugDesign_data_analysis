@@ -1,25 +1,14 @@
+# type: ignore
+
+import os
 from chembl_webresource_client.new_client import new_client
 from chembl_webresource_client.query_set import QuerySet
-import pandas as pd
-import os
+
+from Utils.logger_funcs import *
+from Utils.primary_analysis import *
 
 
 def QuerySetMWRangeFilterCompounds(less_limit: int = 0, greater_limit: int = 12_546_42) -> QuerySet:
-    """      
-    QuerySetMolecularWeightRangeFilter - функция, которая выполняет фильтрацию по базе ChEMBL
-    по диапазону ( [): полуинтервалу) молекулярного веса
-
-    Args:
-        less_limit (int, optional): нижняя граница. Defaults to 0
-        greater_limit (int, optional): верхняя граница. Defaults to 12_546_42
-
-    Raises:
-        ValueError: если границы меньше являются отриц. числами
-        ValueError: если, верхняя граница больше нижней
-
-    Returns:
-        QuerySet: список объектов заданной модели
-    """
 
     if greater_limit < 0 or less_limit < 0:
         raise ValueError(
@@ -34,61 +23,57 @@ def QuerySetMWRangeFilterCompounds(less_limit: int = 0, greater_limit: int = 12_
 
 
 def ExpandedFromDictionaryColumnsDFCompounds(data: pd.DataFrame) -> pd.DataFrame:
-    """
-    ExpandedFromDictionaryColumnsDataFrame - функция, которая переписывает словари и списки словарей 
-    в таблице в отдельные столбцы
 
-    Args:
-        data (pd.DataFrame): изначальная таблица
-
-    Returns:
-        pd.DataFrame: "раскрытая" таблица
-    """
+    def ExtractedValuesFromColumn(df: pd.DataFrame, column_name: str,
+                                  key: str, is_list: bool = True) -> pd.Series:
+        if is_list:
+            return df[column_name].apply(lambda x: [d[key] for d in x] if x else [])
+        return [item[key] if isinstance(item, dict) else None for item in data[column_name]]
 
     # cSpell:disable
 
     exposed_data = pd.DataFrame({
         #! cross_references
-        'xref_id':                     data['cross_references'].apply(lambda x: [d['xref_id'] for d in x] if x else []),
-        'xref_name':                   data['cross_references'].apply(lambda x: [d['xref_name'] for d in x] if x else []),
-        'xref_src':                    data['cross_references'].apply(lambda x: [d['xref_src'] for d in x] if x else []),
+        'xref_id':                     ExtractedValuesFromColumn(data, 'cross_references', 'xref_id'),
+        'xref_name':                   ExtractedValuesFromColumn(data, 'cross_references', 'xref_name'),
+        'xref_src':                    ExtractedValuesFromColumn(data, 'cross_references', 'xref_src'),
         #! molecule_hierarchy
-        'active_chembl_id':            [item['active_chembl_id'] if isinstance(item, dict) else None for item in data['molecule_hierarchy']],
-        'molecule_chembl_id':          [item['molecule_chembl_id'] if isinstance(item, dict) else None for item in data['molecule_hierarchy']],
-        'parent_chembl_id':            [item['parent_chembl_id'] if isinstance(item, dict) else None for item in data['molecule_hierarchy']],
+        'active_chembl_id':            ExtractedValuesFromColumn(data, 'molecule_hierarchy', 'active_chembl_id', is_list=False),
+        'molecule_chembl_id':          ExtractedValuesFromColumn(data, 'molecule_hierarchy', 'molecule_chembl_id', is_list=False),
+        'parent_chembl_id':            ExtractedValuesFromColumn(data, 'molecule_hierarchy', 'parent_chembl_id', is_list=False),
         #! molecule_properties
-        'alogp':                       [item['alogp'] if isinstance(item, dict) else None for item in data['molecule_properties']],
-        'aromatic_rings':              [item['aromatic_rings'] if isinstance(item, dict) else None for item in data['molecule_properties']],
-        'cx_logd':                     [item['cx_logd'] if isinstance(item, dict) else None for item in data['molecule_properties']],
-        'cx_logp':                     [item['cx_logp'] if isinstance(item, dict) else None for item in data['molecule_properties']],
-        'cx_most_apka':                [item['cx_most_apka'] if isinstance(item, dict) else None for item in data['molecule_properties']],
-        'cx_most_bpka':                [item['cx_most_bpka'] if isinstance(item, dict) else None for item in data['molecule_properties']],
-        'full_molformula':             [item['full_molformula'] if isinstance(item, dict) else None for item in data['molecule_properties']],
-        'full_mwt':                    [item['full_mwt'] if isinstance(item, dict) else None for item in data['molecule_properties']],
-        'hba':                         [item['hba'] if isinstance(item, dict) else None for item in data['molecule_properties']],
-        'hba_lipinski':                [item['hba_lipinski'] if isinstance(item, dict) else None for item in data['molecule_properties']],
-        'hbd':                         [item['hbd'] if isinstance(item, dict) else None for item in data['molecule_properties']],
-        'hbd_lipinski':                [item['hbd_lipinski'] if isinstance(item, dict) else None for item in data['molecule_properties']],
-        'heavy_atoms':                 [item['heavy_atoms'] if isinstance(item, dict) else None for item in data['molecule_properties']],
-        'molecular_species':           [item['molecular_species'] if isinstance(item, dict) else None for item in data['molecule_properties']],
-        'mw_freebase':                 [item['mw_freebase'] if isinstance(item, dict) else None for item in data['molecule_properties']],
-        'mw_monoisotopic':             [item['mw_monoisotopic'] if isinstance(item, dict) else None for item in data['molecule_properties']],
-        'np_likeness_score':           [item['np_likeness_score'] if isinstance(item, dict) else None for item in data['molecule_properties']],
-        'num_lipinski_ro5_violations': [item['num_lipinski_ro5_violations'] if isinstance(item, dict) else None for item in data['molecule_properties']],
-        'num_ro5_violations':          [item['num_ro5_violations'] if isinstance(item, dict) else None for item in data['molecule_properties']],
-        'psa':                         [item['psa'] if isinstance(item, dict) else None for item in data['molecule_properties']],
-        'qed_weighted':                [item['qed_weighted'] if isinstance(item, dict) else None for item in data['molecule_properties']],
-        'ro3_pass':                    [item['ro3_pass'] if isinstance(item, dict) else None for item in data['molecule_properties']],
-        'rtb':                         [item['rtb'] if isinstance(item, dict) else None for item in data['molecule_properties']],
+        'alogp':                       ExtractedValuesFromColumn(data, 'molecule_properties', 'alogp', is_list=False),
+        'aromatic_rings':              ExtractedValuesFromColumn(data, 'molecule_properties', 'aromatic_rings', is_list=False),
+        'cx_logd':                     ExtractedValuesFromColumn(data, 'molecule_properties', 'cx_logd', is_list=False),
+        'cx_logp':                     ExtractedValuesFromColumn(data, 'molecule_properties', 'cx_logp', is_list=False),
+        'cx_most_apka':                ExtractedValuesFromColumn(data, 'molecule_properties', 'cx_most_apka', is_list=False),
+        'cx_most_bpka':                ExtractedValuesFromColumn(data, 'molecule_properties', 'cx_most_bpka', is_list=False),
+        'full_molformula':             ExtractedValuesFromColumn(data, 'molecule_properties', 'full_molformula', is_list=False),
+        'full_mwt':                    ExtractedValuesFromColumn(data, 'molecule_properties', 'full_mwt', is_list=False),
+        'hba':                         ExtractedValuesFromColumn(data, 'molecule_properties', 'hba', is_list=False),
+        'hba_lipinski':                ExtractedValuesFromColumn(data, 'molecule_properties', 'hba_lipinski', is_list=False),
+        'hbd':                         ExtractedValuesFromColumn(data, 'molecule_properties', 'hbd', is_list=False),
+        'hbd_lipinski':                ExtractedValuesFromColumn(data, 'molecule_properties', 'hbd_lipinski', is_list=False),
+        'heavy_atoms':                 ExtractedValuesFromColumn(data, 'molecule_properties', 'heavy_atoms', is_list=False),
+        'molecular_species':           ExtractedValuesFromColumn(data, 'molecule_properties', 'molecular_species', is_list=False),
+        'mw_freebase':                 ExtractedValuesFromColumn(data, 'molecule_properties', 'mw_freebase', is_list=False),
+        'mw_monoisotopic':             ExtractedValuesFromColumn(data, 'molecule_properties', 'mw_monoisotopic', is_list=False),
+        'np_likeness_score':           ExtractedValuesFromColumn(data, 'molecule_properties', 'np_likeness_score', is_list=False),
+        'num_lipinski_ro5_violations': ExtractedValuesFromColumn(data, 'molecule_properties', 'num_lipinski_ro5_violations', is_list=False),
+        'num_ro5_violations':          ExtractedValuesFromColumn(data, 'molecule_properties', 'num_ro5_violations', is_list=False),
+        'psa':                         ExtractedValuesFromColumn(data, 'molecule_properties', 'psa', is_list=False),
+        'qed_weighted':                ExtractedValuesFromColumn(data, 'molecule_properties', 'qed_weighted', is_list=False),
+        'ro3_pass':                    ExtractedValuesFromColumn(data, 'molecule_properties', 'ro3_pass', is_list=False),
+        'rtb':                         ExtractedValuesFromColumn(data, 'molecule_properties', 'rtb', is_list=False),
         #! molecule_structures
-        'canonical_smiles':            [item['canonical_smiles'] if isinstance(item, dict) else None for item in data['molecule_structures']],
-        # 'molfile':                   [item['molfile'] if isinstance(item, dict) else None for item in data['molecule_structures']], - какая-то стрёмная хрень с RDKit
-        'standard_inchi':              [item['standard_inchi'] if isinstance(item, dict) else None for item in data['molecule_structures']],
-        'standard_inchi_key':          [item['standard_inchi_key'] if isinstance(item, dict) else None for item in data['molecule_structures']],
+        'canonical_smiles':            ExtractedValuesFromColumn(data, 'molecule_structures', 'canonical_smiles', is_list=False),
+        # 'molfile':                   ExtractedValuesFromColumn(data, 'molecule_structures', 'molfile', is_list=False), - какая-то стрёмная хрень с RDKit
+        'standard_inchi':              ExtractedValuesFromColumn(data, 'molecule_structures', 'standard_inchi', is_list=False),
+        'standard_inchi_key':          ExtractedValuesFromColumn(data, 'molecule_structures', 'standard_inchi_key', is_list=False),
         #! molecule_synonyms
-        'molecule_synonym':            data['molecule_synonyms'].apply(lambda x: [d['molecule_synonym'] for d in x] if x else []),
-        'syn_type':                    data['molecule_synonyms'].apply(lambda x: [d['syn_type'] for d in x] if x else []),
-        'synonyms':                    data['molecule_synonyms'].apply(lambda x: [d['synonyms'] for d in x] if x else []),
+        'molecule_synonym':            ExtractedValuesFromColumn(data, 'molecule_synonyms', 'molecule_synonym'),
+        'syn_type':                    ExtractedValuesFromColumn(data, 'molecule_synonyms', 'syn_type'),
+        'synonyms':                    ExtractedValuesFromColumn(data, 'molecule_synonyms', 'synonyms'),
     })
 
     data = data.drop(['cross_references', 'molecule_hierarchy',
@@ -99,33 +84,50 @@ def ExpandedFromDictionaryColumnsDFCompounds(data: pd.DataFrame) -> pd.DataFrame
     return pd.concat([data, exposed_data], axis=1)
 
 
-def DeleteFilesInFolder(folder_path: str, except_files: list[str]) -> None:
-    """
-    Удаляет все файлы в указанной папке, кроме файлов в списке исключений.
+def DownloadMWRangeCompounds(less_limit: int = 0,
+                             greater_limit: int = 12_546_42,
+                             results_folder_name: str = "compounds_results",
+                             primary_analysis_folder_name: str = "primary_analysis",
+                             need_primary_analysis: bool = False):
 
-    Args:
-        folder_path (str): путь к папке.
-        except_files (list[str]): список имен файлов, которые нужно исключить из удаления.
-    """
+    try:
+        logger.info(
+            f"Downloading molecules with mw in range [{less_limit}, {greater_limit})...".ljust(77))
+        mols_in_mw_range: QuerySet = QuerySetMWRangeFilterCompounds(
+            less_limit, greater_limit)
 
-    for file_name in os.listdir(folder_path):
-        full_file_path = os.path.join(folder_path, file_name)
+        logger.info(
+            ("Amount:" + f"{len(mols_in_mw_range)}").ljust(77))
+        logger.success(
+            f"Downloading molecules with mw in range [{less_limit}, {greater_limit}): SUCCESS".ljust(77))
 
-        if os.path.isfile(full_file_path) and file_name not in except_files:
-            os.remove(full_file_path)
+        try:
+            logger.info(
+                "Collecting molecules to pandas.DataFrame()...".ljust(77))
+            data_frame = ExpandedFromDictionaryColumnsDFCompounds(pd.DataFrame(
+                mols_in_mw_range))
+            logger.success(
+                "Collecting molecules to pandas.DataFrame(): SUCCESS".ljust(77))
 
+            logger.info(
+                f"Collecting molecules to .csv file in '{results_folder_name}'...".ljust(77))
 
-def IsFileInFolder(folder_path: str, file_name: str) -> bool:
-    """
-    Проверяет, существует ли файл в указанной папке.
+            if need_primary_analysis:
+                DataAnalysisByColumns(data_frame,
+                                      f"mols_in_mw_range_{
+                                          less_limit}_{greater_limit}",
+                                      f"{results_folder_name}/{primary_analysis_folder_name}")
+                LoggerFormatUpdate("ChEMBL_download", "yellow")
 
-    Args:
-      file_name: путь к файлу, который нужно проверить.
-      folder_path: путь к папке, в которой нужно проверить наличие файла.
+            file_name: str = f"{results_folder_name}/range_{
+                less_limit}_{greater_limit}_mw_mols.csv"
 
-    Returns:
-      True, если файл существует в папке, в противном случае False.
-    """
+            data_frame.to_csv(file_name, index=False)
+            logger.success(
+                f"Collecting molecules to .csv file in '{results_folder_name}': SUCCESS".ljust(77))
 
-    full_file_path = os.path.join(folder_path, file_name)
-    return os.path.exists(full_file_path)
+        except Exception as exception:
+            logger.error(f"{exception}".ljust(77))
+
+    except Exception as exception:
+        logger.error(f"{exception}".ljust(77))

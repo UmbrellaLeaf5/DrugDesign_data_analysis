@@ -1,31 +1,22 @@
+# type: ignore
+
 import pandas as pd
 
-from loguru import logger
-import sys
+try:
+    from logger_funcs import *
+
+except ImportError:
+    from Utils.logger_funcs import *
 
 
 def DataAnalysisByColumns(data_frame: pd.DataFrame,
                           data_name: str,
+                          folder_name: str,
+                          logger_label: str = "ChEMBL_analysis",
                           should_print_to_console: bool = False,
                           should_save_to_csv: bool = True) -> None:
-    """
-    DataAnalysisByColumns - функция, которая выводит в консоль краткую сводку о столбцах pandas.DataFrame()
-    в консоль и сохраняет ее в .csv файл по следующим признакам: тип данных, количество ненулевых строк,
-    наиболее часто встречающееся значение, максимальное и минимальное значения
 
-    Args:
-        data_frame (pd.DataFrame): изначальная табличка
-        data_name (str): имя таблицы (нужно для вывода и названия файла)
-        should_print_to_console (bool, optional): необходимость вывода сводки в консоль. Defaults to True.
-        should_save_to_csv (bool, optional): необходимость сохранения сводки в файл. Defaults to False.
-    """
-
-    logger.remove()
-    logger.add(sink=sys.stderr,
-               format="[{time:DD.MM.YYYY HH:mm:ss}]" +
-                      " <magenta>ChEMBL_analysis:</magenta>" +
-                      " <white>{message}</white>" +
-                      " [<level>{level}</level>]")
+    LoggerFormatUpdate(logger_label, "magenta")
 
     logger.info(f"Start analysis of '{data_name}'...".ljust(77))
 
@@ -145,8 +136,7 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
             logger.info(
                 "Saving primary analysis to .csv file...".ljust(77))
 
-            file_name: str = f"compounds_results/primary_analysis/{
-                data_name}_analysis.csv"
+            file_name: str = f"{folder_name}/{data_name}_analysis.csv"
 
             pd.DataFrame(summary).to_csv(file_name, index=False)
 

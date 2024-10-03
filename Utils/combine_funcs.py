@@ -1,35 +1,30 @@
+# type: ignore
+
 import os
 import pandas as pd
 
-from loguru import logger
-import sys
+try:
+    from logger_funcs import *
+
+except ImportError:
+    from Utils.logger_funcs import *
 
 
-def CombineChEMBLCompounds() -> None:
-    """
-    CombineChEMBL - функция, которая объединяет все .csv файлы в один
-    """
+def CombineCSVInFolder(folder_name: str, combined_file_name: str,
+                       logger_label: str = "ChEMBL__combine") -> None:
 
-    logger.remove()
-
-    logger.add(sink=sys.stderr,
-               format="[{time:DD.MM.YYYY HH:mm:ss}]" +
-               " <blue>ChEMBL__combine:</blue>" +
-               " <white>{message}</white>" +
-               " [<level>{level}</level>]")
+    LoggerFormatUpdate(logger_label, "blue")
 
     logger.info(f"Start combining all downloads...".ljust(77))
     logger.info(f"{' ' * 77}")
 
-    folder_path: str = f"compounds_results/"
-
     combined_df = pd.DataFrame()
 
-    for file_name in os.listdir(folder_path):
-        if file_name.endswith('.csv') and file_name != f"combined_compounds_data_from_ChEMBL.csv":
+    for file_name in os.listdir(folder_name):
+        if file_name.endswith('.csv') and file_name != f"{combined_file_name}.csv":
 
             logger.info(f"Opening '{file_name}'...".ljust(77))
-            file_path: str = os.path.join(folder_path, file_name)
+            file_path: str = os.path.join(folder_name, file_name)
             logger.success(f"Opening '{file_name}': SUCCESS".ljust(77))
 
             logger.info(
@@ -55,19 +50,15 @@ def CombineChEMBLCompounds() -> None:
             logger.info(f"{'-' * 77}")
 
     logger.info(
-        "Collecting molecules to combined .csv file in 'results'...".ljust(77))
+        f"Collecting to combined .csv file in '{folder_name}'...".ljust(77))
     try:
         combined_df.to_csv(
-            f"{folder_path}combined_compounds_data_from_ChEMBL.csv", index=False)
+            f"{folder_name}/{combined_file_name}.csv", index=False)
         logger.success(
-            f"Collecting molecules to combined .csv file in 'results': SUCCESS".ljust(77))
+            f"Collecting to combined .csv file in '{folder_name}': SUCCESS".ljust(77))
 
     except Exception as exception:
         logger.error(f"{exception}".ljust(77))
 
     logger.info(f"{' ' * 77}")
     logger.success(f"End combining all downloads".ljust(77))
-
-
-if __name__ == "__main__":
-    CombineChEMBLCompounds()
