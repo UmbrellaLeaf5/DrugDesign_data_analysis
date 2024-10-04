@@ -54,12 +54,19 @@ def ExpandedFromDictionaryColumnsDFTargets(data: pd.DataFrame) -> pd.DataFrame:
     })
 
     # избавлюсь от списков, так как в них находятся одиночные словари
-    data['target_components'] = data['target_components'].apply(lambda x: x[0])
+    data['target_components'] = data['target_components'].apply(
+        lambda x: x[0] if x else {'accession': None,
+                                  'component_description': None,
+                                  'component_id': None,
+                                  'component_type': None,
+                                  'relationship': None,
+                                  'target_component_synonyms': [],
+                                  'target_component_xrefs': []})
 
     target_components_data = pd.DataFrame(
         data['target_components'].values.tolist())
 
-    exposed_narrowed_data = pd.DataFrame({
+    exposed_target_components_data = pd.DataFrame({
         #! target_component_synonyms
         'component_synonym':                      ExtractedValuesFromColumn(target_components_data, 'target_component_synonyms', 'component_synonym'),
         'syn_type':                               ExtractedValuesFromColumn(target_components_data, 'target_component_synonyms', 'syn_type'),
@@ -72,7 +79,7 @@ def ExpandedFromDictionaryColumnsDFTargets(data: pd.DataFrame) -> pd.DataFrame:
     target_components_data = target_components_data.drop(
         ['target_component_synonyms', 'target_component_xrefs'], axis=1)
     target_components_data = pd.concat(
-        [target_components_data, exposed_narrowed_data], axis=1)
+        [target_components_data, exposed_target_components_data], axis=1)
 
     data = data.drop(['cross_references', 'target_components'], axis=1)
     return pd.concat([data, exposed_data, target_components_data], axis=1)
