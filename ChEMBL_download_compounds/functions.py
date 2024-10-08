@@ -151,7 +151,7 @@ def DownloadCompoundsByMWRange(less_limit: int = 0,
                                       f"mols_in_mw_range_{
                                           less_limit}_{greater_limit}",
                                       f"{results_folder_name}/{primary_analysis_folder_name}")
-                LoggerFormatUpdate("ChEMBL_download", "yellow")
+                UpdateLoggerFormat("ChEMBL_download", "yellow")
 
             file_name: str = f"{results_folder_name}/range_{
                 less_limit}_{greater_limit}_mw_mols.csv"

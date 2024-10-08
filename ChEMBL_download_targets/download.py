@@ -30,7 +30,7 @@ def DownloadChEMBLTargets(need_primary_analysis: bool = False,
         testing_flag (bool, optional): спец. флаг для тестирования функционала. Defaults to False.
     """
 
-    LoggerFormatUpdate(logger_label, "yellow")
+    UpdateLoggerFormat(logger_label, "yellow")
 
     logger.info(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
 

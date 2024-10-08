@@ -3,7 +3,7 @@ from loguru import logger
 import sys
 
 
-def LoggerFormatUpdate(logger_label: str, color: str) -> None:
+def UpdateLoggerFormat(logger_label: str, color: str) -> None:
     """
     Обновляет формат вывода логирования
 

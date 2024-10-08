@@ -58,7 +58,7 @@ def DownloadChEMBLCompounds(need_primary_analysis: bool = False,
         raise ValueError(
             "DownloadChEMBL: delete_downloaded_after_combining=True but need_combine=False")
 
-    LoggerFormatUpdate(logger_label, "yellow")
+    UpdateLoggerFormat(logger_label, "yellow")
 
     logger.info(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
 
@@ -102,7 +102,7 @@ def DownloadChEMBLCompounds(need_primary_analysis: bool = False,
     if need_combining:
         CombineCSVInFolder(results_folder_name,
                            combined_file_name)
-        LoggerFormatUpdate(logger_label, "yellow")
+        UpdateLoggerFormat(logger_label, "yellow")
 
     if delete_downloaded_after_combining:
         logger.info(f"Deleting files after combining in '{

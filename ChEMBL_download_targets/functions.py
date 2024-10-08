@@ -5,6 +5,7 @@ from chembl_webresource_client.query_set import QuerySet
 
 from Utils.logger_funcs import *
 from Utils.primary_analysis import *
+from Utils.file_funcs import *
 
 
 def QuerySetAllTargets() -> QuerySet:
@@ -92,7 +93,9 @@ def ExpandedFromDictionariesTargetsDF(data: pd.DataFrame) -> pd.DataFrame:
     return data
 
 
-def AddedIC50andKiToTargetsDF(data: pd.DataFrame) -> pd.DataFrame:
+def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
+                              need_to_download_activities: bool = True,
+                              results_folder_name: str = "targets_results/activities") -> pd.DataFrame:
     """
     Добавляет в pd.DataFrame два столбца: IC50 и Ki
 
@@ -106,17 +109,86 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame) -> pd.DataFrame:
     logger.info(
         f"Add 'IC50' and 'Ki' columns to pandas.DataFrame()...".ljust(77))
 
-    def CountIC50(target_id: str) -> int:
-        return len(new_client.activity.filter(target_chembl_id=target_id).filter(standard_type="IC50"))
+    try:
+        def CountIC50(target_id: str) -> int:
+            return len(new_client.activity.filter(target_chembl_id=target_id).filter(standard_type="IC50"))
 
-    def CountKi(target_id: str) -> int:
-        return len(new_client.activity.filter(target_chembl_id=target_id).filter(standard_type="Ki"))
+        def CountKi(target_id: str) -> int:
+            return len(new_client.activity.filter(target_chembl_id=target_id).filter(standard_type="Ki"))
 
-    data["IC50"] = data["target_chembl_id"].apply(CountIC50)
-    data["Ki"] = data["target_chembl_id"].apply(CountKi)
+        data["IC50"] = data["target_chembl_id"].apply(CountIC50)
+        data["Ki"] = data["target_chembl_id"].apply(CountKi)
 
-    logger.success(
-        f"Add 'IC50' and 'Ki' columns to pandas.DataFrame(): SUCCESS".ljust(77))
+        logger.success(
+            f"Add 'IC50' and 'Ki' columns to pandas.DataFrame(): SUCCESS".ljust(77))
+
+        if need_to_download_activities:
+            UpdateLoggerFormat("ChEMBL__IC50&Ki", "green")
+
+            logger.info(
+                f"Start download activities connected with targets IC50 and Ki...".ljust(77))
+
+            for target_id in data['target_chembl_id']:
+                logger.info(f"Downloading activities connected with {
+                    target_id}...".ljust(77))
+
+                activities_ic50: QuerySet = new_client.activity.filter(
+                    target_chembl_id=target_id).filter(standard_type="IC50")
+
+                activities_ki: QuerySet = new_client.activity.filter(
+                    target_chembl_id=target_id).filter(standard_type="Ki")
+
+                logger.info(f"Amount: IC50: {len(activities_ic50)}; Ki: {
+                            len(activities_ki)}".ljust(77))
+                logger.success(f"Downloading activities connected with {
+                               target_id}: SUCCESS".ljust(77))
+                try:
+                    logger.info(
+                        "Collecting activities to pandas.DataFrame()...".ljust(77))
+
+                    data_frame_ic50 = pd.DataFrame(activities_ic50)
+                    data_frame_ki = pd.DataFrame(activities_ki)
+
+                    logger.success(
+                        "Collecting activities to pandas.DataFrame(): SUCCESS".ljust(77))
+
+                    try:
+                        logger.info(f"Creating folder '{
+                                    results_folder_name}'...".ljust(77))
+                        os.mkdir(results_folder_name)
+                        logger.success(f"Creating folder '{
+                            results_folder_name}': SUCCESS".ljust(77))
+
+                    except Exception as exception:
+                        logger.warning(f"{exception}".ljust(77))
+
+                    logger.info(
+                        f"Collecting activities to .csv file in '{results_folder_name}'...".ljust(77))
+
+                    # if need_primary_analysis:
+                    #     DataAnalysisByColumns(data_frame,
+                    #                           f"targets_data_from_ChEMBL",
+                    #                           f"{results_folder_name}/{primary_analysis_folder_name}")
+
+                    #     UpdateLoggerFormat("ChEMBL__targets", "yellow")
+
+                    file_name_ic50: str = f"{
+                        results_folder_name}/{target_id}_IC50_activities.csv"
+
+                    file_name_ki: str = f"{
+                        results_folder_name}/{target_id}_Ki_activities.csv"
+
+                    data_frame_ic50.to_csv(file_name_ic50, index=False)
+                    data_frame_ki.to_csv(file_name_ki, index=False)
+
+                    logger.success(
+                        f"Collecting targets to .csv file in '{results_folder_name}': SUCCESS".ljust(77))
+
+                except Exception as exception:
+                    logger.error(f"{exception}".ljust(77))
+
+    except Exception as exception:
+        logger.error(f"{exception}".ljust(77))
 
     return data
 
@@ -141,10 +213,8 @@ def DownloadTargetsFromIdList(target_chembl_id_list: list[str],
         targets_with_ids: QuerySet = QuerySetTargetsFromIdList(
             target_chembl_id_list)
 
-        logger.info(
-            ("Amount:" + f"{len(targets_with_ids)}").ljust(77))
-        logger.success(
-            f"Downloading targets: SUCCESS".ljust(77))
+        logger.info(f"Amount: {len(targets_with_ids)}".ljust(77))
+        logger.success(f"Downloading targets: SUCCESS".ljust(77))
 
         try:
             logger.info(
@@ -162,7 +232,7 @@ def DownloadTargetsFromIdList(target_chembl_id_list: list[str],
                                       f"targets_data_from_ChEMBL",
                                       f"{results_folder_name}/{primary_analysis_folder_name}")
 
-                LoggerFormatUpdate("ChEMBL__targets", "yellow")
+                UpdateLoggerFormat("ChEMBL__targets", "yellow")
 
             file_name: str = f"{
                 results_folder_name}/targets_data_from_ChEMBL.csv"
@@ -216,7 +286,7 @@ def DownloadAllTargets(results_folder_name: str = "targets_results",
                                       f"targets_data_from_ChEMBL",
                                       f"{results_folder_name}/{primary_analysis_folder_name}")
 
-                LoggerFormatUpdate("ChEMBL__targets", "yellow")
+                UpdateLoggerFormat("ChEMBL__targets", "yellow")
 
             file_name: str = f"{
                 results_folder_name}/targets_data_from_ChEMBL.csv"

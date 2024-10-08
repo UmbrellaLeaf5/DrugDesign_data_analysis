@@ -21,7 +21,7 @@ def CombineCSVInFolder(folder_name: str, combined_file_name: str,
         logger_label (str, optional): текст заголовка для логирования. Defaults to "ChEMBL__combine".
     """
 
-    LoggerFormatUpdate(logger_label, "blue")
+    UpdateLoggerFormat(logger_label, "blue")
 
     logger.info(f"Start combining all downloads...".ljust(77))
     logger.info(f"{' ' * 77}")

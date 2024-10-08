@@ -27,7 +27,7 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
         should_save_to_csv (bool, optional): нужно ли сохранять информацию в .csv файл. Defaults to True.
     """
 
-    LoggerFormatUpdate(logger_label, "magenta")
+    UpdateLoggerFormat(logger_label, "magenta")
 
     logger.info(f"Start analysis of '{data_name}'...".ljust(77))
 
