@@ -43,6 +43,8 @@ def ExpandedFromDictionaryColumnsDFTargets(data: pd.DataFrame) -> pd.DataFrame:
         pd.DataFrame: "раскрытый" pd.DataFrame
     """
 
+    logger.info(f"Expand pandas.DataFrame() from dictionaries...".ljust(77))
+
     def ExtractedValuesFromColumn(df: pd.DataFrame, column_name: str, key: str) -> pd.Series:
         return df[column_name].apply(lambda x: [d[key] for d in x] if x else [])
 
@@ -82,7 +84,41 @@ def ExpandedFromDictionaryColumnsDFTargets(data: pd.DataFrame) -> pd.DataFrame:
         [target_components_data, exposed_target_components_data], axis=1)
 
     data = data.drop(['cross_references', 'target_components'], axis=1)
-    return pd.concat([data, exposed_data, target_components_data], axis=1)
+    data = pd.concat([data, exposed_data, target_components_data], axis=1)
+
+    logger.success(
+        f"Expand pandas.DataFrame() from dictionaries: SUCCESS".ljust(77))
+
+    return data
+
+
+def AddedIC50andKiToDFTargets(data: pd.DataFrame) -> pd.DataFrame:
+    """
+    Добавляет в pd.DataFrame два столбца: IC50 и Ki
+
+    Args:
+        data (pd.DataFrame): исходный pd.DataFrame
+
+    Returns:
+        pd.DataFrame: расширенный pd.DataFrame
+    """
+
+    logger.info(
+        f"Add 'IC50' and 'Ki' columns to pandas.DataFrame()...".ljust(77))
+
+    def CountIC50(target_id: str) -> int:
+        return len(new_client.activity.filter(target_chembl_id=target_id).filter(standard_type="IC50"))
+
+    def CountKi(target_id: str) -> int:
+        return len(new_client.activity.filter(target_chembl_id=target_id).filter(standard_type="Ki"))
+
+    data["IC50"] = data["target_chembl_id"].apply(CountIC50)
+    data["Ki"] = data["target_chembl_id"].apply(CountKi)
+
+    logger.success(
+        f"Add 'IC50' and 'Ki' columns to pandas.DataFrame(): SUCCESS".ljust(77))
+
+    return data
 
 
 def DownloadTargetsFromIdList(target_chembl_id_list: list[str],
@@ -113,8 +149,8 @@ def DownloadTargetsFromIdList(target_chembl_id_list: list[str],
         try:
             logger.info(
                 "Collecting targets to pandas.DataFrame()...".ljust(77))
-            data_frame = ExpandedFromDictionaryColumnsDFTargets(pd.DataFrame(
-                targs_with_ids))
+            data_frame = AddedIC50andKiToDFTargets(
+                ExpandedFromDictionaryColumnsDFTargets(pd.DataFrame(targs_with_ids)))
             logger.success(
                 "Collecting targets to pandas.DataFrame(): SUCCESS".ljust(77))
 
