@@ -32,7 +32,7 @@ def QuerySetTargetsFromIdList(target_chembl_id_list: list[str]) -> QuerySet:
     return new_client.target.filter(target_chembl_id__in=target_chembl_id_list)
 
 
-def ExpandedFromDictionaryColumnsDFTargets(data: pd.DataFrame) -> pd.DataFrame:
+def ExpandedFromDictionariesTargetsDF(data: pd.DataFrame) -> pd.DataFrame:
     """
     Избавляет pd.DataFrame от словарей и списков словарей в столбцах, разбивая их на подстолбцы
 
@@ -92,7 +92,7 @@ def ExpandedFromDictionaryColumnsDFTargets(data: pd.DataFrame) -> pd.DataFrame:
     return data
 
 
-def AddedIC50andKiToDFTargets(data: pd.DataFrame) -> pd.DataFrame:
+def AddedIC50andKiToTargetsDF(data: pd.DataFrame) -> pd.DataFrame:
     """
     Добавляет в pd.DataFrame два столбца: IC50 и Ki
 
@@ -124,7 +124,7 @@ def AddedIC50andKiToDFTargets(data: pd.DataFrame) -> pd.DataFrame:
 def DownloadTargetsFromIdList(target_chembl_id_list: list[str],
                               results_folder_name: str = "targets_results",
                               primary_analysis_folder_name: str = "primary_analysis",
-                              need_primary_analysis: bool = False):
+                              need_primary_analysis: bool = False) -> None:
     """
     Скачивает цели по списку id из базы ChEMBL, сохраняя их в .csv файл
 
@@ -138,19 +138,19 @@ def DownloadTargetsFromIdList(target_chembl_id_list: list[str],
     try:
         logger.info(
             f"Downloading targets...".ljust(77))
-        targs_with_ids: QuerySet = QuerySetTargetsFromIdList(
+        targets_with_ids: QuerySet = QuerySetTargetsFromIdList(
             target_chembl_id_list)
 
         logger.info(
-            ("Amount:" + f"{len(targs_with_ids)}").ljust(77))
+            ("Amount:" + f"{len(targets_with_ids)}").ljust(77))
         logger.success(
             f"Downloading targets: SUCCESS".ljust(77))
 
         try:
             logger.info(
                 "Collecting targets to pandas.DataFrame()...".ljust(77))
-            data_frame = AddedIC50andKiToDFTargets(
-                ExpandedFromDictionaryColumnsDFTargets(pd.DataFrame(targs_with_ids)))
+            data_frame = AddedIC50andKiToTargetsDF(
+                ExpandedFromDictionariesTargetsDF(pd.DataFrame(targets_with_ids)))
             logger.success(
                 "Collecting targets to pandas.DataFrame(): SUCCESS".ljust(77))
 
@@ -180,7 +180,7 @@ def DownloadTargetsFromIdList(target_chembl_id_list: list[str],
 
 def DownloadAllTargets(results_folder_name: str = "targets_results",
                        primary_analysis_folder_name: str = "primary_analysis",
-                       need_primary_analysis: bool = False):
+                       need_primary_analysis: bool = False) -> None:
     """
     Скачивает все цели из базы ChEMBL
 
@@ -193,18 +193,18 @@ def DownloadAllTargets(results_folder_name: str = "targets_results",
     try:
         logger.info(
             f"Downloading targets...".ljust(77))
-        targs: QuerySet = QuerySetAllTargets()
+        targets: QuerySet = QuerySetAllTargets()
 
         logger.info(
-            ("Amount:" + f"{len(targs)}").ljust(77))
+            ("Amount:" + f"{len(targets)}").ljust(77))
         logger.success(
             f"Downloading targets: SUCCESS".ljust(77))
 
         try:
             logger.info(
                 "Collecting targets to pandas.DataFrame()...".ljust(77))
-            data_frame = ExpandedFromDictionaryColumnsDFTargets(pd.DataFrame(
-                targs))
+            data_frame = ExpandedFromDictionariesTargetsDF(pd.DataFrame(
+                targets))
             logger.success(
                 "Collecting targets to pandas.DataFrame(): SUCCESS".ljust(77))
 

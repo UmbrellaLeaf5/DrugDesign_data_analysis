@@ -90,7 +90,7 @@ def DownloadChEMBLCompounds(need_primary_analysis: bool = False,
     for less_limit, greater_limit in mw_ranges:
         if not skip_downloaded_files or not IsFileInFolder(f"{results_folder_name}",
                                                            f"range_{less_limit}_{greater_limit}_mw_mols.csv"):
-            DownloadMWRangeCompounds(
+            DownloadCompoundsByMWRange(
                 less_limit, greater_limit, need_primary_analysis=need_primary_analysis)
 
         else:

@@ -8,7 +8,7 @@ from Utils.logger_funcs import *
 from Utils.primary_analysis import *
 
 
-def QuerySetMWRangeFilterCompounds(less_limit: int = 0, greater_limit: int = 12_546_42) -> QuerySet:
+def QuerySetCompoundsByMWRange(less_limit: int = 0, greater_limit: int = 12_546_42) -> QuerySet:
     """
     Возвращает молекулы в диапазоне молекулярной массы [less_limit; greater_limit) из базы ChEMBL
 
@@ -36,7 +36,7 @@ def QuerySetMWRangeFilterCompounds(less_limit: int = 0, greater_limit: int = 12_
                                       molecule_properties__mw_freebase__gte=less_limit)
 
 
-def ExpandedFromDictionaryColumnsDFCompounds(data: pd.DataFrame) -> pd.DataFrame:
+def ExpandedFromDictionariesCompoundsDF(data: pd.DataFrame) -> pd.DataFrame:
     """
     Избавляет pd.DataFrame от словарей и списков словарей в столбцах, разбивая их на подстолбцы
 
@@ -107,11 +107,11 @@ def ExpandedFromDictionaryColumnsDFCompounds(data: pd.DataFrame) -> pd.DataFrame
     return pd.concat([data, exposed_data], axis=1)
 
 
-def DownloadMWRangeCompounds(less_limit: int = 0,
-                             greater_limit: int = 12_546_42,
-                             results_folder_name: str = "compounds_results",
-                             primary_analysis_folder_name: str = "primary_analysis",
-                             need_primary_analysis: bool = False):
+def DownloadCompoundsByMWRange(less_limit: int = 0,
+                               greater_limit: int = 12_546_42,
+                               results_folder_name: str = "compounds_results",
+                               primary_analysis_folder_name: str = "primary_analysis",
+                               need_primary_analysis: bool = False):
     """
     Возвращает молекулы в диапазоне молекулярной массы [less_limit; greater_limit) из базы ChEMBL, 
     сохраняя их в .csv файл
@@ -127,7 +127,7 @@ def DownloadMWRangeCompounds(less_limit: int = 0,
     try:
         logger.info(
             f"Downloading molecules with mw in range [{less_limit}, {greater_limit})...".ljust(77))
-        mols_in_mw_range: QuerySet = QuerySetMWRangeFilterCompounds(
+        mols_in_mw_range: QuerySet = QuerySetCompoundsByMWRange(
             less_limit, greater_limit)
 
         logger.info(
@@ -138,7 +138,7 @@ def DownloadMWRangeCompounds(less_limit: int = 0,
         try:
             logger.info(
                 "Collecting molecules to pandas.DataFrame()...".ljust(77))
-            data_frame = ExpandedFromDictionaryColumnsDFCompounds(pd.DataFrame(
+            data_frame = ExpandedFromDictionariesCompoundsDF(pd.DataFrame(
                 mols_in_mw_range))
             logger.success(
                 "Collecting molecules to pandas.DataFrame(): SUCCESS".ljust(77))
