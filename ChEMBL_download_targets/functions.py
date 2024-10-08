@@ -93,7 +93,7 @@ def ExpandedFromDictionariesTargetsDF(data: pd.DataFrame) -> pd.DataFrame:
 
 
 def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
-                              need_to_download_activities: bool = True,
+                              need_download_activities: bool = True,
                               results_folder_name: str = "targets_results/activities") -> pd.DataFrame:
     """
     Добавляет в pd.DataFrame два столбца: IC50 и Ki
@@ -123,11 +123,13 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
         logger.success(
             f"Add 'IC50' and 'Ki' columns to pandas.DataFrame(): SUCCESS".ljust(77))
 
-        if need_to_download_activities:
+        if need_download_activities:
             UpdateLoggerFormat("ChEMBL__IC50&Ki", "green")
 
             logger.info(
                 f"Start download activities connected with targets IC50 and Ki...".ljust(77))
+
+            logger.info(f"{'-' * 77}")
 
             for target_id in data['target_chembl_id']:
                 logger.info(f"Downloading activities connected with {
@@ -153,8 +155,6 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
                     logger.success(
                         "Collecting activities to pandas.DataFrame(): SUCCESS".ljust(77))
 
-                    CreateFolder(results_folder_name, results_folder_name)
-
                     logger.info(
                         f"Collecting activities to .csv file in '{results_folder_name}'...".ljust(77))
 
@@ -177,6 +177,8 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
                     logger.success(
                         f"Collecting targets to .csv file in '{results_folder_name}': SUCCESS".ljust(77))
 
+                    logger.info(f"{'-' * 77}")
+
                 except Exception as exception:
                     logger.error(f"{exception}".ljust(77))
 
@@ -189,7 +191,8 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
 def DownloadTargetsFromIdList(target_chembl_id_list: list[str],
                               results_folder_name: str = "targets_results",
                               primary_analysis_folder_name: str = "primary_analysis",
-                              need_primary_analysis: bool = False) -> None:
+                              need_primary_analysis: bool = False,
+                              need_download_activities: bool = True) -> None:
     """
     Скачивает цели по списку id из базы ChEMBL, сохраняя их в .csv файл
 
@@ -212,8 +215,13 @@ def DownloadTargetsFromIdList(target_chembl_id_list: list[str],
         try:
             logger.info(
                 "Collecting targets to pandas.DataFrame()...".ljust(77))
+
             data_frame = AddedIC50andKiToTargetsDF(
-                ExpandedFromDictionariesTargetsDF(pd.DataFrame(targets_with_ids)))
+                ExpandedFromDictionariesTargetsDF(
+                    pd.DataFrame(targets_with_ids)),
+                need_download_activities=need_download_activities)
+            UpdateLoggerFormat("ChEMBL__targets", "yellow")
+
             logger.success(
                 "Collecting targets to pandas.DataFrame(): SUCCESS".ljust(77))
 
@@ -243,7 +251,8 @@ def DownloadTargetsFromIdList(target_chembl_id_list: list[str],
 
 def DownloadAllTargets(results_folder_name: str = "targets_results",
                        primary_analysis_folder_name: str = "primary_analysis",
-                       need_primary_analysis: bool = False) -> None:
+                       need_primary_analysis: bool = False,
+                       need_download_activities: bool = True) -> None:
     """
     Скачивает все цели из базы ChEMBL
 
@@ -266,8 +275,13 @@ def DownloadAllTargets(results_folder_name: str = "targets_results",
         try:
             logger.info(
                 "Collecting targets to pandas.DataFrame()...".ljust(77))
-            data_frame = ExpandedFromDictionariesTargetsDF(pd.DataFrame(
-                targets))
+
+            data_frame = AddedIC50andKiToTargetsDF(
+                ExpandedFromDictionariesTargetsDF(
+                    pd.DataFrame(targets)),
+                need_download_activities=need_download_activities)
+            UpdateLoggerFormat("ChEMBL__targets", "yellow")
+
             logger.success(
                 "Collecting targets to pandas.DataFrame(): SUCCESS".ljust(77))
 

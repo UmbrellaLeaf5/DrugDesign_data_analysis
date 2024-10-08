@@ -19,7 +19,8 @@ logger_label: str = "ChEMBL__targets"
 def DownloadChEMBLTargets(need_primary_analysis: bool = False,
                           skip_downloaded_files: bool = False,
                           download_all: bool = False,
-                          testing_flag: bool = False):
+                          testing_flag: bool = False,
+                          need_download_activities: bool = True) -> None:
     """
     Скачивает необходимые цели из базы ChEMBL
 
@@ -39,6 +40,10 @@ def DownloadChEMBLTargets(need_primary_analysis: bool = False,
     if need_primary_analysis:
         CreateFolder(f"{results_folder_name}/{primary_analysis_folder_name}",
                      primary_analysis_folder_name)
+
+    if need_download_activities:
+        CreateFolder(f"{results_folder_name}/activities",
+                     "activities")
 
     logger.info(f"{'-' * 77}")
 
