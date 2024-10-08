@@ -101,6 +101,8 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
 
     Args:
         data (pd.DataFrame): исходный pd.DataFrame
+        need_to_download_activities (bool, optional): нужно ли скачивать activities отдельно. Defaults to True.
+        results_folder_name (str, optional): название папки для скачанных activities. Defaults to "targets_results/activities".
 
     Returns:
         pd.DataFrame: расширенный pd.DataFrame
@@ -152,15 +154,7 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
                     logger.success(
                         "Collecting activities to pandas.DataFrame(): SUCCESS".ljust(77))
 
-                    try:
-                        logger.info(f"Creating folder '{
-                                    results_folder_name}'...".ljust(77))
-                        os.mkdir(results_folder_name)
-                        logger.success(f"Creating folder '{
-                            results_folder_name}': SUCCESS".ljust(77))
-
-                    except Exception as exception:
-                        logger.warning(f"{exception}".ljust(77))
+                    CreateFolder(results_folder_name, results_folder_name)
 
                     logger.info(
                         f"Collecting activities to .csv file in '{results_folder_name}'...".ljust(77))

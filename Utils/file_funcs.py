@@ -1,5 +1,7 @@
 import os
 
+from loguru import logger
+
 
 def DeleteFilesInFolder(folder_path: str, except_files: list[str]) -> None:
     """
@@ -31,3 +33,23 @@ def IsFileInFolder(folder_path: str, file_name: str) -> bool:
 
     full_file_path = os.path.join(folder_path, file_name)
     return os.path.exists(full_file_path)
+
+
+def CreateFolder(folder_path: str, folder_name: str):
+    """
+    Создает папку, использует логирование
+    (в случае исключения также выводит об этом в консоль)
+
+    Args:
+        folder_path (str): путь к папке.
+        folder_name (str): имя папки (для логирования).
+    """
+
+    try:
+        logger.info(f"Creating folder '{folder_name}'...".ljust(77))
+        os.mkdir(folder_path)
+        logger.success(f"Creating folder '{
+                       folder_name}': SUCCESS".ljust(77))
+
+    except Exception as exception:
+        logger.warning(f"{exception}".ljust(77))

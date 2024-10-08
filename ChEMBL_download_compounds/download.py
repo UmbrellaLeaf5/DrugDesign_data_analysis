@@ -62,25 +62,11 @@ def DownloadChEMBLCompounds(need_primary_analysis: bool = False,
 
     logger.info(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
 
-    try:
-        logger.info(f"Creating folder '{results_folder_name}'...".ljust(77))
-        os.mkdir(results_folder_name)
-        logger.success(f"Creating folder '{
-                       results_folder_name}': SUCCESS".ljust(77))
-
-    except Exception as exception:
-        logger.warning(f"{exception}".ljust(77))
+    CreateFolder(results_folder_name, results_folder_name)
 
     if need_primary_analysis:
-        try:
-            logger.info(f"Creating folder '{
-                        primary_analysis_folder_name}'...".ljust(77))
-            os.mkdir(f"{results_folder_name}/{primary_analysis_folder_name}")
-            logger.success(
-                f"Creating folder '{primary_analysis_folder_name}': SUCCESS".ljust(77))
-
-        except Exception as exception:
-            logger.warning(f"{exception}".ljust(77))
+        CreateFolder(f"{results_folder_name}/{primary_analysis_folder_name}",
+                     primary_analysis_folder_name)
 
     logger.info(f"{'-' * 77}")
 
