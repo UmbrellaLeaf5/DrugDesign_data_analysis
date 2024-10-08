@@ -3,10 +3,10 @@
 import pandas as pd
 
 try:
-    from logger_funcs import *
+    from file_and_logger_funcs import *
 
 except ImportError:
-    from Utils.logger_funcs import *
+    from Utils.file_and_logger_funcs import *
 
 
 def DataAnalysisByColumns(data_frame: pd.DataFrame,
