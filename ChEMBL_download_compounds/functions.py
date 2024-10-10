@@ -88,7 +88,7 @@ def ExpandedFromDictionariesCompoundsDF(data: pd.DataFrame) -> pd.DataFrame:
         'rtb':                         ExtractedValuesFromColumn(data, 'molecule_properties', 'rtb', is_list=False),
         #! molecule_structures
         'canonical_smiles':            ExtractedValuesFromColumn(data, 'molecule_structures', 'canonical_smiles', is_list=False),
-        # 'molfile':                   ExtractedValuesFromColumn(data, 'molecule_structures', 'molfile', is_list=False), - какая-то стрёмная хрень с RDKit
+        'molfile':                     ExtractedValuesFromColumn(data, 'molecule_structures', 'molfile', is_list=False),
         'standard_inchi':              ExtractedValuesFromColumn(data, 'molecule_structures', 'standard_inchi', is_list=False),
         'standard_inchi_key':          ExtractedValuesFromColumn(data, 'molecule_structures', 'standard_inchi_key', is_list=False),
         #! molecule_synonyms

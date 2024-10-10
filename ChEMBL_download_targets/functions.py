@@ -192,6 +192,33 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
     return data
 
 
+def CleanedActivitiesDF(data: pd.DataFrame) -> pd.DataFrame:
+    try:
+        data = data.drop(['activity_id', 'activity_properties',
+                          'document_journal', 'document_year',
+                          'molecule_pref_name', 'pchembl_value',
+                          'potential_duplicate', 'qudt_units',
+                          'record_id', 'src_id', 'standard_flag',
+                          'standard_text_value', 'standard_upper_value',
+                          'target_chembl_id', 'target_pref_name',
+                          'target_tax_id', 'text_value', 'toid',
+                          'type', 'units', 'uo_units', 'upper_value',
+                          'value'], axis=1)
+
+    except Exception as exception:
+        logger.warning(f"{exception}".ljust(77))
+
+    # TODO: произвести фильтрацию:
+    # relation == '='
+    # standard_units == 'nM'
+    # standard_value == float
+    # для повторов по molecule_chembl_id - считать медиану nM
+    # поменять столбцы местами
+    # ? скачать по molecule_chembl_id также информацию о targets
+
+    return data
+
+
 def DownloadTargetsFromIdList(target_chembl_id_list: list[str] = [],
                               results_folder_name: str = "results/targets",
                               primary_analysis_folder_name: str = "primary_analysis",
