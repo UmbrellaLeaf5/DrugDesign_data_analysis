@@ -192,7 +192,7 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
     return data
 
 
-def DownloadTargetsFromIdList(target_chembl_id_list: list[str],
+def DownloadTargetsFromIdList(target_chembl_id_list: list[str] = [],
                               results_folder_name: str = "targets_results",
                               primary_analysis_folder_name: str = "primary_analysis",
                               need_primary_analysis: bool = False,
@@ -202,7 +202,7 @@ def DownloadTargetsFromIdList(target_chembl_id_list: list[str],
     Скачивает цели по списку id из базы ChEMBL, сохраняя их в .csv файл
 
     Args:
-        target_chembl_id_list (list[str]): список id
+        target_chembl_id_list (list[str], optional): список id. Defaults to []: для скачивания всех целей.
         results_folder_name (str, optional): имя папки для закачки. Defaults to "targets_results".
         primary_analysis_folder_name (str, optional): имя папки для сохранения данных о первичном анализе. Defaults to "primary_analysis".
         need_primary_analysis (bool, optional): нужно ли проводить первичный анализ. Defaults to False.
@@ -215,6 +215,9 @@ def DownloadTargetsFromIdList(target_chembl_id_list: list[str],
             f"Downloading targets...".ljust(77))
         targets_with_ids: QuerySet = QuerySetTargetsFromIdList(
             target_chembl_id_list)
+
+        if target_chembl_id_list == []:
+            targets_with_ids = QuerySetAllTargets()
 
         logger.info(f"Amount: {len(targets_with_ids)}".ljust(77))
         logger.success(f"Downloading targets: SUCCESS".ljust(77))
@@ -229,66 +232,6 @@ def DownloadTargetsFromIdList(target_chembl_id_list: list[str],
                 download_activities=download_activities,
                 print_to_console=print_to_console)
 
-            UpdateLoggerFormat("ChEMBL__targets", "yellow")
-
-            logger.success(
-                "Collecting targets to pandas.DataFrame(): SUCCESS".ljust(77))
-
-            logger.info(
-                f"Collecting targets to .csv file in '{results_folder_name}'...".ljust(77))
-
-            if need_primary_analysis:
-                DataAnalysisByColumns(data_frame,
-                                      f"targets_data_from_ChEMBL",
-                                      f"{results_folder_name}/{primary_analysis_folder_name}")
-
-                UpdateLoggerFormat("ChEMBL__targets", "yellow")
-
-            file_name: str = f"{
-                results_folder_name}/targets_data_from_ChEMBL.csv"
-
-            data_frame.to_csv(file_name, index=False)
-            logger.success(
-                f"Collecting targets to .csv file in '{results_folder_name}': SUCCESS".ljust(77))
-
-        except Exception as exception:
-            logger.error(f"{exception}".ljust(77))
-
-    except Exception as exception:
-        logger.error(f"{exception}".ljust(77))
-
-
-def DownloadAllTargets(results_folder_name: str = "targets_results",
-                       primary_analysis_folder_name: str = "primary_analysis",
-                       need_primary_analysis: bool = False,
-                       need_download_activities: bool = True) -> None:
-    """
-    Скачивает все цели из базы ChEMBL
-
-    Args:
-        results_folder_name (str, optional): имя папки для закачки. Defaults to "targets_results".
-        primary_analysis_folder_name (str, optional): имя папки для сохранения данных о первичном анализе. Defaults to "primary_analysis".
-        need_primary_analysis (bool, optional): нужно ли проводить первичный анализ. Defaults to False.
-    """
-
-    try:
-        logger.info(
-            f"Downloading targets...".ljust(77))
-        targets: QuerySet = QuerySetAllTargets()
-
-        logger.info(
-            ("Amount:" + f"{len(targets)}").ljust(77))
-        logger.success(
-            f"Downloading targets: SUCCESS".ljust(77))
-
-        try:
-            logger.info(
-                "Collecting targets to pandas.DataFrame()...".ljust(77))
-
-            data_frame = AddedIC50andKiToTargetsDF(
-                ExpandedFromDictionariesTargetsDF(
-                    pd.DataFrame(targets)),
-                download_activities=need_download_activities)
             UpdateLoggerFormat("ChEMBL__targets", "yellow")
 
             logger.success(

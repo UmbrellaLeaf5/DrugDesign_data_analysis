@@ -30,7 +30,7 @@ def QuerySetCompoundsByMWRange(less_limit: int = 0, greater_limit: int = 12_546_
         raise ValueError(
             "QuerySetMWRangeFilter: greater_limit should be greater than less_limit")
 
-    return new_client.molecule.filter(molecule_properties__mw_freebase__lt=greater_limit,  # type: ignore
+    return new_client.molecule.filter(molecule_properties__mw_freebase__lt=greater_limit,
                                       molecule_properties__mw_freebase__gte=less_limit)
 
 

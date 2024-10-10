@@ -40,7 +40,7 @@ def DownloadChEMBLCompounds(need_primary_analysis: bool = False,
 
     logger.info(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
 
-    CreateFolder(results_folder_name, results_folder_name)
+    CreateFolder(results_folder_name)
 
     if need_primary_analysis:
         CreateFolder(f"{results_folder_name}/{primary_analysis_folder_name}",

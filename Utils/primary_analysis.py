@@ -14,7 +14,7 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
                           folder_name: str,
                           logger_label: str = "ChEMBL_analysis",
                           print_to_console: bool = False,
-                          should_save_to_csv: bool = True) -> None:
+                          save_to_csv: bool = True) -> None:
     """
     Проводит первичный анализ pd.DataFrame с возможностью вывода в консоль и сохранения в .csv файл
 
@@ -24,7 +24,7 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
         folder_name (str): имя папки, куда сохранять .csv файл
         logger_label (str, optional): текст заголовка логирования. Defaults to "ChEMBL_analysis".
         print_to_console (bool, optional): нужно ли выводить информацию в консоль. Defaults to False.
-        should_save_to_csv (bool, optional): нужно ли сохранять информацию в .csv файл. Defaults to True.
+        save_to_csv (bool, optional): нужно ли сохранять информацию в .csv файл. Defaults to True.
     """
 
     UpdateLoggerFormat(logger_label, "magenta")
@@ -44,7 +44,7 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
             logger.info("-" * 85)
             logger.info(f"{"Column".ljust(30)}: {column}".ljust(77))
 
-        if should_save_to_csv:
+        if save_to_csv:
             summary['Column'].append(column)
 
         # тип данных
@@ -55,7 +55,7 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
                 logger.info(f"{"Type of data".ljust(30)}: {
                             data_type}".ljust(77))
 
-            if should_save_to_csv:
+            if save_to_csv:
                 summary['Data type'].append(data_type)
 
         except Exception as exception:
@@ -63,7 +63,7 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
                 logger.warning(
                     f"{"Data type:EXCEPTION".ljust(30)}: {exception}".ljust(77))
 
-            if should_save_to_csv:
+            if save_to_csv:
                 summary['Data type'].append("")
 
         # количество ненулевых строк
@@ -76,7 +76,7 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
             logger.info(f"{"Non-empty strings".ljust(30)
                            }: {non_null_count}".ljust(77))
 
-        if should_save_to_csv:
+        if save_to_csv:
             summary['Non-empty strings'].append(non_null_count)
 
         # наиболее часто встречающееся значение
@@ -92,7 +92,7 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
                 logger.info(f"{"Common value".ljust(30)}: {
                             common_value}".ljust(77))
 
-            if should_save_to_csv:
+            if save_to_csv:
                 summary['Common value'].append(common_value)
 
         except Exception as exception:
@@ -100,7 +100,7 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
                 logger.warning(
                     f"{"Common value:EXCEPTION".ljust(30)}: {exception}".ljust(77))
 
-            if should_save_to_csv:
+            if save_to_csv:
                 summary['Common value'].append("")
 
         # максимальное и минимальное значения
@@ -127,7 +127,7 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
                 logger.info(f"{"Max value".ljust(30)}: {max_value}".ljust(77))
                 logger.info(f"{"Min value".ljust(30)}: {min_value}".ljust(77))
 
-            if should_save_to_csv:
+            if save_to_csv:
                 summary['Max value'].append(max_value)
                 summary['Min value'].append(min_value)
 
@@ -138,11 +138,11 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
                 logger.warning(
                     f"{"Min value:EXCEPTION".ljust(30)}: {exception}".ljust(77))
 
-            if should_save_to_csv:
+            if save_to_csv:
                 summary['Max value'].append("")
                 summary['Min value'].append("")
 
-    if should_save_to_csv:
+    if save_to_csv:
         try:
             logger.info(
                 "Saving primary analysis to .csv file...".ljust(77))

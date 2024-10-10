@@ -5,13 +5,13 @@ import os
 from loguru import logger
 
 
-def DeleteFilesInFolder(folder_path: str, except_files: list[str]) -> None:
+def DeleteFilesInFolder(folder_path: str, except_files: list[str] = []) -> None:
     """
     Удаляет все файлы в указанной папке, кроме файлов в списке исключений.
 
     Args:
-        folder_path (str): путь к папке.
-        except_files (list[str]): список имен файлов, которые нужно исключить из удаления.
+      folder_path (str): путь к папке.
+      except_files (list[str], optional): список имен файлов, которые нужно исключить из удаления. Defaults to [].
     """
 
     for file_name in os.listdir(folder_path):
@@ -37,15 +37,18 @@ def IsFileInFolder(folder_path: str, file_name: str) -> bool:
     return os.path.exists(full_file_path)
 
 
-def CreateFolder(folder_path: str, folder_name: str):
+def CreateFolder(folder_path: str, folder_name: str = "") -> None:
     """
     Создает папку, использует логирование
     (в случае исключения также выводит об этом в консоль)
 
     Args:
         folder_path (str): путь к папке.
-        folder_name (str): имя папки (для логирования).
+        folder_name (str, optional): имя папки (для логирования). Defaults to "": имя будет идентично folder_path.
     """
+
+    if folder_name == "":
+        folder_name = folder_path
 
     try:
         logger.info(f"Creating folder '{folder_name}'...".ljust(77))
