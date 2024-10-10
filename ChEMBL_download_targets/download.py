@@ -4,10 +4,6 @@
 
 from ChEMBL_download_targets.functions import *
 
-from Utils.combine_funcs import *
-from Utils.file_and_logger_funcs import *
-
-
 # ic.disable()
 
 results_folder_name: str = "targets_results"
@@ -17,17 +13,18 @@ logger_label: str = "ChEMBL__targets"
 
 
 def DownloadChEMBLTargets(need_primary_analysis: bool = False,
-                          skip_downloaded_files: bool = False,
                           download_all: bool = False,
-                          testing_flag: bool = False,
-                          need_download_activities: bool = True) -> None:
+                          download_activities: bool = True,
+                          skip_downloaded_files: bool = False,
+                          testing_flag: bool = False) -> None:
     """
     Скачивает необходимые цели из базы ChEMBL
 
     Args:
         need_primary_analysis (bool, optional): нужен ли первичный анализ скачанных файлов. Defaults to False.
-        skip_downloaded_files (bool, optional): пропускать ли уже скачанные файлы. Defaults to False.
         download_all (bool, optional): скачивать ли все цели (или использовать только те, что из списка). Defaults to False.
+        download_activities (bool, optional): скачивать ли наборы активностей к целям (по IC50 и Ki). Defaults to True.
+        skip_downloaded_files (bool, optional): пропускать ли уже скачанные файлы. Defaults to False.
         testing_flag (bool, optional): спец. флаг для тестирования функционала. Defaults to False.
     """
 
@@ -41,7 +38,7 @@ def DownloadChEMBLTargets(need_primary_analysis: bool = False,
         CreateFolder(f"{results_folder_name}/{primary_analysis_folder_name}",
                      primary_analysis_folder_name)
 
-    if need_download_activities:
+    if download_activities:
         CreateFolder(f"{results_folder_name}/activities",
                      "activities")
 

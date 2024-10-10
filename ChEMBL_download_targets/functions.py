@@ -3,7 +3,6 @@
 from chembl_webresource_client.new_client import new_client
 from chembl_webresource_client.query_set import QuerySet
 
-from Utils.file_and_logger_funcs import *
 from Utils.primary_analysis import *
 
 

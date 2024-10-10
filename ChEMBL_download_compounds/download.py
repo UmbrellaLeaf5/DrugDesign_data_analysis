@@ -4,10 +4,6 @@
 
 from ChEMBL_download_compounds.functions import *
 
-from Utils.combine_funcs import *
-from Utils.file_and_logger_funcs import *
-
-
 # ic.disable()
 
 results_folder_name: str = "compounds_results"
