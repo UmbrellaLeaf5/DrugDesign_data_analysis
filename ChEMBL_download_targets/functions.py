@@ -92,8 +92,9 @@ def ExpandedFromDictionariesTargetsDF(data: pd.DataFrame) -> pd.DataFrame:
 
 
 def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
-                              need_download_activities: bool = True,
-                              results_folder_name: str = "targets_results/activities") -> pd.DataFrame:
+                              download_activities: bool = True,
+                              results_folder_name: str = "targets_results/activities",
+                              print_to_console: bool = False) -> pd.DataFrame:
     """
     Добавляет в pd.DataFrame два столбца: IC50 и Ki
 
@@ -101,6 +102,7 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
         data (pd.DataFrame): исходный pd.DataFrame
         need_to_download_activities (bool, optional): нужно ли скачивать activities отдельно. Defaults to True.
         results_folder_name (str, optional): название папки для скачанных activities. Defaults to "targets_results/activities".
+        print_to_console (bool, optional): нужно ли выводить логирование в консоль. Defaults to False.
 
     Returns:
         pd.DataFrame: расширенный pd.DataFrame
@@ -122,17 +124,18 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
         logger.success(
             f"Add 'IC50' and 'Ki' columns to pandas.DataFrame(): SUCCESS".ljust(77))
 
-        if need_download_activities:
+        if download_activities:
             UpdateLoggerFormat("ChEMBL__IC50&Ki", "green")
 
             logger.info(
-                f"Start download activities connected with targets IC50 and Ki...".ljust(77))
+                f"Start download activities connected with targets...".ljust(77))
 
             logger.info(f"{'-' * 77}")
 
             for target_id in data['target_chembl_id']:
-                logger.info(f"Downloading activities connected with {
-                    target_id}...".ljust(77))
+                if print_to_console:
+                    logger.info(f"Downloading activities connected with {
+                        target_id}...".ljust(77))
 
                 activities_ic50: QuerySet = new_client.activity.filter(
                     target_chembl_id=target_id).filter(standard_type="IC50")
@@ -140,29 +143,28 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
                 activities_ki: QuerySet = new_client.activity.filter(
                     target_chembl_id=target_id).filter(standard_type="Ki")
 
-                logger.info(f"Amount: IC50: {len(activities_ic50)}; Ki: {
-                            len(activities_ki)}".ljust(77))
-                logger.success(f"Downloading activities connected with {
-                               target_id}: SUCCESS".ljust(77))
-                try:
+                if print_to_console:
+                    logger.info(f"Amount: IC50: {len(activities_ic50)}; Ki: {
+                        len(activities_ki)}".ljust(77))
+                    logger.success(f"Downloading activities connected with {
+                        target_id}: SUCCESS".ljust(77))
+
                     logger.info(
                         "Collecting activities to pandas.DataFrame()...".ljust(77))
-
+                try:
                     data_frame_ic50 = pd.DataFrame(activities_ic50)
                     data_frame_ki = pd.DataFrame(activities_ki)
 
-                    logger.success(
-                        "Collecting activities to pandas.DataFrame(): SUCCESS".ljust(77))
-
-                    logger.info(
-                        f"Collecting activities to .csv file in '{results_folder_name}'...".ljust(77))
+                    if print_to_console:
+                        logger.success(
+                            "Collecting activities to pandas.DataFrame(): SUCCESS".ljust(77))
+                        logger.info(
+                            f"Collecting activities to .csv file in '{results_folder_name}'...".ljust(77))
 
                     # if need_primary_analysis:
                     #     DataAnalysisByColumns(data_frame,
                     #                           f"targets_data_from_ChEMBL",
                     #                           f"{results_folder_name}/{primary_analysis_folder_name}")
-
-                    #     UpdateLoggerFormat("ChEMBL__targets", "yellow")
 
                     file_name_ic50: str = f"{
                         results_folder_name}/{target_id}_IC50_activities.csv"
@@ -173,13 +175,16 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
                     data_frame_ic50.to_csv(file_name_ic50, index=False)
                     data_frame_ki.to_csv(file_name_ki, index=False)
 
-                    logger.success(
-                        f"Collecting targets to .csv file in '{results_folder_name}': SUCCESS".ljust(77))
-
-                    logger.info(f"{'-' * 77}")
+                    if print_to_console:
+                        logger.success(
+                            f"Collecting activities to .csv file in '{results_folder_name}': SUCCESS".ljust(77))
+                        logger.info(f"{'-' * 77}")
 
                 except Exception as exception:
                     logger.error(f"{exception}".ljust(77))
+
+            logger.success(
+                f"End download activities connected with targets: SUCCESS".ljust(77))
 
     except Exception as exception:
         logger.error(f"{exception}".ljust(77))
@@ -191,7 +196,8 @@ def DownloadTargetsFromIdList(target_chembl_id_list: list[str],
                               results_folder_name: str = "targets_results",
                               primary_analysis_folder_name: str = "primary_analysis",
                               need_primary_analysis: bool = False,
-                              need_download_activities: bool = True) -> None:
+                              download_activities: bool = True,
+                              print_to_console: bool = False) -> None:
     """
     Скачивает цели по списку id из базы ChEMBL, сохраняя их в .csv файл
 
@@ -200,6 +206,8 @@ def DownloadTargetsFromIdList(target_chembl_id_list: list[str],
         results_folder_name (str, optional): имя папки для закачки. Defaults to "targets_results".
         primary_analysis_folder_name (str, optional): имя папки для сохранения данных о первичном анализе. Defaults to "primary_analysis".
         need_primary_analysis (bool, optional): нужно ли проводить первичный анализ. Defaults to False.
+        download_activities (bool, optional): нужно ли скачивать активности к целям по IC50 и Ki. Defaults to True.
+        print_to_console (bool, optional): нужно ли выводить логирование в консоль. Defaults to False.
     """
 
     try:
@@ -218,7 +226,9 @@ def DownloadTargetsFromIdList(target_chembl_id_list: list[str],
             data_frame = AddedIC50andKiToTargetsDF(
                 ExpandedFromDictionariesTargetsDF(
                     pd.DataFrame(targets_with_ids)),
-                need_download_activities=need_download_activities)
+                download_activities=download_activities,
+                print_to_console=print_to_console)
+
             UpdateLoggerFormat("ChEMBL__targets", "yellow")
 
             logger.success(
@@ -278,7 +288,7 @@ def DownloadAllTargets(results_folder_name: str = "targets_results",
             data_frame = AddedIC50andKiToTargetsDF(
                 ExpandedFromDictionariesTargetsDF(
                     pd.DataFrame(targets)),
-                need_download_activities=need_download_activities)
+                download_activities=need_download_activities)
             UpdateLoggerFormat("ChEMBL__targets", "yellow")
 
             logger.success(

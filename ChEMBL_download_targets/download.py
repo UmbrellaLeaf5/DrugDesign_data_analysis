@@ -53,7 +53,7 @@ def DownloadChEMBLTargets(need_primary_analysis: bool = False,
                           "CHEMBL2034", "CHEMBL236", "CHEMBL233", "CHEMBL222", "CHEMBL228"]
 
     if testing_flag:
-        id_list = ["CHEMBL220", "CHEMBL251"]
+        id_list = ["CHEMBL1951", "CHEMBL2034"]
 
     if not skip_downloaded_files or not IsFileInFolder(f"{results_folder_name}",
                                                        "targets_data_from_ChEMBL.csv"):

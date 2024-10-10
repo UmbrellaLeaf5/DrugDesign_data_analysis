@@ -13,7 +13,7 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
                           data_name: str,
                           folder_name: str,
                           logger_label: str = "ChEMBL_analysis",
-                          should_print_to_console: bool = False,
+                          print_to_console: bool = False,
                           should_save_to_csv: bool = True) -> None:
     """
     Проводит первичный анализ pd.DataFrame с возможностью вывода в консоль и сохранения в .csv файл
@@ -23,7 +23,7 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
         data_name (str): имя исходных данных (нужно для логирования)
         folder_name (str): имя папки, куда сохранять .csv файл
         logger_label (str, optional): текст заголовка логирования. Defaults to "ChEMBL_analysis".
-        should_print_to_console (bool, optional): нужно ли выводить информацию в консоль. Defaults to False.
+        print_to_console (bool, optional): нужно ли выводить информацию в консоль. Defaults to False.
         should_save_to_csv (bool, optional): нужно ли сохранять информацию в .csv файл. Defaults to True.
     """
 
@@ -40,7 +40,7 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
 
     for column in data_frame.columns:
         # имя столбца
-        if should_print_to_console:
+        if print_to_console:
             logger.info("-" * 85)
             logger.info(f"{"Column".ljust(30)}: {column}".ljust(77))
 
@@ -51,7 +51,7 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
         try:
             data_type = data_frame[column].dtype
 
-            if should_print_to_console:
+            if print_to_console:
                 logger.info(f"{"Type of data".ljust(30)}: {
                             data_type}".ljust(77))
 
@@ -59,7 +59,7 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
                 summary['Data type'].append(data_type)
 
         except Exception as exception:
-            if should_print_to_console:
+            if print_to_console:
                 logger.warning(
                     f"{"Data type:EXCEPTION".ljust(30)}: {exception}".ljust(77))
 
@@ -72,7 +72,7 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
             if value:
                 non_null_count += 1
 
-        if should_print_to_console:
+        if print_to_console:
             logger.info(f"{"Non-empty strings".ljust(30)
                            }: {non_null_count}".ljust(77))
 
@@ -88,7 +88,7 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
             else:
                 common_value = ""
 
-            if should_print_to_console:
+            if print_to_console:
                 logger.info(f"{"Common value".ljust(30)}: {
                             common_value}".ljust(77))
 
@@ -96,7 +96,7 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
                 summary['Common value'].append(common_value)
 
         except Exception as exception:
-            if should_print_to_console:
+            if print_to_console:
                 logger.warning(
                     f"{"Common value:EXCEPTION".ljust(30)}: {exception}".ljust(77))
 
@@ -123,7 +123,7 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
                         if min_value is None or len(value) < len(min_value):
                             min_value = value
 
-            if should_print_to_console:
+            if print_to_console:
                 logger.info(f"{"Max value".ljust(30)}: {max_value}".ljust(77))
                 logger.info(f"{"Min value".ljust(30)}: {min_value}".ljust(77))
 
@@ -132,7 +132,7 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
                 summary['Min value'].append(min_value)
 
         except Exception as exception:
-            if should_print_to_console:
+            if print_to_console:
                 logger.warning(
                     f"{"Max value:EXCEPTION".ljust(30)}: {exception}".ljust(77))
                 logger.warning(
