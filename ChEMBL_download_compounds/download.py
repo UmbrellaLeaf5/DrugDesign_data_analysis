@@ -86,7 +86,9 @@ def DownloadChEMBLCompounds(need_primary_analysis: bool = False,
 
     if need_combining:
         CombineCSVInFolder(results_folder_name,
-                           combined_file_name)
+                           combined_file_name,
+                           skip_downloaded_files=skip_downloaded_files)
+
         UpdateLoggerFormat(logger_label, "yellow")
 
     if delete_downloaded_after_combining:

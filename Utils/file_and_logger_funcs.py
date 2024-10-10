@@ -62,7 +62,8 @@ def CreateFolder(folder_path: str, folder_name: str = "") -> None:
 
 def CombineCSVInFolder(folder_name: str, combined_file_name: str,
                        logger_label: str = "ChEMBL__combine",
-                       print_to_console: bool = False) -> None:
+                       print_to_console: bool = False,
+                       skip_downloaded_files: bool = False) -> None:
     """
     Склеивает все .csv файлы в папке в один
 
@@ -77,6 +78,11 @@ def CombineCSVInFolder(folder_name: str, combined_file_name: str,
 
     logger.info(f"Start combining all downloads...".ljust(77))
     logger.info(f"{'-' * 77}")
+
+    if IsFileInFolder(folder_name, f"{combined_file_name}.csv") and skip_downloaded_files:
+        logger.warning(
+            f"File '{combined_file_name}' is in folder, no need to combine".ljust(77))
+        return
 
     combined_df = pd.DataFrame()
 
