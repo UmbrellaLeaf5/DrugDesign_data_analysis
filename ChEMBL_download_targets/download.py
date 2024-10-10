@@ -6,7 +6,8 @@ from ChEMBL_download_targets.functions import *
 
 # ic.disable()
 
-results_folder_name: str = "targets_results"
+results_folder_name: str = "results/targets"
+activities_folder_name: str = "results/activities"
 primary_analysis_folder_name: str = "primary_analysis"
 combined_file_name: str = "combined_targets_data_from_ChEMBL"
 logger_label: str = "ChEMBL__targets"
@@ -35,12 +36,10 @@ def DownloadChEMBLTargets(need_primary_analysis: bool = False,
     CreateFolder(results_folder_name)
 
     if need_primary_analysis:
-        CreateFolder(f"{results_folder_name}/{primary_analysis_folder_name}",
-                     primary_analysis_folder_name)
+        CreateFolder(f"{results_folder_name}/{primary_analysis_folder_name}")
 
     if download_activities:
-        CreateFolder(f"{results_folder_name}/activities",
-                     "activities")
+        CreateFolder(activities_folder_name)
 
     logger.info(f"{'-' * 77}")
 

@@ -107,7 +107,7 @@ def ExpandedFromDictionariesCompoundsDF(data: pd.DataFrame) -> pd.DataFrame:
 
 def DownloadCompoundsByMWRange(less_limit: int = 0,
                                greater_limit: int = 12_546_42,
-                               results_folder_name: str = "compounds_results",
+                               results_folder_name: str = "results/compounds",
                                primary_analysis_folder_name: str = "primary_analysis",
                                need_primary_analysis: bool = False):
     """
@@ -117,7 +117,7 @@ def DownloadCompoundsByMWRange(less_limit: int = 0,
     Args:
         less_limit (int, optional): нижняя граница. Defaults to 0.
         greater_limit (int, optional): верхняя граница. Defaults to 12_546_42.
-        results_folder_name (str, optional): имя папки для закачки. Defaults to "targets_results".
+        results_folder_name (str, optional): имя папки для закачки. Defaults to "results/compounds".
         primary_analysis_folder_name (str, optional): имя папки для сохранения данных о первичном анализе. Defaults to "primary_analysis".
         need_primary_analysis (bool, optional): нужно ли проводить первичный анализ. Defaults to False.
     """

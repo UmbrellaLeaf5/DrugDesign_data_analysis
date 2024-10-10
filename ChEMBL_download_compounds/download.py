@@ -6,7 +6,7 @@ from ChEMBL_download_compounds.functions import *
 
 # ic.disable()
 
-results_folder_name: str = "compounds_results"
+results_folder_name: str = "results/compounds"
 primary_analysis_folder_name: str = "primary_analysis"
 combined_file_name: str = "combined_compounds_data_from_ChEMBL"
 logger_label: str = "ChEMBL_compound"
@@ -43,8 +43,7 @@ def DownloadChEMBLCompounds(need_primary_analysis: bool = False,
     CreateFolder(results_folder_name)
 
     if need_primary_analysis:
-        CreateFolder(f"{results_folder_name}/{primary_analysis_folder_name}",
-                     primary_analysis_folder_name)
+        CreateFolder(f"{results_folder_name}/{primary_analysis_folder_name}")
 
     logger.info(f"{'-' * 77}")
 

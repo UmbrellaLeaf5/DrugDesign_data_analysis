@@ -93,7 +93,7 @@ def ExpandedFromDictionariesTargetsDF(data: pd.DataFrame) -> pd.DataFrame:
 
 def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
                               download_activities: bool = True,
-                              results_folder_name: str = "targets_results/activities",
+                              results_folder_name: str = "results/activities",
                               print_to_console: bool = False) -> pd.DataFrame:
     """
     Добавляет в pd.DataFrame два столбца: IC50 и Ki
@@ -101,7 +101,7 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
     Args:
         data (pd.DataFrame): исходный pd.DataFrame
         need_to_download_activities (bool, optional): нужно ли скачивать activities отдельно. Defaults to True.
-        results_folder_name (str, optional): название папки для скачанных activities. Defaults to "targets_results/activities".
+        results_folder_name (str, optional): название папки для скачанных activities. Defaults to "results/activities".
         print_to_console (bool, optional): нужно ли выводить логирование в консоль. Defaults to False.
 
     Returns:
@@ -193,7 +193,7 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
 
 
 def DownloadTargetsFromIdList(target_chembl_id_list: list[str] = [],
-                              results_folder_name: str = "targets_results",
+                              results_folder_name: str = "results/targets",
                               primary_analysis_folder_name: str = "primary_analysis",
                               need_primary_analysis: bool = False,
                               download_activities: bool = True,
@@ -203,7 +203,7 @@ def DownloadTargetsFromIdList(target_chembl_id_list: list[str] = [],
 
     Args:
         target_chembl_id_list (list[str], optional): список id. Defaults to []: для скачивания всех целей.
-        results_folder_name (str, optional): имя папки для закачки. Defaults to "targets_results".
+        results_folder_name (str, optional): имя папки для закачки. Defaults to "results/targets".
         primary_analysis_folder_name (str, optional): имя папки для сохранения данных о первичном анализе. Defaults to "primary_analysis".
         need_primary_analysis (bool, optional): нужно ли проводить первичный анализ. Defaults to False.
         download_activities (bool, optional): нужно ли скачивать активности к целям по IC50 и Ki. Defaults to True.
