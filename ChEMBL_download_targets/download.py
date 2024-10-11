@@ -7,7 +7,7 @@ from ChEMBL_download_targets.functions import *
 # ic.disable()
 
 results_folder_name: str = "results/targets"
-activities_folder_name: str = "results/activities"
+activities_results_folder_name: str = "results/activities"
 primary_analysis_folder_name: str = "primary_analysis"
 combined_file_name: str = "combined_targets_data_from_ChEMBL"
 logger_label: str = "ChEMBL__targets"
@@ -39,7 +39,7 @@ def DownloadChEMBLTargets(need_primary_analysis: bool = False,
         CreateFolder(f"{results_folder_name}/{primary_analysis_folder_name}")
 
     if download_activities:
-        CreateFolder(activities_folder_name)
+        CreateFolder(activities_results_folder_name)
 
     logger.info(f"{'-' * 77}")
 
@@ -57,11 +57,13 @@ def DownloadChEMBLTargets(need_primary_analysis: bool = False,
     if not skip_downloaded_files or not IsFileInFolder(f"{results_folder_name}",
                                                        "targets_data_from_ChEMBL.csv"):
         if download_all:
-            DownloadAllTargets()
+            id_list = []  # в случае пустого списка в DownloadTargetsFromIdList скачаются все
 
-        else:
-            DownloadTargetsFromIdList(
-                id_list, need_primary_analysis=need_primary_analysis)
+        DownloadTargetsFromIdList(target_chembl_id_list=id_list,
+                                  need_primary_analysis=need_primary_analysis,
+                                  download_activities=download_activities,
+                                  activities_results_folder_name=activities_results_folder_name,
+                                  print_to_console=testing_flag)
 
     else:
         logger.warning(
