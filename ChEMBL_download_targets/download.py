@@ -17,16 +17,18 @@ def DownloadChEMBLTargets(need_primary_analysis: bool = False,
                           download_all: bool = False,
                           download_activities: bool = True,
                           skip_downloaded_files: bool = False,
-                          testing_flag: bool = False) -> None:
+                          testing_flag: bool = False,
+                          print_to_console_verbosely: bool = False) -> None:
     """
     Скачивает необходимые цели из базы ChEMBL
 
     Args:
         need_primary_analysis (bool, optional): нужен ли первичный анализ скачанных файлов. Defaults to False.
-        download_all (bool, optional): скачивать ли все цели (или использовать только те, что из списка). Defaults to False.
+        download_all (bool, optional): скачивать ли все цели (или использовать только те, что нужны DrugDesign). Defaults to False.
         download_activities (bool, optional): скачивать ли наборы активностей к целям (по IC50 и Ki). Defaults to True.
         skip_downloaded_files (bool, optional): пропускать ли уже скачанные файлы. Defaults to False.
         testing_flag (bool, optional): спец. флаг для тестирования функционала. Defaults to False.
+        print_to_console_verbosely (bool, optional): нужен ли более подробный вывод в консоль. Defaults to False.
     """
 
     UpdateLoggerFormat(logger_label, "yellow")
@@ -63,7 +65,7 @@ def DownloadChEMBLTargets(need_primary_analysis: bool = False,
                                   need_primary_analysis=need_primary_analysis,
                                   download_activities=download_activities,
                                   activities_results_folder_name=activities_results_folder_name,
-                                  print_to_console=testing_flag)
+                                  print_to_console=(testing_flag or print_to_console_verbosely))
 
     else:
         logger.warning(

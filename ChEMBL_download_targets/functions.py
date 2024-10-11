@@ -6,6 +6,7 @@ from chembl_webresource_client.query_set import QuerySet
 from Utils.primary_analysis import *
 
 from ChEMBL_download_activities.download import DownloadChEMBLActivities
+from ChEMBL_download_activities.functions import CountActivitiesByIC50, CountActivitiesByKi
 
 
 def QuerySetAllTargets() -> QuerySet:

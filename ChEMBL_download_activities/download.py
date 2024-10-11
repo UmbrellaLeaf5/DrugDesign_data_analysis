@@ -29,18 +29,25 @@ def DownloadChEMBLActivities(targets_data: pd.DataFrame,
         if print_to_console:
             logger.info(f"Amount: IC50: {CountActivitiesByIC50(target_id)}; Ki: {
                         CountActivitiesByKi(target_id)}".ljust(77))
+
             logger.success(f"Downloading activities connected with {
                 target_id}: SUCCESS".ljust(77))
 
             logger.info(
                 "Collecting activities to pandas.DataFrame()...".ljust(77))
         try:
-            data_frame_ic50 = pd.DataFrame(activities_ic50)
-            data_frame_ki = pd.DataFrame(activities_ki)
+            data_frame_ic50 = CleanedActivitiesDF(pd.DataFrame(
+                activities_ic50), target_id=target_id, activities_type="IC50",
+                print_to_console=print_to_console)
+
+            data_frame_ki = CleanedActivitiesDF(pd.DataFrame(
+                activities_ki), target_id=target_id, activities_type="Ki",
+                print_to_console=print_to_console)
 
             if print_to_console:
                 logger.success(
                     "Collecting activities to pandas.DataFrame(): SUCCESS".ljust(77))
+
                 logger.info(
                     f"Collecting activities to .csv file in '{results_folder_name}'...".ljust(77))
 
@@ -61,6 +68,7 @@ def DownloadChEMBLActivities(targets_data: pd.DataFrame,
             if print_to_console:
                 logger.success(
                     f"Collecting activities to .csv file in '{results_folder_name}': SUCCESS".ljust(77))
+
                 logger.info(f"{'-' * 77}")
 
         except Exception as exception:
