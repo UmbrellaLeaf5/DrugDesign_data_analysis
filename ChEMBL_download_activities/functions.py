@@ -80,7 +80,7 @@ def CleanedActivitiesDF(data: pd.DataFrame, target_id: str, activities_type: str
     """
 
     if print_to_console:
-        logger.info(f"Start to clean {activities_type} activities DataFrame from {
+        logger.info(f"Start cleaning {activities_type} activities DataFrame from {
             target_id}...".ljust(77))
 
         logger.info(f"Deleting useless columns...".ljust(77))
@@ -137,7 +137,7 @@ def CleanedActivitiesDF(data: pd.DataFrame, target_id: str, activities_type: str
             logger.success(
                 f"Reindexing columns in logical order: SUCCESS".ljust(77))
 
-            logger.success(f"End to clean activities DataFrame from {
+            logger.success(f"End cleaning activities DataFrame from {
                 target_id}".ljust(77))
 
     except Exception as exception:
