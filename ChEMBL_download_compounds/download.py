@@ -4,6 +4,8 @@
 
 from ChEMBL_download_compounds.functions import *
 
+from Utils.decorators import IgnoreWarnings
+
 # ic.disable()
 
 results_folder_name: str = "results/compounds"
@@ -12,6 +14,7 @@ combined_file_name: str = "combined_compounds_data_from_ChEMBL"
 logger_label: str = "ChEMBL_compound"
 
 
+@IgnoreWarnings
 def DownloadChEMBLCompounds(need_primary_analysis: bool = False,
                             need_combining: bool = True,
                             delete_downloaded_after_combining: bool = True,

@@ -4,6 +4,8 @@
 
 from ChEMBL_download_targets.functions import *
 
+from Utils.decorators import IgnoreWarnings
+
 # ic.disable()
 
 results_folder_name: str = "results/targets"
@@ -13,6 +15,7 @@ combined_file_name: str = "combined_targets_data_from_ChEMBL"
 logger_label: str = "ChEMBL__targets"
 
 
+@IgnoreWarnings
 def DownloadChEMBLTargets(need_primary_analysis: bool = False,
                           download_all: bool = False,
                           download_activities: bool = True,

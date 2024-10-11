@@ -4,9 +4,12 @@
 
 from ChEMBL_download_activities.functions import *
 
+from Utils.decorators import IgnoreWarnings
+
 # ic.disable()
 
 
+@IgnoreWarnings
 def DownloadChEMBLActivities(targets_data: pd.DataFrame,
                              results_folder_name: str = "results/activities",
                              print_to_console: bool = False) -> None:
