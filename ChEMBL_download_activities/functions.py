@@ -73,7 +73,7 @@ def CleanedActivitiesDF(data: pd.DataFrame, target_id: str, activities_type: str
     Args:
         data (pd.DataFrame): выборка activities
         target_id (str): идентификатор цели
-        type (str): IC50 или Ki
+        activities_type (str): IC50 или Ki
 
     Returns:
         pd.DataFrame: очищенная выборка
@@ -106,6 +106,12 @@ def CleanedActivitiesDF(data: pd.DataFrame, target_id: str, activities_type: str
         data = data[data['standard_units'] == 'nM']
         data = data[data['target_organism'] == "Homo sapiens"]
         data = data[data['standard_type'].isin(['IC50', 'Ki'])]
+
+        data['standard_value'] = data['standard_value'].astype(float)
+        data = data[data['standard_value'] <= 1000000000]
+
+        data['activity_comment'] = data['activity_comment'].replace(
+            "Not Determined", None)
 
         data = data.drop(['target_organism', 'standard_type'], axis=1)
 

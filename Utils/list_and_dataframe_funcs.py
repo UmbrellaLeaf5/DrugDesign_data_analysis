@@ -49,8 +49,7 @@ def MedianDedupedDF(df: pd.DataFrame, id_column_name: str, median_column_name: s
     median_and_id_data: dict = {}
 
     # значения в столбце, где будут медианы - должно быть типа float
-    df[median_column_name] = pd.to_numeric(
-        df[median_column_name], downcast="float")
+    df[median_column_name] = df[median_column_name].astype(float)
 
     for name in df[id_column_name].unique():
         name_subset_df: pd.DataFrame = df.loc[df[id_column_name] == name]
