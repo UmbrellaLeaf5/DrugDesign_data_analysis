@@ -38,6 +38,7 @@ def DownloadChEMBLActivities(targets_data: pd.DataFrame,
 
             logger.info(
                 "Collecting activities to pandas.DataFrame()...".ljust(77))
+
         try:
             data_frame_ic50 = CleanedActivitiesDF(pd.DataFrame(
                 activities_ic50), target_id=target_id, activities_type="IC50",
@@ -50,6 +51,22 @@ def DownloadChEMBLActivities(targets_data: pd.DataFrame,
             if print_to_console:
                 logger.success(
                     "Collecting activities to pandas.DataFrame(): SUCCESS".ljust(77))
+
+                logger.info(
+                    "Recording new values 'IC50', 'Ki' in targets DataFrame...".ljust(77))
+
+            targets_data.loc[targets_data["target_chembl_id"]
+                             == target_id, "IC50_new"] = len(data_frame_ic50)
+
+            targets_data.loc[targets_data["target_chembl_id"]
+                             == target_id, "Ki_new"] = len(data_frame_ki)
+
+            if print_to_console:
+                logger.info(f"Amount: IC50: {len(data_frame_ic50)}; Ki: {
+                            len(data_frame_ki)}".ljust(77))
+
+                logger.success(
+                    "Recording new values 'IC50', 'Ki' in targets DataFrame: SUCCESS".ljust(77))
 
                 logger.info(
                     f"Collecting activities to .csv file in '{results_folder_name}'...".ljust(77))

@@ -126,6 +126,9 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
                                      results_folder_name=activities_results_folder_name,
                                      print_to_console=print_to_console)
 
+            data["IC50_new"] = data["IC50_new"].astype(int)
+            data["Ki_new"] = data["Ki_new"].astype(int)
+
     except Exception as exception:
         logger.error(f"{exception}".ljust(77))
 
