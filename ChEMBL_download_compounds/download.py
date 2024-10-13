@@ -19,7 +19,8 @@ def DownloadChEMBLCompounds(need_primary_analysis: bool = False,
                             need_combining: bool = True,
                             delete_downloaded_after_combining: bool = True,
                             skip_downloaded_files: bool = False,
-                            testing_flag: bool = False):
+                            testing_flag: bool = False,
+                            print_to_console_verbosely: bool = False):
     """
     Скачивает необходимые молекулы из базы ChEMBL
 
@@ -29,6 +30,7 @@ def DownloadChEMBLCompounds(need_primary_analysis: bool = False,
         delete_downloaded_after_combining (bool, optional): нужно ли удалять все скачанные файлы после комбинирования. Defaults to True.
         skip_downloaded_files (bool, optional): пропускать ли уже скачанные файлы. Defaults to False.
         testing_flag (bool, optional): спец. флаг для тестирования функционала. Defaults to False.
+        print_to_console_verbosely (bool, optional): нужен ли более подробный вывод в консоль. Defaults to False.
     """
 
     if delete_downloaded_after_combining and not need_combining:
@@ -39,7 +41,7 @@ def DownloadChEMBLCompounds(need_primary_analysis: bool = False,
         raise ValueError(
             "DownloadChEMBLCompounds: skip_downloaded_files=True, nothing to analyse")
 
-    UpdateLoggerFormat(logger_label, "yellow")
+    UpdateLoggerFormat(logger_label, "fg #BBDD7C")
 
     logger.info(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
 
@@ -81,7 +83,8 @@ def DownloadChEMBLCompounds(need_primary_analysis: bool = False,
         if not skip_downloaded_files or not IsFileInFolder(f"{results_folder_name}",
                                                            f"range_{less_limit}_{greater_limit}_mw_mols.csv"):
             DownloadCompoundsByMWRange(
-                less_limit, greater_limit, need_primary_analysis=need_primary_analysis)
+                less_limit, greater_limit, need_primary_analysis=need_primary_analysis,
+                print_to_console=(print_to_console_verbosely or testing_flag))
 
         else:
             logger.warning(f"Molecules with mw in range [{less_limit}, {
@@ -92,9 +95,10 @@ def DownloadChEMBLCompounds(need_primary_analysis: bool = False,
     if need_combining:
         CombineCSVInFolder(results_folder_name,
                            combined_file_name,
-                           skip_downloaded_files=skip_downloaded_files)
+                           skip_downloaded_files=skip_downloaded_files,
+                           print_to_console=(print_to_console_verbosely or testing_flag))
 
-        UpdateLoggerFormat(logger_label, "yellow")
+        UpdateLoggerFormat(logger_label, "fg #BBDD7C")
 
     if delete_downloaded_after_combining:
         logger.info(f"Deleting files after combining in '{

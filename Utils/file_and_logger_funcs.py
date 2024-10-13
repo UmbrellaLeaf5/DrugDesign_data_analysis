@@ -74,7 +74,7 @@ def CombineCSVInFolder(folder_name: str, combined_file_name: str,
         print_to_console (bool, optional): нужно ли выводить логирование в консоль. Defaults to False.
     """
 
-    UpdateLoggerFormat(logger_label, "blue")
+    UpdateLoggerFormat(logger_label, "fg #474747")
 
     logger.info(f"Start combining all downloads...".ljust(77))
     logger.info(f"{'-' * 77}")

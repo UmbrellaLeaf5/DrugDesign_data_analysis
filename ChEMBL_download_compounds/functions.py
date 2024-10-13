@@ -109,7 +109,8 @@ def DownloadCompoundsByMWRange(less_limit: int = 0,
                                greater_limit: int = 12_546_42,
                                results_folder_name: str = "results/compounds",
                                primary_analysis_folder_name: str = "primary_analysis",
-                               need_primary_analysis: bool = False):
+                               need_primary_analysis: bool = False,
+                               print_to_console: bool = False):
     """
     Возвращает молекулы в диапазоне молекулярной массы [less_limit; greater_limit) из базы ChEMBL, 
     сохраняя их в .csv файл
@@ -120,6 +121,7 @@ def DownloadCompoundsByMWRange(less_limit: int = 0,
         results_folder_name (str, optional): имя папки для закачки. Defaults to "results/compounds".
         primary_analysis_folder_name (str, optional): имя папки для сохранения данных о первичном анализе. Defaults to "primary_analysis".
         need_primary_analysis (bool, optional): нужно ли проводить первичный анализ. Defaults to False.
+        print_to_console (bool, optional): нужно ли выводить логирование в консоль. Defaults to False.
     """
 
     try:
@@ -145,11 +147,13 @@ def DownloadCompoundsByMWRange(less_limit: int = 0,
                 f"Collecting molecules to .csv file in '{results_folder_name}'...".ljust(77))
 
             if need_primary_analysis:
-                DataAnalysisByColumns(data_frame,
-                                      f"mols_in_mw_range_{
-                                          less_limit}_{greater_limit}",
-                                      f"{results_folder_name}/{primary_analysis_folder_name}")
-                UpdateLoggerFormat("ChEMBL_download", "yellow")
+                PrimaryAnalysisByColumns(data_frame=data_frame,
+                                         data_name=f"mols_in_mw_range_{
+                                             less_limit}_{greater_limit}",
+                                         folder_name=f"{
+                                             results_folder_name}/{primary_analysis_folder_name}",
+                                         print_to_console=print_to_console)
+                UpdateLoggerFormat("ChEMBL_download", "fg #CCA87A")
 
             file_name: str = f"{results_folder_name}/range_{
                 less_limit}_{greater_limit}_mw_mols.csv"

@@ -178,7 +178,7 @@ def DownloadTargetsFromIdList(target_chembl_id_list: list[str] = [],
                 activities_results_folder_name=activities_results_folder_name,
                 print_to_console=print_to_console)
 
-            UpdateLoggerFormat("ChEMBL__targets", "yellow")
+            UpdateLoggerFormat("ChEMBL__targets", "fg #CBDD7C")
 
             logger.success(
                 "Collecting targets to pandas.DataFrame(): SUCCESS".ljust(77))
@@ -187,11 +187,13 @@ def DownloadTargetsFromIdList(target_chembl_id_list: list[str] = [],
                 f"Collecting targets to .csv file in '{results_folder_name}'...".ljust(77))
 
             if need_primary_analysis:
-                DataAnalysisByColumns(data_frame,
-                                      f"targets_data_from_ChEMBL",
-                                      f"{results_folder_name}/{primary_analysis_folder_name}")
+                PrimaryAnalysisByColumns(data_frame=data_frame,
+                                         data_name=f"targets_data_from_ChEMBL",
+                                         folder_name=f"{
+                                             results_folder_name}/{primary_analysis_folder_name}",
+                                         print_to_console=print_to_console)
 
-                UpdateLoggerFormat("ChEMBL__targets", "yellow")
+                UpdateLoggerFormat("ChEMBL__targets", "fg #CBDD7C")
 
             file_name: str = f"{
                 results_folder_name}/targets_data_from_ChEMBL.csv"

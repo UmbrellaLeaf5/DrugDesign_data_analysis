@@ -74,6 +74,7 @@ def CleanedActivitiesDF(data: pd.DataFrame, target_id: str, activities_type: str
         data (pd.DataFrame): выборка activities
         target_id (str): идентификатор цели
         activities_type (str): IC50 или Ki
+        print_to_console (bool, optional): нужно ли выводить логирование в консоль. Defaults to False.
 
     Returns:
         pd.DataFrame: очищенная выборка
@@ -150,6 +151,6 @@ def CleanedActivitiesDF(data: pd.DataFrame, target_id: str, activities_type: str
         logger.error(f"{exception}".ljust(77))
 
     if print_to_console:
-        logger.info(f"{' ' * 77}")
+        logger.info(f"{'-' * 77}")
 
     return data

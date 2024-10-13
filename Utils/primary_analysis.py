@@ -9,12 +9,12 @@ except ImportError:
     from Utils.file_and_logger_funcs import *
 
 
-def DataAnalysisByColumns(data_frame: pd.DataFrame,
-                          data_name: str,
-                          folder_name: str,
-                          logger_label: str = "ChEMBL_analysis",
-                          print_to_console: bool = False,
-                          save_to_csv: bool = True) -> None:
+def PrimaryAnalysisByColumns(data_frame: pd.DataFrame,
+                             data_name: str,
+                             folder_name: str,
+                             logger_label: str = "ChEMBL_analysis",
+                             print_to_console: bool = False,
+                             save_to_csv: bool = True) -> None:
     """
     Проводит первичный анализ pd.DataFrame с возможностью вывода в консоль и сохранения в .csv файл
 
@@ -27,7 +27,7 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
         save_to_csv (bool, optional): нужно ли сохранять информацию в .csv файл. Defaults to True.
     """
 
-    UpdateLoggerFormat(logger_label, "magenta")
+    UpdateLoggerFormat(logger_label, "fg #C48BC0")
 
     logger.info(f"Start analysis of '{data_name}'...".ljust(77))
 
@@ -41,7 +41,7 @@ def DataAnalysisByColumns(data_frame: pd.DataFrame,
     for column in data_frame.columns:
         # имя столбца
         if print_to_console:
-            logger.info("-" * 85)
+            logger.info("-" * 77)
             logger.info(f"{"Column".ljust(30)}: {column}".ljust(77))
 
         if save_to_csv:

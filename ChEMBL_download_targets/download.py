@@ -34,7 +34,7 @@ def DownloadChEMBLTargets(need_primary_analysis: bool = False,
         print_to_console_verbosely (bool, optional): нужен ли более подробный вывод в консоль. Defaults to False.
     """
 
-    UpdateLoggerFormat(logger_label, "yellow")
+    UpdateLoggerFormat(logger_label, "fg #CBDD7C")
 
     logger.info(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
 
@@ -69,7 +69,7 @@ def DownloadChEMBLTargets(need_primary_analysis: bool = False,
                                   need_primary_analysis=need_primary_analysis,
                                   download_activities=download_activities,
                                   activities_results_folder_name=activities_results_folder_name,
-                                  print_to_console=(testing_flag or print_to_console_verbosely))
+                                  print_to_console=(print_to_console_verbosely or testing_flag))
 
     else:
         logger.warning(

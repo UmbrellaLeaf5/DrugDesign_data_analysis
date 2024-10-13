@@ -13,7 +13,16 @@ from Utils.decorators import IgnoreWarnings
 def DownloadChEMBLActivities(targets_data: pd.DataFrame,
                              results_folder_name: str = "results/activities",
                              print_to_console: bool = False) -> None:
-    UpdateLoggerFormat("ChEMBL__IC50&Ki", "green")
+    """
+    Скачивает необходимые activities из базы ChEMBL по данным по целям.
+
+    Args:
+        targets_data (pd.DataFrame): данные по целям.
+        results_folder_name (str, optional): имя папки для закачки. Defaults to "results/activities".
+        print_to_console (bool, optional): нужно ли выводить логирование в консоль. Defaults to False.
+    """
+
+    UpdateLoggerFormat("ChEMBL__IC50&Ki", "fg #61B78C")
 
     logger.info(
         f"Start download activities connected with targets...".ljust(77))
