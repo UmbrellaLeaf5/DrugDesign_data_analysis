@@ -160,7 +160,7 @@ def DownloadCompoundsByMWRange(less_limit: int = 0,
             file_name: str = f"{results_folder_name}/range_{
                 less_limit}_{greater_limit}_mw_mols.csv"
 
-            data_frame.to_csv(file_name, index=False)
+            data_frame.to_csv(file_name, sep=';', index=False)
             logger.success(
                 f"Collecting molecules to .csv file in '{results_folder_name}': SUCCESS".ljust(77))
 

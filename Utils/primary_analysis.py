@@ -149,7 +149,7 @@ def PrimaryAnalysisByColumns(data_frame: pd.DataFrame,
 
             file_name: str = f"{folder_name}/{data_name}_analysis.csv"
 
-            pd.DataFrame(summary).to_csv(file_name, index=False)
+            pd.DataFrame(summary).to_csv(file_name, sep=';', index=False)
 
             logger.success(
                 "Saving primary analysis to .csv file: SUCCESS".ljust(77))

@@ -201,7 +201,7 @@ def DownloadTargetsFromIdList(target_chembl_id_list: list[str] = [],
             file_name: str = f"{
                 results_folder_name}/targets_data_from_ChEMBL.csv"
 
-            data_frame.to_csv(file_name, index=False)
+            data_frame.to_csv(file_name, sep=';', index=False)
             logger.success(
                 f"Collecting targets to .csv file in '{results_folder_name}': SUCCESS".ljust(77))
 

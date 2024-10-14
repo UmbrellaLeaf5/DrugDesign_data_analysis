@@ -130,7 +130,7 @@ def CombineCSVInFolder(folder_name: str, combined_file_name: str,
         f"Collecting to combined .csv file in '{folder_name}'...".ljust(77))
     try:
         combined_df.to_csv(
-            f"{folder_name}/{combined_file_name}.csv", index=False)
+            f"{folder_name}/{combined_file_name}.csv", sep=';', index=False)
         logger.success(
             f"Collecting to combined .csv file in '{folder_name}': SUCCESS".ljust(77))
 

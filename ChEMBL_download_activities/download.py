@@ -91,8 +91,8 @@ def DownloadChEMBLActivities(targets_data: pd.DataFrame,
             file_name_ki: str = f"{
                 results_folder_name}/{target_id}_Ki_activities.csv"
 
-            data_frame_ic50.to_csv(file_name_ic50, index=False)
-            data_frame_ki.to_csv(file_name_ki, index=False)
+            data_frame_ic50.to_csv(file_name_ic50, sep=';', index=False)
+            data_frame_ki.to_csv(file_name_ki, sep=';', index=False)
 
             if print_to_console:
                 logger.success(
