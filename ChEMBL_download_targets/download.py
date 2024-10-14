@@ -69,7 +69,9 @@ def DownloadChEMBLTargets(need_primary_analysis: bool = False,
                                   need_primary_analysis=need_primary_analysis,
                                   download_activities=download_activities,
                                   activities_results_folder_name=activities_results_folder_name,
-                                  print_to_console=(print_to_console_verbosely or testing_flag))
+                                  print_to_console=(
+                                      print_to_console_verbosely or testing_flag),
+                                  skip_downloaded_activities=skip_downloaded_files)
 
     else:
         logger.warning(

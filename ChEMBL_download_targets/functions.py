@@ -100,7 +100,8 @@ def ExpandedFromDictionariesTargetsDF(data: pd.DataFrame) -> pd.DataFrame:
 def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
                               download_activities: bool = True,
                               activities_results_folder_name: str = "results/activities",
-                              print_to_console: bool = False) -> pd.DataFrame:
+                              print_to_console: bool = False,
+                              skip_downloaded_activities: bool = False) -> pd.DataFrame:
     """
     Добавляет в pd.DataFrame два столбца: IC50 и Ki
 
@@ -109,6 +110,7 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
         need_to_download_activities (bool, optional): нужно ли скачивать activities отдельно. Defaults to True.
         activities_results_folder_name (str, optional): название папки для скачанных activities. Defaults to "results/activities".
         print_to_console (bool, optional): нужно ли выводить логирование в консоль. Defaults to False.
+        skip_downloaded_activities (bool, optional): пропускать ли уже скачанные файлы activities. Defaults to False.
 
     Returns:
         pd.DataFrame: расширенный pd.DataFrame
@@ -127,10 +129,18 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
         if download_activities:
             DownloadChEMBLActivities(data,
                                      results_folder_name=activities_results_folder_name,
-                                     print_to_console=print_to_console)
+                                     print_to_console=print_to_console,
+                                     skip_downloaded_activities=skip_downloaded_activities)
+            try:
+                data["IC50_new"] = data["IC50_new"].astype(int)
+                data["Ki_new"] = data["Ki_new"].astype(int)
 
-            data["IC50_new"] = data["IC50_new"].astype(int)
-            data["Ki_new"] = data["Ki_new"].astype(int)
+            except Exception as exception:
+                if not skip_downloaded_activities:  # это исключение может возникнуть, если колонки нет
+                    raise exception  # новых activities не скачалось, т.е. значение пересчитывать не надо
+
+                else:
+                    pass
 
     except Exception as exception:
         logger.error(f"{exception}".ljust(77))
@@ -144,7 +154,8 @@ def DownloadTargetsFromIdList(target_chembl_id_list: list[str] = [],
                               need_primary_analysis: bool = False,
                               download_activities: bool = True,
                               activities_results_folder_name: str = "results/activities",
-                              print_to_console: bool = False) -> None:
+                              print_to_console: bool = False,
+                              skip_downloaded_activities: bool = False) -> None:
     """
     Скачивает цели по списку id из базы ChEMBL, сохраняя их в .csv файл
 
@@ -156,6 +167,7 @@ def DownloadTargetsFromIdList(target_chembl_id_list: list[str] = [],
         download_activities (bool, optional): нужно ли скачивать активности к целям по IC50 и Ki. Defaults to True.
         activities_results_folder_name (str, optional): имя папки для закачки activities. Defaults to "results/activities". 
         print_to_console (bool, optional): нужно ли выводить логирование в консоль. Defaults to False.
+        skip_downloaded_activities (bool, optional): пропускать ли уже скачанные файлы activities. Defaults to False.
     """
 
     try:
@@ -179,7 +191,8 @@ def DownloadTargetsFromIdList(target_chembl_id_list: list[str] = [],
                     pd.DataFrame(targets_with_ids)),
                 download_activities=download_activities,
                 activities_results_folder_name=activities_results_folder_name,
-                print_to_console=print_to_console)
+                print_to_console=print_to_console,
+                skip_downloaded_activities=skip_downloaded_activities)
 
             UpdateLoggerFormat("ChEMBL__targets", "fg #CBDD7C")
 

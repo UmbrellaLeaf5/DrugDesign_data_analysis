@@ -12,7 +12,8 @@ from Utils.decorators import IgnoreWarnings
 @IgnoreWarnings
 def DownloadChEMBLActivities(targets_data: pd.DataFrame,
                              results_folder_name: str = "results/activities",
-                             print_to_console: bool = False) -> None:
+                             print_to_console: bool = False,
+                             skip_downloaded_activities: bool = False) -> None:
     """
     Скачивает необходимые activities из базы ChEMBL по данным по целям.
 
@@ -20,6 +21,7 @@ def DownloadChEMBLActivities(targets_data: pd.DataFrame,
         targets_data (pd.DataFrame): данные по целям.
         results_folder_name (str, optional): имя папки для закачки. Defaults to "results/activities".
         print_to_console (bool, optional): нужно ли выводить логирование в консоль. Defaults to False.
+        skip_downloaded_activities (bool, optional): пропускать ли уже скачанные файлы activities. Defaults to False.
     """
 
     UpdateLoggerFormat("ChEMBL__IC50&Ki", "fg #61B78C")
@@ -30,6 +32,18 @@ def DownloadChEMBLActivities(targets_data: pd.DataFrame,
     logger.info(f"{'-' * 77}")
 
     for target_id in targets_data['target_chembl_id']:
+        file_name_ic50: str = f"{target_id}_IC50_activities.csv"
+        file_name_ki: str = f"{target_id}_Ki_activities.csv"
+
+        if skip_downloaded_activities \
+           and IsFileInFolder(results_folder_name, file_name_ic50) \
+           and IsFileInFolder(results_folder_name, file_name_ki):
+            logger.warning(f"Activities connected with target {
+                target_id} is already downloaded, skip".ljust(77))
+            logger.info(f"{'-' * 77}")
+
+            continue
+
         if print_to_console:
             logger.info(f"Downloading activities connected with {
                 target_id}...".ljust(77))
@@ -85,14 +99,12 @@ def DownloadChEMBLActivities(targets_data: pd.DataFrame,
             #                           f"targets_data_from_ChEMBL",
             #                           f"{results_folder_name}/{primary_analysis_folder_name}")
 
-            file_name_ic50: str = f"{
-                results_folder_name}/{target_id}_IC50_activities.csv"
+            full_file_name_ic50: str = f"{
+                results_folder_name}/{file_name_ic50}"
+            full_file_name_ki: str = f"{results_folder_name}/{file_name_ki}"
 
-            file_name_ki: str = f"{
-                results_folder_name}/{target_id}_Ki_activities.csv"
-
-            data_frame_ic50.to_csv(file_name_ic50, sep=';', index=False)
-            data_frame_ki.to_csv(file_name_ki, sep=';', index=False)
+            data_frame_ic50.to_csv(full_file_name_ic50, sep=';', index=False)
+            data_frame_ki.to_csv(full_file_name_ki, sep=';', index=False)
 
             if print_to_console:
                 logger.success(
