@@ -48,7 +48,7 @@ def ExpandedFromDictionariesTargetsDF(data: pd.DataFrame) -> pd.DataFrame:
         pd.DataFrame: "раскрытый" pd.DataFrame
     """
 
-    logger.info(f"Expand pandas.DataFrame() from dictionaries...".ljust(77))
+    logger.info(f"Expanding pandas.DataFrame() from dictionaries...".ljust(77))
 
     def ExtractedValuesFromColumn(df: pd.DataFrame, column_name: str, key: str) -> pd.Series:
         return df[column_name].apply(lambda x: [d[key] for d in x] if x else [])
@@ -92,7 +92,7 @@ def ExpandedFromDictionariesTargetsDF(data: pd.DataFrame) -> pd.DataFrame:
     data = pd.concat([data, exposed_data, target_components_data], axis=1)
 
     logger.success(
-        f"Expand pandas.DataFrame() from dictionaries: SUCCESS".ljust(77))
+        f"Expanding pandas.DataFrame() from dictionaries: SUCCESS".ljust(77))
 
     return data
 
@@ -115,14 +115,14 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
     """
 
     logger.info(
-        f"Add 'IC50' and 'Ki' columns to pandas.DataFrame()...".ljust(77))
+        f"Adding 'IC50' and 'Ki' columns to pandas.DataFrame()...".ljust(77))
 
     try:
         data["IC50"] = data["target_chembl_id"].apply(CountActivitiesByIC50)
         data["Ki"] = data["target_chembl_id"].apply(CountActivitiesByKi)
 
         logger.success(
-            f"Add 'IC50' and 'Ki' columns to pandas.DataFrame(): SUCCESS".ljust(77))
+            f"Adding 'IC50' and 'Ki' columns to pandas.DataFrame(): SUCCESS".ljust(77))
 
         if download_activities:
             DownloadChEMBLActivities(data,
