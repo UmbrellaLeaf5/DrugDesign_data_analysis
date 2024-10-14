@@ -3,10 +3,12 @@
 from chembl_webresource_client.new_client import new_client
 from chembl_webresource_client.query_set import QuerySet
 
+from Utils.decorators import Retry
 from Utils.file_and_logger_funcs import *
 from Utils.list_and_dataframe_funcs import *
 
 
+@Retry()
 def QuerySetActivitiesByIC50(target_id: str) -> QuerySet:
     """
     Возвращает активности по target_id по IC50
@@ -21,6 +23,7 @@ def QuerySetActivitiesByIC50(target_id: str) -> QuerySet:
     return new_client.activity.filter(target_chembl_id=target_id).filter(standard_type="IC50")
 
 
+@Retry()
 def QuerySetActivitiesByKi(target_id: str) -> QuerySet:
     """
     Возвращает активности по target_id по Ki

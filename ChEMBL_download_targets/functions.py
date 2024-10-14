@@ -3,12 +3,14 @@
 from chembl_webresource_client.new_client import new_client
 from chembl_webresource_client.query_set import QuerySet
 
+from Utils.decorators import Retry
 from Utils.primary_analysis import *
 
 from ChEMBL_download_activities.download import DownloadChEMBLActivities
 from ChEMBL_download_activities.functions import CountActivitiesByIC50, CountActivitiesByKi
 
 
+@Retry()
 def QuerySetAllTargets() -> QuerySet:
     """
     Возвращает все цели из базы ChEMBL
@@ -20,6 +22,7 @@ def QuerySetAllTargets() -> QuerySet:
     return new_client.target.filter()
 
 
+@Retry()
 def QuerySetTargetsFromIdList(target_chembl_id_list: list[str]) -> QuerySet:
     """
     Возвращает цели по списку id из базы ChEMBL

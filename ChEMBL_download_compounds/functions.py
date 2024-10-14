@@ -3,9 +3,11 @@
 from chembl_webresource_client.new_client import new_client
 from chembl_webresource_client.query_set import QuerySet
 
+from Utils.decorators import Retry
 from Utils.primary_analysis import *
 
 
+@Retry()
 def QuerySetCompoundsByMWRange(less_limit: int = 0, greater_limit: int = 12_546_42) -> QuerySet:
     """
     Возвращает молекулы в диапазоне молекулярной массы [less_limit; greater_limit) из базы ChEMBL
