@@ -99,7 +99,7 @@ def CleanedActivitiesDF(data: pd.DataFrame, target_id: str, activities_type: str
                           'target_chembl_id', 'target_pref_name',
                           'target_tax_id', 'text_value', 'toid',
                           'type', 'units', 'uo_units', 'upper_value',
-                          'value'], axis=1)
+                          'value', 'ligand_efficiency'], axis=1)
 
         if print_to_console:
             logger.success(f"Deleting useless columns: SUCCESS".ljust(77))
@@ -141,7 +141,7 @@ def CleanedActivitiesDF(data: pd.DataFrame, target_id: str, activities_type: str
                                      'assay_description', 'assay_type', 'assay_variant_accession',
                                      'assay_variant_mutation', 'action_type', 'activity_comment',
                                      'data_validity_comment', 'data_validity_description',
-                                     'bao_endpoint', 'bao_format', 'bao_label', 'ligand_efficiency'])
+                                     'bao_endpoint', 'bao_format', 'bao_label'])
 
         if print_to_console:
             logger.success(
