@@ -5,4 +5,3 @@ from ChEMBL_download_targets.download import DownloadChEMBLTargets
 
 if __name__ == "__main__":
     DownloadChEMBLTargets()
-    # DownloadChEMBLCompounds(skip_downloaded_files=True)

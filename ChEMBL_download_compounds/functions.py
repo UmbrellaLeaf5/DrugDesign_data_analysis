@@ -51,7 +51,7 @@ def ExpandedFromDictionariesCompoundsDF(data: pd.DataFrame) -> pd.DataFrame:
                                   key: str, is_list: bool = True) -> pd.Series:
         if is_list:
             return df[column_name].apply(lambda x: [d[key] for d in x] if x else [])
-        return [item[key] if isinstance(item, dict) else None for item in data[column_name]]
+        return [item[key] if isinstance(item, dict) else None for item in df[column_name]]
 
     # cSpell:disable
 
@@ -155,7 +155,7 @@ def DownloadCompoundsByMWRange(less_limit: int = 0,
                                          folder_name=f"{
                                              results_folder_name}/{primary_analysis_folder_name}",
                                          print_to_console=print_to_console)
-                UpdateLoggerFormat("ChEMBL_download", "fg #CCA87A")
+                UpdateLoggerFormat("ChEMBL_compound", "fg #CCA87A")
 
             file_name: str = f"{results_folder_name}/range_{
                 less_limit}_{greater_limit}_mw_mols.csv"
@@ -169,3 +169,80 @@ def DownloadCompoundsByMWRange(less_limit: int = 0,
 
     except Exception as exception:
         logger.error(f"{exception}".ljust(77))
+
+
+def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str],
+                              file_name: str, print_to_console: bool = False) -> None:
+    """
+    Сохраняет molfiles из списка id в .sdf файл
+
+    Args:
+        molecule_chembl_id_list (list[str]): список id
+        file_name (str): имя файла (без .sdf)
+        print_to_console (bool, optional): нужно ли выводить логирование в консоль. Defaults to False.
+
+    Returns:
+        _type_: _description_
+    """
+
+    @Retry()
+    def DataFrameMolfilesFromIdList(molecule_chembl_id_list: list[str]) -> pd.DataFrame:
+        """
+        Возвращает pd.DataFrame из molfile по каждой молекуле из списка molecule_chembl_id
+
+        Args:
+            molecule_chembl_id_list (list[str]): список id
+
+        Returns:
+            pd.DataFrame: DataFrame, который содержит molecule_chembl_id и соотв. molfile
+        """
+
+        qs_data: QuerySet = new_client.molecule.filter(
+            molecule_chembl_id__in=molecule_chembl_id_list).only([
+                'molecule_chembl_id', 'molecule_structures'])
+
+        data = pd.DataFrame(qs_data)
+
+        data['molfile'] = data['molecule_structures'].apply(
+            lambda x: x['molfile'] if isinstance(x, dict) else None)
+
+        data = data.drop(['molecule_structures'], axis=1)
+
+        return data
+
+    def SaveMolfilesToSDF(data: pd.DataFrame, file_name: str, print_to_console: bool = False) -> None:
+        """
+        Сохраняет molfiles из pd.DataFrame в .sdf файл
+
+        Args:
+            data (pd.DataFrame): DataFrame с molfile и molecule_chembl_id
+            file_name (str): имя файла (без .sdf)
+            print_to_console (bool, optional): нужно ли выводить логирование в консоль. Defaults to False.
+        """
+
+        if print_to_console:
+            logger.info(f"Opening {file_name}...".ljust(77))
+
+        with open(f"{file_name}.sdf", 'w') as f:
+            if print_to_console:
+                logger.success(f"Opening {file_name}".ljust(77))
+
+            for value in data.values:
+                molecule_chembl_id, molfile = value
+
+                f.write(f"{molecule_chembl_id}{molfile}\n\n$$$$\n")
+
+                if print_to_console:
+                    logger.info(
+                        f"Writing {molecule_chembl_id} data to .sdf file...".ljust(77))
+
+    if print_to_console:
+        logger.info("Collecting molfiles to pandas.DataFrame()...".ljust(77))
+
+    data = DataFrameMolfilesFromIdList(molecule_chembl_id_list)
+
+    if print_to_console:
+        logger.success("Collecting molfiles to pandas.DataFrame()".ljust(77))
+
+    SaveMolfilesToSDF(data=data, file_name=file_name,
+                      print_to_console=print_to_console)

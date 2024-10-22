@@ -100,6 +100,7 @@ def ExpandedFromDictionariesTargetsDF(data: pd.DataFrame) -> pd.DataFrame:
 def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
                               download_activities: bool = True,
                               activities_results_folder_name: str = "results/activities",
+                              download_compounds_sdf: bool = True,
                               print_to_console: bool = False,
                               skip_downloaded_activities: bool = False) -> pd.DataFrame:
     """
@@ -109,6 +110,7 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
         data (pd.DataFrame): исходный pd.DataFrame
         need_to_download_activities (bool, optional): нужно ли скачивать activities отдельно. Defaults to True.
         activities_results_folder_name (str, optional): название папки для скачанных activities. Defaults to "results/activities".
+        download_compounds_sdf (bool, optional): нужно ли скачивать .sdf файл с molfile для каждой молекулы. Defaults to True.
         print_to_console (bool, optional): нужно ли выводить логирование в консоль. Defaults to False.
         skip_downloaded_activities (bool, optional): пропускать ли уже скачанные файлы activities. Defaults to False.
 
@@ -129,6 +131,7 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
         if download_activities:
             DownloadChEMBLActivities(data,
                                      results_folder_name=activities_results_folder_name,
+                                     download_compounds_sdf=download_compounds_sdf,
                                      print_to_console=print_to_console,
                                      skip_downloaded_activities=skip_downloaded_activities)
             try:
