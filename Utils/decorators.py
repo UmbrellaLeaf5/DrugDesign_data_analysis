@@ -33,9 +33,9 @@ def Retry(attempts_amount=3, exception_to_check=Exception, sleep_time=1) -> Call
     Декоратор для повторения попыток выполнения функции
 
     Args:
-        attempts_amount (int, optional): кол-во попыток. Defaults to 1.
+        attempts_amount (int, optional): кол-во попыток. Defaults to 3.
         exception_to_check (_type_, optional): улавливаемое исключение. Defaults to Exception.
-        sleep_time (int, optional): время ожидания между попытками. Defaults to 3.
+        sleep_time (int, optional): время ожидания между попытками. Defaults to 1.
 
     Returns:
         Callable: декорируемая функция
