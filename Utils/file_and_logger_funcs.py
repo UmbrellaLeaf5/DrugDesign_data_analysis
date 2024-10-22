@@ -97,23 +97,18 @@ def CombineCSVInFolder(folder_name: str, combined_file_name: str,
             if print_to_console:
                 logger.success(f"Opening '{file_name}': SUCCESS".ljust(77))
 
-            if print_to_console:
                 logger.info(
                     f"Collecting '{file_name}' to pandas.DataFrame()...".ljust(77))
             try:
-                df = pd.read_csv(file_path, low_memory=False)
+                df = pd.read_csv(file_path, low_memory=False, sep=';')
 
                 if print_to_console:
                     logger.success(
                         f"Collecting '{file_name}' to pandas.DataFrame(): SUCCESS".ljust(77))
 
-            except Exception as exception:
-                logger.error(f"{exception}".ljust(77))
+                    logger.info(
+                        f"Concatenating '{file_name}' to combined_data_frame...".ljust(77))
 
-            if print_to_console:
-                logger.info(
-                    f"Concatenating '{file_name}' to combined_data_frame...".ljust(77))
-            try:
                 combined_df = pd.concat([combined_df, df], ignore_index=True)
 
                 if print_to_console:
