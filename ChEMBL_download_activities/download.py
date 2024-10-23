@@ -133,6 +133,7 @@ def DownloadChEMBLActivities(targets_data: pd.DataFrame,
                         data_frame_ic50['molecule_chembl_id'].tolist(),
                         f"results/compounds/molfiles/{
                             file_name_ic50}_molfiles",
+                        extra_data=data_frame_ic50,
                         print_to_console=print_to_console)
 
                     if print_to_console:
@@ -149,6 +150,7 @@ def DownloadChEMBLActivities(targets_data: pd.DataFrame,
                     SaveMolfilesToSDFByIdList(
                         data_frame_ki['molecule_chembl_id'].tolist(),
                         f"results/compounds/molfiles/{file_name_ki}_molfiles",
+                        extra_data=data_frame_ki,
                         print_to_console=print_to_console)
 
                     if print_to_console:

@@ -171,14 +171,16 @@ def DownloadCompoundsByMWRange(less_limit: int = 0,
         logger.error(f"{exception}".ljust(77))
 
 
-def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str],
-                              file_name: str, print_to_console: bool = False) -> None:
+def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str], file_name: str,
+                              extra_data: pd.DataFrame = pd.DataFrame(),
+                              print_to_console: bool = False) -> None:
     """
     Сохраняет molfiles из списка id в .sdf файл
 
     Args:
         molecule_chembl_id_list (list[str]): список id
         file_name (str): имя файла (без .sdf)
+        extra_data (pd.DataFrame, optional): дополнительная информация. Defaults to pd.DataFrame().
         print_to_console (bool, optional): нужно ли выводить логирование в консоль. Defaults to False.
 
     Returns:
@@ -210,31 +212,54 @@ def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str],
 
         return data
 
-    def SaveMolfilesToSDF(data: pd.DataFrame, file_name: str, print_to_console: bool = False) -> None:
+    def SaveMolfilesToSDF(data: pd.DataFrame, file_name: str,
+                          extra_data: pd.DataFrame = pd.DataFrame(),
+                          print_to_console: bool = False) -> None:
         """
         Сохраняет molfiles из pd.DataFrame в .sdf файл
 
         Args:
             data (pd.DataFrame): DataFrame с molfile и molecule_chembl_id
             file_name (str): имя файла (без .sdf)
+            extra_data (pd.DataFrame, optional): дополнительная информация. Defaults to pd.DataFrame().
             print_to_console (bool, optional): нужно ли выводить логирование в консоль. Defaults to False.
         """
 
         if print_to_console:
             logger.info(f"Opening {file_name}...".ljust(77))
 
-        with open(f"{file_name}.sdf", 'w') as f:
+        with open(f"{file_name}.sdf", 'w', encoding='utf-8') as f:
             if print_to_console:
                 logger.success(f"Opening {file_name}".ljust(77))
 
             for value in data.values:
-                molecule_chembl_id, molfile = value
+                try:
+                    molecule_chembl_id, molfile = value
 
-                f.write(f"{molecule_chembl_id}{molfile}\n\n$$$$\n")
+                    f.write(f"{molecule_chembl_id}{molfile}\n\n")
 
-                if print_to_console:
-                    logger.info(
-                        f"Writing {molecule_chembl_id} data to .sdf file...".ljust(77))
+                    if not extra_data.empty:
+                        df = extra_data.set_index("molecule_chembl_id")
+
+                        for column in df.columns:
+                            try:
+                                value = str(df.loc[molecule_chembl_id, column])
+
+                                if value != "nan" and value != "None":
+                                    f.write(f"> <{column}>\n")
+                                    f.write(f"{value}\n\n")
+
+                            except Exception as exception:
+                                logger.error(f"{exception}".ljust(77))
+
+                    f.write("$$$$\n")
+
+                    if print_to_console:
+                        logger.info(
+                            f"Writing {molecule_chembl_id} data to .sdf file...".ljust(77))
+
+                except Exception as exception:
+                    logger.error(f"{exception}".ljust(77))
 
     if print_to_console:
         logger.info("Collecting molfiles to pandas.DataFrame()...".ljust(77))
@@ -244,5 +269,5 @@ def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str],
     if print_to_console:
         logger.success("Collecting molfiles to pandas.DataFrame()".ljust(77))
 
-    SaveMolfilesToSDF(data=data, file_name=file_name,
+    SaveMolfilesToSDF(data=data, file_name=file_name, extra_data=extra_data,
                       print_to_console=print_to_console)
