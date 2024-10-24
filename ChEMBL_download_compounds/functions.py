@@ -1,5 +1,7 @@
 # type: ignore
 
+from io import TextIOWrapper
+
 from chembl_webresource_client.new_client import new_client
 from chembl_webresource_client.query_set import QuerySet
 
@@ -114,7 +116,7 @@ def DownloadCompoundsByMWRange(less_limit: int = 0,
                                need_primary_analysis: bool = False,
                                print_to_console: bool = False):
     """
-    Возвращает молекулы в диапазоне молекулярной массы [less_limit; greater_limit) из базы ChEMBL, 
+    Возвращает молекулы в диапазоне молекулярной массы [less_limit; greater_limit) из базы ChEMBL,
     сохраняя их в .csv файл
 
     Args:
@@ -225,6 +227,56 @@ def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str], file_name: str
             print_to_console (bool, optional): нужно ли выводить логирование в консоль. Defaults to False.
         """
 
+        def WriteColumnAndValueToSDF(file: TextIOWrapper, value, column: str = ""):
+            """
+            Записывает столбец и значение в .sdf файл
+
+            Args:
+                file (TextIOWrapper): открытый файл для записи.
+                value: значение, которое нужно записать.
+                column (str, optional): имя столбца.  Defaults to "". 
+            """
+
+            if isinstance(value, list):
+                if column:
+                    file.write(f"> <{column}>\n")
+
+                for elem in value:
+                    # если value - это список словарей
+                    if isinstance(elem, dict):
+                        WriteColumnAndValueToSDF(file, elem)
+
+                    else:
+                        elem = str(elem)
+
+                        if elem != "nan" and elem != "None":
+                            file.write(f"{elem}\n")
+
+                if column:
+                    file.write("\n")
+
+            elif isinstance(value, dict):
+                if column:
+                    file.write(f"> <{column}>\n")
+
+                for key, elem in value.items():
+                    elem = str(elem)
+
+                    if elem != "nan" and elem != "None":
+                        file.write(f"{key}: {elem}\n")
+
+                if column:
+                    file.write("\n")
+
+            else:
+                value = str(value)
+
+                if value != "nan" and value != "None":
+                    if column:
+                        file.write(f"> <{column}>\n")
+
+                    file.write(f"{value}\n\n")
+
         if print_to_console:
             logger.info(f"Opening {file_name}...".ljust(77))
 
@@ -243,11 +295,8 @@ def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str], file_name: str
 
                         for column in df.columns:
                             try:
-                                value = str(df.loc[molecule_chembl_id, column])
-
-                                if value != "nan" and value != "None":
-                                    f.write(f"> <{column}>\n")
-                                    f.write(f"{value}\n\n")
+                                WriteColumnAndValueToSDF(
+                                    f, df.loc[molecule_chembl_id, column], column)
 
                             except Exception as exception:
                                 logger.error(f"{exception}".ljust(77))
