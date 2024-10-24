@@ -143,8 +143,9 @@ def DownloadChEMBLActivities(targets_data: pd.DataFrame,
                 except Exception as exception:
                     logger.error(f"{exception}".ljust(77))
 
-                logger.info(
-                    "Saving connected with Ki molfiles...".ljust(77))
+                if print_to_console:
+                    logger.info(
+                        "Saving connected with Ki molfiles...".ljust(77))
 
                 try:
                     SaveMolfilesToSDFByIdList(
