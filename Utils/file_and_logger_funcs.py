@@ -51,10 +51,11 @@ def CreateFolder(folder_path: str, folder_name: str = "") -> None:
         folder_name = folder_path
 
     try:
-        logger.info(f"Creating folder '{folder_name}'...".ljust(77))
-        os.mkdir(folder_path)
-        logger.success(f"Creating folder '{
-                       folder_name}': SUCCESS".ljust(77))
+        if not os.path.exists(folder_path):
+            logger.info(f"Creating folder '{folder_name}'...".ljust(77))
+            os.mkdir(folder_path)
+            logger.success(f"Creating folder '{
+                folder_name}': SUCCESS".ljust(77))
 
     except Exception as exception:
         logger.warning(f"{exception}".ljust(77))
