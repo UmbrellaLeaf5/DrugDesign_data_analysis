@@ -28,7 +28,12 @@ def DedupedList(l: list) -> list:
         list: список без None и дубликатов
     """
 
-    return list(set(NonNoneList(l)))
+    try:
+        return list(set(NonNoneList(l)))
+
+    except:
+        # https://stackoverflow.com/questions/9427163/remove-duplicate-dict-in-list-in-python
+        return list({frozenset(item.items()): item for item in NonNoneList(l)}.values())
 
 
 def MedianDedupedDF(df: pd.DataFrame, id_column_name: str, median_column_name: str) -> pd.DataFrame:
