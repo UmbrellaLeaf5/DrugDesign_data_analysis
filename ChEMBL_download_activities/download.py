@@ -141,7 +141,7 @@ def DownloadChEMBLActivities(targets_data: pd.DataFrame,
                             "Saving connected with IC50 molfiles".ljust(77))
 
                 except Exception as exception:
-                    logger.error(f"{exception}".ljust(77))
+                    PrintException(exception, "ChEMBL__IC50&Ki", "fg #61B78C")
 
                 if print_to_console:
                     logger.info(
@@ -162,7 +162,7 @@ def DownloadChEMBLActivities(targets_data: pd.DataFrame,
                             f"End download molfiles connected with {target_id} to .sdf".ljust(77))
 
                 except Exception as exception:
-                    logger.error(f"{exception}".ljust(77))
+                    PrintException(exception, "ChEMBL__IC50&Ki", "fg #61B78C")
 
                 UpdateLoggerFormat("ChEMBL__IC50&Ki", "fg #61B78C")
 
@@ -170,7 +170,7 @@ def DownloadChEMBLActivities(targets_data: pd.DataFrame,
                 logger.info(f"{'-' * 77}")
 
         except Exception as exception:
-            logger.error(f"{exception}".ljust(77))
+            PrintException(exception, "ChEMBL__IC50&Ki", "fg #61B78C")
 
     logger.success(
         f"End download activities connected with targets: SUCCESS".ljust(77))

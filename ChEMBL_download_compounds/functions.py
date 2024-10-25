@@ -167,10 +167,10 @@ def DownloadCompoundsByMWRange(less_limit: int = 0,
                 f"Collecting molecules to .csv file in '{results_folder_name}': SUCCESS".ljust(77))
 
         except Exception as exception:
-            logger.error(f"{exception}".ljust(77))
+            PrintException(exception, "ChEMBL_compound", "fg #CCA87A")
 
     except Exception as exception:
-        logger.error(f"{exception}".ljust(77))
+        PrintException(exception, "ChEMBL_compound", "fg #CCA87A")
 
 
 def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str], file_name: str,
@@ -227,7 +227,7 @@ def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str], file_name: str
             print_to_console (bool, optional): нужно ли выводить логирование в консоль. Defaults to False.
         """
 
-        def WriteColumnAndValueToSDF(file: TextIOWrapper, value, column: str = ""):
+        def WriteColumnAndValueToSDF(file: TextIOWrapper, value, column: str = "") -> None:
             """
             Записывает столбец и значение в .sdf файл
 
@@ -299,7 +299,8 @@ def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str], file_name: str
                                     f, df.loc[molecule_chembl_id, column], column)
 
                             except Exception as exception:
-                                logger.error(f"{exception}".ljust(77))
+                                PrintException(
+                                    exception, "ChEMBL_compound", "fg #CCA87A")
 
                     f.write("$$$$\n")
 
@@ -308,7 +309,7 @@ def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str], file_name: str
                             f"Writing {molecule_chembl_id} data to .sdf file...".ljust(77))
 
                 except Exception as exception:
-                    logger.error(f"{exception}".ljust(77))
+                    PrintException(exception, "ChEMBL_compound", "fg #CCA87A")
 
     if print_to_console:
         logger.info("Collecting molfiles to pandas.DataFrame()...".ljust(77))

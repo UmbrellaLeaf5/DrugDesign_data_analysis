@@ -1,3 +1,5 @@
+from io import TextIOWrapper
+from typing import TextIO
 import pandas as pd
 import sys
 import os
@@ -117,7 +119,7 @@ def CombineCSVInFolder(folder_name: str, combined_file_name: str,
                         f"Concatenating '{file_name}' to combined_data_frame: SUCCESS".ljust(77))
 
             except Exception as exception:
-                logger.error(f"{exception}".ljust(77))
+                PrintException(exception, logger_label, "fg #474747")
 
             if print_to_console:
                 logger.info(f"{'-' * 77}")
@@ -131,24 +133,48 @@ def CombineCSVInFolder(folder_name: str, combined_file_name: str,
             f"Collecting to combined .csv file in '{folder_name}': SUCCESS".ljust(77))
 
     except Exception as exception:
-        logger.error(f"{exception}".ljust(77))
+        PrintException(exception, logger_label, "fg #474747")
 
     logger.info(f"{'-' * 77}")
     logger.success(f"End combining all downloads".ljust(77))
 
 
-def UpdateLoggerFormat(logger_label: str, color: str) -> None:
+def UpdateLoggerFormat(logger_label: str, color: str,
+                       out: TextIO | TextIOWrapper = sys.stdout) -> None:
     """
     Обновляет формат вывода логирования
 
     Args:
         logger_label (str): текст заголовка для логирования
         color (str): цвет заголовка для логирования
+        out (TextIO | TextIOWrapper, optional): способ вывода. Defaults to sys.stdout.
     """
 
     logger.remove()
-    logger.add(sink=sys.stdout,
+    logger.add(sink=out,
                format="[{time:DD.MM.YYYY HH:mm:ss}]" +
                       f" <{color}>{logger_label}:</{color}>" +
                       " <white>{message}</white>" +
                       " [<level>{level}</level>]")
+
+
+def PrintException(exception: Exception, logger_label: str, color: str,
+                   file_name: str = "exceptions.log") -> None:
+    """
+    Выводит исключение в консоль и записывает в файл.
+
+    Args:
+        exception (Exception): исключение
+        logger_label (str): текст заголовка для логирования
+        color (str): цвет заголовка для логирования
+        file_name (str, optional): имя файла. Defaults to "exceptions.log".
+    """
+
+    logger.error(f"{exception}".ljust(77))
+
+    with open(file_name, 'a', encoding='utf-8') as f:
+        UpdateLoggerFormat(logger_label, color, f)
+
+        logger.error(f"{exception}".ljust(77))
+
+    UpdateLoggerFormat(logger_label, color)

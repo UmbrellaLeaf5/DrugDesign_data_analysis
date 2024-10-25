@@ -151,7 +151,7 @@ def CleanedActivitiesDF(data: pd.DataFrame, target_id: str, activities_type: str
                 target_id}".ljust(77))
 
     except Exception as exception:
-        logger.error(f"{exception}".ljust(77))
+        PrintException(exception, "ChEMBL__IC50&Ki", "fg #61B78C")
 
     if print_to_console:
         logger.info(f"{'-' * 77}")

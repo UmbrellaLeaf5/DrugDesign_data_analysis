@@ -1,6 +1,7 @@
 # type: ignore
 
 import pandas as pd
+from loguru import logger
 
 try:
     from file_and_logger_funcs import *
@@ -155,6 +156,6 @@ def PrimaryAnalysisByColumns(data_frame: pd.DataFrame,
                 "Saving primary analysis to .csv file: SUCCESS".ljust(77))
 
         except Exception as exception:
-            logger.error(f"{exception}".ljust(77))
+            PrintException(exception, logger_label, "fg #C48BC0")
 
     logger.success(f"End analysis of '{data_name}'".ljust(77))

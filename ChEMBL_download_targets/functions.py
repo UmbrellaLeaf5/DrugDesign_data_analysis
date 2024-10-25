@@ -146,7 +146,7 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
                     pass
 
     except Exception as exception:
-        logger.error(f"{exception}".ljust(77))
+        PrintException(exception, "ChEMBL__targets", "fg #CBDD7C")
 
     return data
 
@@ -222,7 +222,7 @@ def DownloadTargetsFromIdList(target_chembl_id_list: list[str] = [],
                 f"Collecting targets to .csv file in '{results_folder_name}': SUCCESS".ljust(77))
 
         except Exception as exception:
-            logger.error(f"{exception}".ljust(77))
+            PrintException(exception, "ChEMBL__targets", "fg #CBDD7C")
 
     except Exception as exception:
-        logger.error(f"{exception}".ljust(77))
+        PrintException(exception, "ChEMBL__targets", "fg #CBDD7C")

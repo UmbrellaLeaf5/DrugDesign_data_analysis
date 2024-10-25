@@ -111,6 +111,6 @@ def DownloadChEMBLCompounds(need_primary_analysis: bool = False,
                 f"Deleting files after combining in '{results_folder_name}'".ljust(77))
 
         except Exception as exception:
-            logger.error(f"{exception}".ljust(77))
+            PrintException(exception, logger_label, "fg #BBDD7C")
 
     logger.success(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
