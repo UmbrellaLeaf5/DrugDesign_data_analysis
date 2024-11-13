@@ -4,6 +4,7 @@ import pandas as pd
 import sys
 import os
 import traceback
+import re
 
 from loguru import logger
 
@@ -105,7 +106,7 @@ def CombineCSVInFolder(folder_name: str, combined_file_name: str,
                 logger.info(
                     f"Collecting '{file_name}' to pandas.DataFrame()...".ljust(77))
             try:
-                df = pd.read_csv(full_file_name, low_memory=False, sep=';')
+                df = pd.read_csv(full_file_name, sep=';', low_memory=False)
 
                 if print_to_console:
                     logger.success(
@@ -175,14 +176,9 @@ def PrintException(exception: Exception, logger_label: str, color: str,
     logger.error(f"{exception}".ljust(77))
 
     with open(file_name, 'a', encoding='utf-8') as f:
-        # получаем информацию о файле и строке, где произошла ошибка
-        error_info = traceback.extract_tb(exception.__traceback__)[-1]
-        file_name = error_info.filename
-        line_number = error_info.lineno
-
         UpdateLoggerFormat(logger_label, color, f)
 
-        logger.error(f"{exception}".ljust(77))
-        logger.error(f"{file_name}:{line_number}".ljust(77))
+        logger.error(
+            f"{re.sub(r'"(.*?)\",\s+line\s+(\d+)', r'\1:\2', traceback.format_exc())}")
 
     UpdateLoggerFormat(logger_label, color)

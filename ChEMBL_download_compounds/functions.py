@@ -1,5 +1,7 @@
 # type: ignore
 
+# from icecream import ic
+
 from io import TextIOWrapper
 
 from chembl_webresource_client.new_client import new_client
@@ -7,6 +9,8 @@ from chembl_webresource_client.query_set import QuerySet
 
 from Utils.decorators import Retry
 from Utils.primary_analysis import *
+
+# ic.disable()
 
 
 @Retry()
@@ -188,6 +192,11 @@ def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str], file_name: str
     Returns:
         _type_: _description_
     """
+
+    if not molecule_chembl_id_list:
+        logger.warning(
+            "Molecules list is empty, nothing to save to .sdf!".ljust(77))
+        return
 
     @Retry()
     def DataFrameMolfilesFromIdList(molecule_chembl_id_list: list[str]) -> pd.DataFrame:

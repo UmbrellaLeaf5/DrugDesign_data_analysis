@@ -220,9 +220,9 @@ def GetCellLineChEMBLActivitiesFromCSV(cell_lines_data: pd.DataFrame,
                 cell_id}...".ljust(77))
 
         data_frame_ic50 = pd.read_csv(
-            f"{raw_csv_folder_name}/{file_name_ic50}.csv", sep=';')
+            f"{raw_csv_folder_name}/{file_name_ic50}.csv", sep=';', low_memory=False)
         data_frame_gi50 = pd.read_csv(
-            f"{raw_csv_folder_name}/{file_name_gi50}.csv", sep=';')
+            f"{raw_csv_folder_name}/{file_name_gi50}.csv", sep=';', low_memory=False)
 
         if print_to_console:
             logger.info(f"Amount: IC50: {len(data_frame_ic50)}; GI50: {
@@ -234,113 +234,113 @@ def GetCellLineChEMBLActivitiesFromCSV(cell_lines_data: pd.DataFrame,
             logger.info(
                 "Cleaning activities...".ljust(77))
 
-            try:
-                data_frame_ic50 = CleanedCellLineActivitiesDF(data_frame_ic50,
-                                                              cell_id=cell_id,
-                                                              activities_type="IC50",
-                                                              print_to_console=print_to_console)
+        try:
+            data_frame_ic50 = CleanedCellLineActivitiesDF(data_frame_ic50,
+                                                          cell_id=cell_id,
+                                                          activities_type="IC50",
+                                                          print_to_console=print_to_console)
 
-                data_frame_gi50 = CleanedCellLineActivitiesDF(data_frame_gi50,
-                                                              cell_id=cell_id,
-                                                              activities_type="GI50",
-                                                              print_to_console=print_to_console)
+            data_frame_gi50 = CleanedCellLineActivitiesDF(data_frame_gi50,
+                                                          cell_id=cell_id,
+                                                          activities_type="GI50",
+                                                          print_to_console=print_to_console)
+            if print_to_console:
+                logger.success(
+                    "Collecting activities to pandas.DataFrame(): SUCCESS".ljust(77))
+
+                logger.info(
+                    "Recording new values 'IC50', 'GI50' in targets DataFrame...".ljust(77))
+
+            cell_lines_data.loc[cell_lines_data["cell_chembl_id"]
+                                == cell_id, "IC50_new"] = len(data_frame_ic50)
+
+            cell_lines_data.loc[cell_lines_data["cell_chembl_id"]
+                                == cell_id, "GI50_new"] = len(data_frame_gi50)
+
+            if print_to_console:
+                logger.info(f"Amount: IC50: {len(data_frame_ic50)}; GI50: {
+                    len(data_frame_gi50)}".ljust(77))
+
+                logger.success(
+                    "Recording new values 'IC50', 'GI50' in targets DataFrame: SUCCESS".ljust(77))
+
+                logger.info(
+                    f"Collecting activities to .csv file in '{results_folder_name}'...".ljust(77))
+
+            full_file_name_ic50: str = f"{
+                results_folder_name}/{file_name_ic50}.csv"
+            full_file_name_gi50: str = f"{
+                results_folder_name}/{file_name_gi50}.csv"
+
+            data_frame_ic50.to_csv(
+                full_file_name_ic50, sep=';', index=False)
+            data_frame_gi50.to_csv(
+                full_file_name_gi50, sep=';', index=False)
+
+            if print_to_console:
+                logger.success(
+                    f"Collecting activities to .csv file in '{results_folder_name}': SUCCESS".ljust(77))
+
+            if download_compounds_sdf:
                 if print_to_console:
-                    logger.success(
-                        "Collecting activities to pandas.DataFrame(): SUCCESS".ljust(77))
+                    UpdateLoggerFormat("ChEMBL_compound", "fg #CCA87A")
 
                     logger.info(
-                        "Recording new values 'IC50', 'GI50' in targets DataFrame...".ljust(77))
+                        f"Start download molfiles connected with {cell_id} to .sdf...".ljust(77))
 
-                cell_lines_data.loc[cell_lines_data["cell_chembl_id"]
-                                    == cell_id, "IC50_new"] = len(data_frame_ic50)
-
-                cell_lines_data.loc[cell_lines_data["cell_chembl_id"]
-                                    == cell_id, "GI50_new"] = len(data_frame_gi50)
+                CreateFolder("results/compounds", "compounds")
+                CreateFolder("results/compounds/molfiles", "molfiles")
 
                 if print_to_console:
-                    logger.info(f"Amount: IC50: {len(data_frame_ic50)}; GI50: {
-                        len(data_frame_gi50)}".ljust(77))
-
-                    logger.success(
-                        "Recording new values 'IC50', 'GI50' in targets DataFrame: SUCCESS".ljust(77))
-
                     logger.info(
-                        f"Collecting activities to .csv file in '{results_folder_name}'...".ljust(77))
+                        "Saving connected with IC50 molfiles...".ljust(77))
 
-                full_file_name_ic50: str = f"{
-                    results_folder_name}/{file_name_ic50}.csv"
-                full_file_name_gi50: str = f"{
-                    results_folder_name}/{file_name_gi50}.csv"
+                try:
+                    SaveMolfilesToSDFByIdList(
+                        data_frame_ic50['molecule_chembl_id'].tolist(),
+                        f"results/compounds/molfiles/{
+                            file_name_ic50}_molfiles",
+                        extra_data=data_frame_ic50,
+                        print_to_console=print_to_console)
 
-                data_frame_ic50.to_csv(
-                    full_file_name_ic50, sep=';', index=False)
-                data_frame_gi50.to_csv(
-                    full_file_name_gi50, sep=';', index=False)
+                    if print_to_console:
+                        logger.success(
+                            "Saving connected with IC50 molfiles".ljust(77))
+
+                except Exception as exception:
+                    PrintException(
+                        exception, "ChEMBL__IC&GI50", "fg #6785C6")
 
                 if print_to_console:
-                    logger.success(
-                        f"Collecting activities to .csv file in '{results_folder_name}': SUCCESS".ljust(77))
+                    logger.info(
+                        "Saving connected with GI50 molfiles...".ljust(77))
 
-                if download_compounds_sdf:
-                    if print_to_console:
-                        UpdateLoggerFormat("ChEMBL_compound", "fg #CCA87A")
-
-                        logger.info(
-                            f"Start download molfiles connected with {cell_id} to .sdf...".ljust(77))
-
-                    CreateFolder("results/compounds", "compounds")
-                    CreateFolder("results/compounds/molfiles", "molfiles")
+                try:
+                    SaveMolfilesToSDFByIdList(
+                        data_frame_gi50['molecule_chembl_id'].tolist(),
+                        f"results/compounds/molfiles/{
+                            file_name_gi50}_molfiles",
+                        extra_data=data_frame_gi50,
+                        print_to_console=print_to_console)
 
                     if print_to_console:
-                        logger.info(
-                            "Saving connected with IC50 molfiles...".ljust(77))
+                        logger.success(
+                            "Saving connected with GI50 molfiles".ljust(77))
 
-                    try:
-                        SaveMolfilesToSDFByIdList(
-                            data_frame_ic50['molecule_chembl_id'].tolist(),
-                            f"results/compounds/molfiles/{
-                                file_name_ic50}_molfiles",
-                            extra_data=data_frame_ic50,
-                            print_to_console=print_to_console)
+                        logger.success(
+                            f"End download molfiles connected with {cell_id} to .sdf".ljust(77))
 
-                        if print_to_console:
-                            logger.success(
-                                "Saving connected with IC50 molfiles".ljust(77))
+                except Exception as exception:
+                    PrintException(
+                        exception, "ChEMBL__IC&GI50", "fg #6785C6")
 
-                    except Exception as exception:
-                        PrintException(
-                            exception, "ChEMBL__IC&GI50", "fg #6785C6")
+            UpdateLoggerFormat("ChEMBL__IC&GI50", "fg #6785C6")
 
-                    if print_to_console:
-                        logger.info(
-                            "Saving connected with GI50 molfiles...".ljust(77))
+            if print_to_console:
+                logger.info(f"{'-' * 77}")
 
-                    try:
-                        SaveMolfilesToSDFByIdList(
-                            data_frame_gi50['molecule_chembl_id'].tolist(),
-                            f"results/compounds/molfiles/{
-                                file_name_gi50}_molfiles",
-                            extra_data=data_frame_gi50,
-                            print_to_console=print_to_console)
-
-                        if print_to_console:
-                            logger.success(
-                                "Saving connected with GI50 molfiles".ljust(77))
-
-                            logger.success(
-                                f"End download molfiles connected with {cell_id} to .sdf".ljust(77))
-
-                    except Exception as exception:
-                        PrintException(
-                            exception, "ChEMBL__IC&GI50", "fg #6785C6")
-
-                UpdateLoggerFormat("ChEMBL__IC&GI50", "fg #6785C6")
-
-                if print_to_console:
-                    logger.info(f"{'-' * 77}")
-
-            except Exception as exception:
-                PrintException(exception, "ChEMBL__IC&GI50", "fg #6785C6")
+        except Exception as exception:
+            PrintException(exception, "ChEMBL__IC&GI50", "fg #6785C6")
 
     logger.success(
-        f"End download activities connected with targets: SUCCESS".ljust(77))
+        f"End download activities connected with cell lines: SUCCESS".ljust(77))
