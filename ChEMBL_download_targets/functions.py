@@ -6,8 +6,8 @@ from chembl_webresource_client.query_set import QuerySet
 from Utils.decorators import Retry
 from Utils.primary_analysis import *
 
-from ChEMBL_download_activities.download import DownloadChEMBLActivities
-from ChEMBL_download_activities.functions import CountActivitiesByIC50, CountActivitiesByKi
+from ChEMBL_download_activities.download import DownloadTargetChEMBLActivities
+from ChEMBL_download_activities.functions import CountTargetActivitiesByIC50, CountTargetActivitiesByKi
 
 
 @Retry()
@@ -122,18 +122,19 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
         f"Adding 'IC50' and 'Ki' columns to pandas.DataFrame()...".ljust(77))
 
     try:
-        data["IC50"] = data["target_chembl_id"].apply(CountActivitiesByIC50)
-        data["Ki"] = data["target_chembl_id"].apply(CountActivitiesByKi)
+        data["IC50"] = data["target_chembl_id"].apply(
+            CountTargetActivitiesByIC50)
+        data["Ki"] = data["target_chembl_id"].apply(CountTargetActivitiesByKi)
 
         logger.success(
             f"Adding 'IC50' and 'Ki' columns to pandas.DataFrame(): SUCCESS".ljust(77))
 
         if download_activities:
-            DownloadChEMBLActivities(data,
-                                     results_folder_name=activities_results_folder_name,
-                                     download_compounds_sdf=download_compounds_sdf,
-                                     print_to_console=print_to_console,
-                                     skip_downloaded_activities=skip_downloaded_activities)
+            DownloadTargetChEMBLActivities(data,
+                                           results_folder_name=activities_results_folder_name,
+                                           download_compounds_sdf=download_compounds_sdf,
+                                           print_to_console=print_to_console,
+                                           skip_downloaded_activities=skip_downloaded_activities)
             try:
                 data["IC50_new"] = data["IC50_new"].astype(int)
                 data["Ki_new"] = data["Ki_new"].astype(int)
