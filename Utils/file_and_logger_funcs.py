@@ -8,57 +8,58 @@ import traceback
 from loguru import logger
 
 
-def DeleteFilesInFolder(folder_path: str, except_files: list[str] = []) -> None:
+def DeleteFilesInFolder(folder_name: str, except_files: list[str] = []) -> None:
     """
     Удаляет все файлы в указанной папке, кроме файлов в списке исключений.
 
     Args:
-      folder_path (str): путь к папке.
+      folder_name (str): путь к папке.
       except_files (list[str], optional): список имен файлов, которые нужно исключить из удаления. Defaults to [].
     """
 
-    for file_name in os.listdir(folder_path):
-        full_file_path = os.path.join(folder_path, file_name)
+    for file_name in os.listdir(folder_name):
+        full_file_name = os.path.join(folder_name, file_name)
 
-        if os.path.isfile(full_file_path) and file_name not in except_files:
-            os.remove(full_file_path)
+        if os.path.isfile(full_file_name) and file_name not in except_files:
+            os.remove(full_file_name)
 
 
-def IsFileInFolder(folder_path: str, file_name: str) -> bool:
+def IsFileInFolder(folder_name: str, file_name: str) -> bool:
     """
     Проверяет, существует ли файл в указанной папке.
 
     Args:
       file_name: путь к файлу, который нужно проверить.
-      folder_path: путь к папке, в которой нужно проверить наличие файла.
+      folder_name: путь к папке, в которой нужно проверить наличие файла.
 
     Returns:
       True, если файл существует в папке, в противном случае False.
     """
 
-    full_file_path = os.path.join(folder_path, file_name)
-    return os.path.exists(full_file_path)
+    full_file_name = os.path.join(folder_name, file_name)
+    return os.path.exists(full_file_name)
 
 
-def CreateFolder(folder_path: str, folder_name: str = "") -> None:
+def CreateFolder(folder_name: str, folder_name_for_log: str = "") -> None:
     """
     Создает папку, использует логирование
     (в случае исключения также выводит об этом в консоль)
 
     Args:
-        folder_path (str): путь к папке.
-        folder_name (str, optional): имя папки (для логирования). Defaults to "": имя будет идентично folder_path.
+        folder_name (str): путь к папке.
+        folder_name_for_log (str, optional): имя папки (для логирования). Defaults to "": имя будет идентично folder_name.
     """
 
-    if folder_name == "":
-        folder_name = folder_path
+    if folder_name_for_log == "":
+        folder_name_for_log = folder_name
 
     try:
-        if not os.path.exists(folder_path):
-            logger.info(f"Creating folder '{folder_name}'...".ljust(77))
-            os.mkdir(folder_path)
+        if not os.path.exists(folder_name):
+            logger.info(f"Creating folder '{
+                        folder_name_for_log}'...".ljust(77))
+            os.mkdir(folder_name)
             logger.success(f"Creating folder '{
-                folder_name}': SUCCESS".ljust(77))
+                folder_name_for_log}': SUCCESS".ljust(77))
 
     except Exception as exception:
         logger.warning(f"{exception}".ljust(77))
@@ -96,7 +97,7 @@ def CombineCSVInFolder(folder_name: str, combined_file_name: str,
             if print_to_console:
                 logger.info(f"Opening '{file_name}'...".ljust(77))
 
-            file_path: str = os.path.join(folder_name, file_name)
+            full_file_name: str = os.path.join(folder_name, file_name)
 
             if print_to_console:
                 logger.success(f"Opening '{file_name}': SUCCESS".ljust(77))
@@ -104,7 +105,7 @@ def CombineCSVInFolder(folder_name: str, combined_file_name: str,
                 logger.info(
                     f"Collecting '{file_name}' to pandas.DataFrame()...".ljust(77))
             try:
-                df = pd.read_csv(file_path, low_memory=False, sep=';')
+                df = pd.read_csv(full_file_name, low_memory=False, sep=';')
 
                 if print_to_console:
                     logger.success(
@@ -176,12 +177,12 @@ def PrintException(exception: Exception, logger_label: str, color: str,
     with open(file_name, 'a', encoding='utf-8') as f:
         # получаем информацию о файле и строке, где произошла ошибка
         error_info = traceback.extract_tb(exception.__traceback__)[-1]
-        file_path = error_info.filename
+        file_name = error_info.filename
         line_number = error_info.lineno
 
         UpdateLoggerFormat(logger_label, color, f)
 
         logger.error(f"{exception}".ljust(77))
-        logger.error(f"{file_path}:{line_number}".ljust(77))
+        logger.error(f"{file_name}:{line_number}".ljust(77))
 
     UpdateLoggerFormat(logger_label, color)

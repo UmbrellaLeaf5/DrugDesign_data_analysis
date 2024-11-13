@@ -72,9 +72,9 @@ def CountTargetActivitiesByKi(target_id: str) -> int:
     return len(QuerySetActivitiesByKi(target_id))
 
 
-def CountCellLineActivitiesByFile(path_to_file: str) -> int:
+def CountCellLineActivitiesByFile(file_name: str) -> int:
 
-    return sum(1 for _ in open(path_to_file, 'r'))
+    return sum(1 for _ in open(file_name, 'r'))
 
 
 def CleanedTargetActivitiesDF(data: pd.DataFrame, target_id: str, activities_type: str,
