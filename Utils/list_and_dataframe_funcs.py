@@ -4,6 +4,8 @@
 
 import pandas as pd
 
+# ic.disable()
+
 
 def NonNoneList(l: list) -> list:
     """

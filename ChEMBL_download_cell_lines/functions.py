@@ -44,6 +44,22 @@ def AddedIC50andGI50ToCellLinesDF(data: pd.DataFrame,
                                   download_compounds_sdf: bool = True,
                                   print_to_console: bool = False,
                                   skip_gotten_activities: bool = False) -> pd.DataFrame:
+    """
+    Добавляет в pd.DataFrame два столбца: IC50 и GI50
+
+    Args:
+        data (pd.DataFrame): исходный pd.DataFrame
+        need_to_download_activities (bool, optional): нужно ли получать activities отдельно. Defaults to True.
+        raw_csv_folder_name (str, optional): название папки, откуда необходимо получить activities. Defaults to "raw/cell_lines_activities".
+        activities_results_folder_name (str, optional): название папки для полученных activities. Defaults to "results/activities".
+        download_compounds_sdf (bool, optional): нужно ли скачивать .sdf файл с molfile для каждой молекулы. Defaults to True.
+        print_to_console (bool, optional): нужно ли выводить логирование в консоль. Defaults to False.
+        skip_gotten_activities (bool, optional): пропускать ли уже скачанные файлы activities. Defaults to False.
+
+    Returns:
+        pd.DataFrame: расширенный pd.DataFrame
+    """
+
     logger.info(
         f"Adding 'IC50' and 'GI50' columns to pandas.DataFrame()...".ljust(77))
 
@@ -69,9 +85,9 @@ def AddedIC50andGI50ToCellLinesDF(data: pd.DataFrame,
                 data["IC50_new"] = data["IC50_new"].astype(int)
                 data["GI50_new"] = data["GI50_new"].astype(int)
 
-            except Exception as exception:
-                if not skip_gotten_activities:  # это исключение может возникнуть, если колонки нет
-                    raise exception  # новых activities не скачалось, т.е. значение пересчитывать не надо
+            except Exception as exception:  # это исключение может возникнуть, если колонки нет
+                if not skip_gotten_activities:  # новых activities не скачалось, т.е. значение пересчитывать не надо
+                    raise exception
 
                 else:
                     pass
@@ -90,6 +106,20 @@ def DownloadCellLinesFromIdList(cell_line_chembl_id_list: list[str] = [],
                                 activities_results_folder_name: str = "results/activities",
                                 print_to_console: bool = False,
                                 skip_gotten_activities: bool = False) -> None:
+    """
+    Скачивает клеточные линии по списку id из базы ChEMBL, сохраняя их в .csv файл
+
+    Args:
+        cell_line_chembl_id_list (list[str], optional): список id. Defaults to []: для скачивания всех клеточных линий.
+        results_folder_name (str, optional): имя папки для закачки. Defaults to "results/cell_lines".
+        primary_analysis_folder_name (str, optional): имя папки для сохранения данных о первичном анализе. Defaults to "primary_analysis".
+        need_primary_analysis (bool, optional): нужно ли проводить первичный анализ. Defaults to False.
+        get_activities (bool, optional): нужно ли получать активности к клеточным линиям по IC50 и GI50. Defaults to True.
+        activities_results_folder_name (str, optional): имя папки для закачки activities. Defaults to "results/activities".
+        print_to_console (bool, optional): нужно ли выводить логирование в консоль. Defaults to False.
+        skip_gotten_activities (bool, optional): пропускать ли уже скачанные файлы activities. Defaults to False.
+    """
+
     try:
         logger.info(
             f"Downloading cell lines...".ljust(77))

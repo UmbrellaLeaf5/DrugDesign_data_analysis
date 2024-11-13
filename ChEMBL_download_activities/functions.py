@@ -73,6 +73,15 @@ def CountTargetActivitiesByKi(target_id: str) -> int:
 
 
 def CountCellLineActivitiesByFile(file_name: str) -> int:
+    """
+    Подсчитывает кол-во активностей клеточных линий по .csv файлу, в котором они находятся
+
+    Args:
+        file_name (str): _description_
+
+    Returns:
+        int: _description_
+    """
 
     return sum(1 for _ in open(file_name, 'r'))
 
@@ -171,6 +180,19 @@ def CleanedTargetActivitiesDF(data: pd.DataFrame, target_id: str, activities_typ
 
 def CleanedCellLineActivitiesDF(data: pd.DataFrame, cell_id: str, activities_type: str,
                                 print_to_console: bool = False) -> pd.DataFrame:
+    """
+    Производит чистку выборки activities конкретной клеточной линии по IC50 и GI50
+
+    Args:
+        data (pd.DataFrame): выборка activities
+        cell_id (str): идентификатор клеточной линии
+        activities_type (str): IC50 или GI50
+        print_to_console (bool, optional): нужно ли выводить логирование в консоль. Defaults to False.
+
+    Returns:
+        pd.DataFrame: очищенная выборка
+    """
+
     if print_to_console:
         logger.info(f"Start cleaning {activities_type} activities DataFrame from {
             cell_id}...".ljust(77))
@@ -178,7 +200,6 @@ def CleanedCellLineActivitiesDF(data: pd.DataFrame, cell_id: str, activities_typ
         logger.info(f"Deleting useless columns...".ljust(77))
 
     try:
-        # ic(data.columns)
         data = data[['Molecule ChEMBL ID', 'Smiles', 'Document ChEMBL ID',
                     'Standard Type', 'Standard Relation', 'Standard Value',
                      'Standard Units', 'Assay ChEMBL ID', 'Assay Description',
