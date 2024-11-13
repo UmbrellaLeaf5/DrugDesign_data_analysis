@@ -1,5 +1,7 @@
 # type: ignore
 
+# from icecream import ic
+
 import pandas as pd
 
 
@@ -78,9 +80,13 @@ def MedianDedupedDF(df: pd.DataFrame, id_column_name: str, median_column_name: s
                 if len(name_values_dict[col]) == 1:
                     name_values_dict[col] = name_values_dict[col][0]
 
-                # если список пуст, то это не список
-                if len(name_values_dict[col]) == 0:
-                    name_values_dict[col] = None
+                def IsAllNan(l: list):
+                    return all(str(elem) == "nan" for elem in l)
+
+                # если в списке нет элементов, или они все == "nan", то это не список
+                if (isinstance(name_values_dict[col], list)):
+                    if len(name_values_dict[col]) == 0 or IsAllNan(name_values_dict[col]):
+                        name_values_dict[col] = None
 
         # сохраняем данные для данного имени
         median_and_id_data[name] = name_values_dict

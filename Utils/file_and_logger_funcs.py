@@ -3,6 +3,7 @@ from typing import TextIO
 import pandas as pd
 import sys
 import os
+import traceback
 
 from loguru import logger
 
@@ -173,8 +174,14 @@ def PrintException(exception: Exception, logger_label: str, color: str,
     logger.error(f"{exception}".ljust(77))
 
     with open(file_name, 'a', encoding='utf-8') as f:
+        # получаем информацию о файле и строке, где произошла ошибка
+        error_info = traceback.extract_tb(exception.__traceback__)[-1]
+        file_path = error_info.filename
+        line_number = error_info.lineno
+
         UpdateLoggerFormat(logger_label, color, f)
 
         logger.error(f"{exception}".ljust(77))
+        logger.error(f"{file_path}:{line_number}".ljust(77))
 
     UpdateLoggerFormat(logger_label, color)
