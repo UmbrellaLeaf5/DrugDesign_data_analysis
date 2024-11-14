@@ -118,17 +118,18 @@ def CleanedTargetActivitiesDF(data: pd.DataFrame, target_id: str, activities_typ
                           'target_chembl_id', 'target_pref_name',
                           'target_tax_id', 'text_value', 'toid',
                           'type', 'units', 'uo_units', 'upper_value',
-                          'value', 'ligand_efficiency'], axis=1)
+                          'value', 'ligand_efficiency', 'relation'], axis=1)
 
         if print_to_console:
             logger.success(f"Deleting useless columns: SUCCESS".ljust(77))
 
             logger.info(f"Deleting inappropriate elements...".ljust(77))
 
-        data = data[data['relation'] == '=']
+        data = data[data['standard_relation'] == '=']
         data = data[data['standard_units'] == 'nM']
         data = data[data['target_organism'] == "Homo sapiens"]
         data = data[data['standard_type'].isin(['IC50', 'Ki'])]
+        data = data[data['assay_type'] == 'B']
 
         data['standard_value'] = data['standard_value'].astype(float)
         data = data[data['standard_value'] <= 1000000000]
@@ -156,7 +157,7 @@ def CleanedTargetActivitiesDF(data: pd.DataFrame, target_id: str, activities_typ
 
         data = data.reindex(columns=["molecule_chembl_id", "parent_molecule_chembl_id",
                                      "canonical_smiles", "document_chembl_id", "standard_relation",
-                                     "relation", "standard_value", "standard_units", 'assay_chembl_id',
+                                     "standard_value", "standard_units", 'assay_chembl_id',
                                      'assay_description', 'assay_type', 'assay_variant_accession',
                                      'assay_variant_mutation', 'action_type', 'activity_comment',
                                      'data_validity_comment', 'data_validity_description',

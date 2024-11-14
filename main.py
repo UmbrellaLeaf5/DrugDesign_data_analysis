@@ -5,5 +5,5 @@ from ChEMBL_download_cell_lines.download import DownloadChEMBLCellLines
 # from PubChem_download.download import
 
 if __name__ == "__main__":
-    DownloadChEMBLTargets()
-    DownloadChEMBLCellLines()
+    DownloadChEMBLTargets(print_to_console_verbosely=True)
+    DownloadChEMBLCellLines(print_to_console_verbosely=True)
