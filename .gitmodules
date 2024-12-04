@@ -1,3 +1,6 @@
 [submodule "ChEMBL_notebooks"]
 	path = ChEMBL_notebooks
 	url = https://github.com/UmbrellaLeaf5/DrugDesign_ChEMBL_notebooks
+[submodule "PubChem_notebooks"]
+	path = PubChem_notebooks
+	url = https://github.com/UmbrellaLeaf5/DrugDesign_PubChem_notebooks
