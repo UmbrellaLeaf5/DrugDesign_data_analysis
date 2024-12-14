@@ -4,3 +4,6 @@
 [submodule "PubChem_notebooks"]
 	path = PubChem_notebooks
 	url = https://github.com/UmbrellaLeaf5/DrugDesign_PubChem_notebooks
+[submodule ".extra/doxygen/theme"]
+	path = .extra/doxygen/theme
+	url = https://github.com/jothepro/doxygen-awesome-css
