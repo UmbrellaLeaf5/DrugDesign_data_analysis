@@ -22,7 +22,7 @@ def DownloadChEMBLCompounds(need_primary_analysis: bool = False,
                             testing_flag: bool = False,
                             print_to_console_verbosely: bool = False):
     """
-    Скачивает необходимые молекулы из базы ChEMBL
+    Скачивает необходимые молекулы из базы ChEMBL.
 
     Args:
         need_primary_analysis (bool, optional): нужен ли первичный анализ скачанных файлов. Defaults to False.

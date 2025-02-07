@@ -1,7 +1,5 @@
 {
   "cSpell.words": [
-    "подстолбцы",
-    "скачалось",
     "activitity",
     "ADMET",
     "alogp",
@@ -16,6 +14,7 @@
     "cardiotoxicity",
     "cellosaurus",
     "chembl",
+    "chemidplus",
     "cheminformatics",
     "chemokine",
     "cmpd",
@@ -35,6 +34,7 @@
     "iexact",
     "immunosupressants",
     "inchi",
+    "infmt",
     "iregex",
     "isin",
     "isnull",
@@ -54,17 +54,23 @@
     "nephrotoxicity",
     "norvegicus",
     "optimisation",
+    "outfmt",
     "praziquantel",
+    "pubchem",
     "pubchempy",
     "qudt",
+    "relevancescore",
     "Schistosoma",
     "startswith",
     "targs",
     "toid",
+    "toxcomp",
     "Uberon",
     "UHFFFAOYSA",
     "Uniprot",
     "usan",
-    "webresource"
+    "webresource",
+    "подстолбцы",
+    "скачалось"
   ]
 }

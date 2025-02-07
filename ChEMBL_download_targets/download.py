@@ -23,7 +23,7 @@ def DownloadChEMBLTargets(need_primary_analysis: bool = False,
                           testing_flag: bool = False,
                           print_to_console_verbosely: bool = False) -> None:
     """
-    Скачивает необходимые цели из базы ChEMBL
+    Скачивает необходимые цели из базы ChEMBL.
 
     Args:
         need_primary_analysis (bool, optional): нужен ли первичный анализ скачанных файлов. Defaults to False.

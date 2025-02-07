@@ -17,7 +17,7 @@ def PrimaryAnalysisByColumns(data_frame: pd.DataFrame,
                              print_to_console: bool = False,
                              save_to_csv: bool = True) -> None:
     """
-    Проводит первичный анализ pd.DataFrame с возможностью вывода в консоль и сохранения в .csv файл
+    Проводит первичный анализ pd.DataFrame с возможностью вывода в консоль и сохранения в .csv файл.
 
     Args:
         data_frame (pd.DataFrame): исходный pd.DataFrame

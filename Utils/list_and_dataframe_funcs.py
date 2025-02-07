@@ -9,7 +9,7 @@ import pandas as pd
 
 def NonNoneList(l: list) -> list:
     """
-    Убирает все None из списка
+    Убирает все None из списка.
 
     Args:
         l (list): исходный список
@@ -23,7 +23,7 @@ def NonNoneList(l: list) -> list:
 
 def DedupedList(l: list) -> list:
     """
-    Убирает все дубликаты и None из списка
+    Убирает все дубликаты и None из списка.
 
     Args:
         l (list): исходный список

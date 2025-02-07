@@ -8,7 +8,7 @@ from Utils.file_and_logger_funcs import logger
 
 def IgnoreWarnings(func: Callable) -> Callable:
     """
-    Декоратор для игнорирования предупреждений RuntimeWarning и UserWarning
+    Декоратор для игнорирования предупреждений RuntimeWarning и UserWarning.
 
     Args:
         func (Callable): декорируемая функция
@@ -30,7 +30,7 @@ def IgnoreWarnings(func: Callable) -> Callable:
 
 def Retry(attempts_amount=3, exception_to_check=Exception, sleep_time=1) -> Callable:
     """
-    Декоратор для повторения попыток выполнения функции
+    Декоратор для повторения попыток выполнения функции.
 
     Args:
         attempts_amount (int, optional): кол-во попыток. Defaults to 3.

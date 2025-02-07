@@ -43,7 +43,7 @@ def IsFileInFolder(folder_name: str, file_name: str) -> bool:
 
 def CreateFolder(folder_name: str, folder_name_for_log: str = "") -> None:
     """
-    Создает папку, использует логирование
+    Создает папку, использует логирование.
     (в случае исключения также выводит об этом в консоль)
 
     Args:
@@ -58,7 +58,7 @@ def CreateFolder(folder_name: str, folder_name_for_log: str = "") -> None:
         if not os.path.exists(folder_name):
             logger.info(f"Creating folder '{
                         folder_name_for_log}'...".ljust(77))
-            os.mkdir(folder_name)
+            os.makedirs(folder_name, exist_ok=True)
             logger.success(f"Creating folder '{
                 folder_name_for_log}': SUCCESS".ljust(77))
 
@@ -71,7 +71,7 @@ def CombineCSVInFolder(folder_name: str, combined_file_name: str,
                        print_to_console: bool = False,
                        skip_downloaded_files: bool = False) -> None:
     """
-    Склеивает все .csv файлы в папке в один
+    Склеивает все .csv файлы в папке в один.
 
     Args:
         folder_name (str): имя папки с .csv файлами
@@ -145,7 +145,7 @@ def CombineCSVInFolder(folder_name: str, combined_file_name: str,
 def UpdateLoggerFormat(logger_label: str, color: str,
                        out: TextIO | TextIOWrapper = sys.stdout) -> None:
     """
-    Обновляет формат вывода логирования
+    Обновляет формат вывода логирования.
 
     Args:
         logger_label (str): текст заголовка для логирования
