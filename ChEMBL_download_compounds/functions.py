@@ -16,7 +16,7 @@ from Utils.primary_analysis import *
 @Retry()
 def QuerySetCompoundsByMWRange(less_limit: int = 0, greater_limit: int = 12_546_42) -> QuerySet:
     """
-    Возвращает молекулы в диапазоне молекулярной массы [less_limit; greater_limit) из базы ChEMBL
+    Возвращает молекулы в диапазоне молекулярной массы [less_limit; greater_limit) из базы ChEMBL.
 
     Args:
         less_limit (int, optional): нижняя граница. Defaults to 0.
@@ -44,7 +44,7 @@ def QuerySetCompoundsByMWRange(less_limit: int = 0, greater_limit: int = 12_546_
 
 def ExpandedFromDictionariesCompoundsDF(data: pd.DataFrame) -> pd.DataFrame:
     """
-    Избавляет pd.DataFrame от словарей и списков словарей в столбцах, разбивая их на подстолбцы
+    Избавляет pd.DataFrame от словарей и списков словарей в столбцах, разбивая их на подстолбцы.
 
     Args:
         data (pd.DataFrame): исходный pd.DataFrame
@@ -121,7 +121,7 @@ def DownloadCompoundsByMWRange(less_limit: int = 0,
                                print_to_console: bool = False):
     """
     Возвращает молекулы в диапазоне молекулярной массы [less_limit; greater_limit) из базы ChEMBL,
-    сохраняя их в .csv файл
+    сохраняя их в .csv файл.
 
     Args:
         less_limit (int, optional): нижняя граница. Defaults to 0.
@@ -181,7 +181,7 @@ def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str], file_name: str
                               extra_data: pd.DataFrame = pd.DataFrame(),
                               print_to_console: bool = False) -> None:
     """
-    Сохраняет molfiles из списка id в .sdf файл
+    Сохраняет molfiles из списка id в .sdf файл.
 
     Args:
         molecule_chembl_id_list (list[str]): список id
@@ -201,7 +201,7 @@ def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str], file_name: str
     @Retry()
     def DataFrameMolfilesFromIdList(molecule_chembl_id_list: list[str]) -> pd.DataFrame:
         """
-        Возвращает pd.DataFrame из molfile по каждой молекуле из списка molecule_chembl_id
+        Возвращает pd.DataFrame из molfile по каждой молекуле из списка molecule_chembl_id.
 
         Args:
             molecule_chembl_id_list (list[str]): список id
@@ -227,7 +227,7 @@ def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str], file_name: str
                           extra_data: pd.DataFrame = pd.DataFrame(),
                           print_to_console: bool = False) -> None:
         """
-        Сохраняет molfiles из pd.DataFrame в .sdf файл
+        Сохраняет molfiles из pd.DataFrame в .sdf файл.
 
         Args:
             data (pd.DataFrame): DataFrame с molfile и molecule_chembl_id
@@ -238,7 +238,7 @@ def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str], file_name: str
 
         def WriteColumnAndValueToSDF(file: TextIOWrapper, value, column: str = "") -> None:
             """
-            Записывает столбец и значение в .sdf файл
+            Записывает столбец и значение в .sdf файл.
 
             Args:
                 file (TextIOWrapper): открытый файл для записи.

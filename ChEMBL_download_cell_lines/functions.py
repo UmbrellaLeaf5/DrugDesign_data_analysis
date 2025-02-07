@@ -13,7 +13,7 @@ from ChEMBL_download_activities.functions import CountCellLineActivitiesByFile
 @Retry()
 def QuerySetAllCellLines() -> QuerySet:
     """
-    Возвращает все цели из базы ChEMBL
+    Возвращает все цели из базы ChEMBL.
 
     Returns:
         QuerySet: набор всех целей
@@ -25,7 +25,7 @@ def QuerySetAllCellLines() -> QuerySet:
 @Retry()
 def QuerySetCellLinesFromIdList(cell_line_chembl_id_list: list[str]) -> QuerySet:
     """
-    Возвращает цели по списку id из базы ChEMBL
+    Возвращает цели по списку id из базы ChEMBL.
 
     Args:
         cell_line_chembl_id_list (list[str]): список id
@@ -45,7 +45,7 @@ def AddedIC50andGI50ToCellLinesDF(data: pd.DataFrame,
                                   print_to_console: bool = False,
                                   skip_gotten_activities: bool = False) -> pd.DataFrame:
     """
-    Добавляет в pd.DataFrame два столбца: IC50 и GI50
+    Добавляет в pd.DataFrame два столбца: IC50 и GI50.
 
     Args:
         data (pd.DataFrame): исходный pd.DataFrame
@@ -107,7 +107,7 @@ def DownloadCellLinesFromIdList(cell_line_chembl_id_list: list[str] = [],
                                 print_to_console: bool = False,
                                 skip_gotten_activities: bool = False) -> None:
     """
-    Скачивает клеточные линии по списку id из базы ChEMBL, сохраняя их в .csv файл
+    Скачивает клеточные линии по списку id из базы ChEMBL, сохраняя их в .csv файл.
 
     Args:
         cell_line_chembl_id_list (list[str], optional): список id. Defaults to []: для скачивания всех клеточных линий.

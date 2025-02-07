@@ -1,6 +1,6 @@
 # type: ignore
 
-from icecream import ic
+# from icecream import ic
 
 from chembl_webresource_client.new_client import new_client
 from chembl_webresource_client.query_set import QuerySet
@@ -15,7 +15,7 @@ from Utils.list_and_dataframe_funcs import *
 @Retry()
 def QuerySetActivitiesByIC50(target_id: str) -> QuerySet:
     """
-    Возвращает активности по target_id по IC50
+    Возвращает активности по target_id по IC50.
 
     Args:
         target_id (str): идентификатор цели из базы ChEMBL
@@ -30,7 +30,7 @@ def QuerySetActivitiesByIC50(target_id: str) -> QuerySet:
 @Retry()
 def QuerySetActivitiesByKi(target_id: str) -> QuerySet:
     """
-    Возвращает активности по target_id по Ki
+    Возвращает активности по target_id по Ki.
 
     Args:
         target_id (str): идентификатор цели из базы ChEMBL
@@ -44,7 +44,7 @@ def QuerySetActivitiesByKi(target_id: str) -> QuerySet:
 
 def CountTargetActivitiesByIC50(target_id: str) -> int:
     """
-    Подсчитывает кол-во активностей по target_id по IC50
+    Подсчитывает кол-во активностей по target_id по IC50.
     (иначе говоря, численное значение IC50 для конкретной цели)
 
     Args:
@@ -59,7 +59,7 @@ def CountTargetActivitiesByIC50(target_id: str) -> int:
 
 def CountTargetActivitiesByKi(target_id: str) -> int:
     """
-    Подсчитывает кол-во активностей по target_id по Ki
+    Подсчитывает кол-во активностей по target_id по Ki.
     (иначе говоря, численное значение Ki для конкретной цели)
 
     Args:
@@ -74,7 +74,7 @@ def CountTargetActivitiesByKi(target_id: str) -> int:
 
 def CountCellLineActivitiesByFile(file_name: str) -> int:
     """
-    Подсчитывает кол-во активностей клеточных линий по .csv файлу, в котором они находятся
+    Подсчитывает кол-во активностей клеточных линий по .csv файлу, в котором они находятся.
 
     Args:
         file_name (str): _description_
@@ -89,7 +89,7 @@ def CountCellLineActivitiesByFile(file_name: str) -> int:
 def CleanedTargetActivitiesDF(data: pd.DataFrame, target_id: str, activities_type: str,
                               print_to_console: bool = False) -> pd.DataFrame:
     """
-    Производит чистку выборки activities конкретной цели по IC50 и Ki
+    Производит чистку выборки activities конкретной цели по IC50 и Ki.
 
     Args:
         data (pd.DataFrame): выборка activities
@@ -182,7 +182,7 @@ def CleanedTargetActivitiesDF(data: pd.DataFrame, target_id: str, activities_typ
 def CleanedCellLineActivitiesDF(data: pd.DataFrame, cell_id: str, activities_type: str,
                                 print_to_console: bool = False) -> pd.DataFrame:
     """
-    Производит чистку выборки activities конкретной клеточной линии по IC50 и GI50
+    Производит чистку выборки activities конкретной клеточной линии по IC50 и GI50.
 
     Args:
         data (pd.DataFrame): выборка activities

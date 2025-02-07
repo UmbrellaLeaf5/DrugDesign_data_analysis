@@ -13,7 +13,7 @@ from ChEMBL_download_activities.functions import CountTargetActivitiesByIC50, Co
 @Retry()
 def QuerySetAllTargets() -> QuerySet:
     """
-    Возвращает все цели из базы ChEMBL
+    Возвращает все цели из базы ChEMBL.
 
     Returns:
         QuerySet: набор всех целей
@@ -25,7 +25,7 @@ def QuerySetAllTargets() -> QuerySet:
 @Retry()
 def QuerySetTargetsFromIdList(target_chembl_id_list: list[str]) -> QuerySet:
     """
-    Возвращает цели по списку id из базы ChEMBL
+    Возвращает цели по списку id из базы ChEMBL.
 
     Args:
         target_chembl_id_list (list[str]): список id
@@ -39,7 +39,7 @@ def QuerySetTargetsFromIdList(target_chembl_id_list: list[str]) -> QuerySet:
 
 def ExpandedFromDictionariesTargetsDF(data: pd.DataFrame) -> pd.DataFrame:
     """
-    Избавляет pd.DataFrame от словарей и списков словарей в столбцах, разбивая их на подстолбцы
+    Избавляет pd.DataFrame от словарей и списков словарей в столбцах, разбивая их на подстолбцы.
 
     Args:
         data (pd.DataFrame): исходный pd.DataFrame
@@ -104,7 +104,7 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
                               print_to_console: bool = False,
                               skip_downloaded_activities: bool = False) -> pd.DataFrame:
     """
-    Добавляет в pd.DataFrame два столбца: IC50 и Ki
+    Добавляет в pd.DataFrame два столбца: IC50 и Ki.
 
     Args:
         data (pd.DataFrame): исходный pd.DataFrame
@@ -161,7 +161,7 @@ def DownloadTargetsFromIdList(target_chembl_id_list: list[str] = [],
                               print_to_console: bool = False,
                               skip_downloaded_activities: bool = False) -> None:
     """
-    Скачивает цели по списку id из базы ChEMBL, сохраняя их в .csv файл
+    Скачивает цели по списку id из базы ChEMBL, сохраняя их в .csv файл.
 
     Args:
         target_chembl_id_list (list[str], optional): список id. Defaults to []: для скачивания всех целей.
