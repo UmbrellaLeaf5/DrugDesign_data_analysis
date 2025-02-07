@@ -1,4 +1,4 @@
-# DrugDesign_parsing
+# DrugDesign_data_analysis
 
 ## Description
 Часть проекта DrugDesign
@@ -8,7 +8,7 @@
 
 ## Sources
   * Explore Chemistry. Quickly find chemical information from authoritative sources. — Текст : электронный // PubChem: An official website of the United States government : [сайт](https://pubchem.ncbi.nlm.nih.gov)
-  * ChEMBL is a manually curated database of bioactive molecules with drug-like properties. It brings together chemical, bioactivity and genomic data to aid the translation of genomic information into effective new drugs.. — Текст : электронный // ChEMBL : [сайт](https://www.ebi.ac.uk/chembl)
+  * ChEMBL is a manually curated database of bioactive molecules with drug-like properties. It brings together chemical, bioactivity and genomic data to aid the translation of genomic information into effective new drugs. — Текст : электронный // ChEMBL : [сайт](https://www.ebi.ac.uk/chembl)
 
 <hr></hr>
 
