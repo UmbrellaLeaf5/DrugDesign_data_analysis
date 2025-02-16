@@ -4,8 +4,17 @@ from ChEMBL_download_cell_lines.download import DownloadChEMBLCellLines
 
 from PubChem_download_toxicity.download import DownloadPubChemCompoundsToxicity
 
-if __name__ == "__main__":
-    # DownloadChEMBLTargets(print_to_console_verbosely=True)
-    # DownloadChEMBLCellLines(print_to_console_verbosely=True)
+import json
 
-    DownloadPubChemCompoundsToxicity(print_to_console_verbosely=True)
+
+if __name__ == "__main__":
+    config: dict = {}
+
+    with open("configurations.json", "r", encoding="utf-8") as f:
+        config = json.load(f)
+
+    # DownloadChEMBLCompounds(config)
+    DownloadChEMBLCellLines(config)
+    DownloadChEMBLTargets(config)
+
+    DownloadPubChemCompoundsToxicity(config)

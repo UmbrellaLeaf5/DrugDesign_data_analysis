@@ -1,5 +1,3 @@
-# type: ignore
-
 import pandas as pd
 from loguru import logger
 
@@ -14,8 +12,9 @@ def PrimaryAnalysisByColumns(data_frame: pd.DataFrame,
                              data_name: str,
                              folder_name: str,
                              logger_label: str = "ChEMBL_analysis",
+                             logger_color: str = "fg #C48BC0",
                              print_to_console: bool = False,
-                             save_to_csv: bool = True) -> None:
+                             save_to_csv: bool = True):
     """
     Проводит первичный анализ pd.DataFrame с возможностью вывода в консоль и сохранения в .csv файл.
 
@@ -28,16 +27,16 @@ def PrimaryAnalysisByColumns(data_frame: pd.DataFrame,
         save_to_csv (bool, optional): нужно ли сохранять информацию в .csv файл. Defaults to True.
     """
 
-    UpdateLoggerFormat(logger_label, "fg #C48BC0")
+    UpdateLoggerFormat(logger_label, logger_color)  # type: ignore
 
     logger.info(f"Start analysis of '{data_name}'...".ljust(77))
 
-    summary: dict = {'Column':            [],
-                     'Data type':         [],
-                     'Non-empty strings': [],
-                     'Common value':      [],
-                     'Max value':         [],
-                     'Min value':         []}
+    summary: dict[str, list] = {'Column':            [],
+                                'Data type':         [],
+                                'Non-empty strings': [],
+                                'Common value':      [],
+                                'Max value':         [],
+                                'Min value':         []}
 
     for column in data_frame.columns:
         # имя столбца
@@ -53,8 +52,7 @@ def PrimaryAnalysisByColumns(data_frame: pd.DataFrame,
             data_type = data_frame[column].dtype
 
             if print_to_console:
-                logger.info(f"{"Type of data".ljust(30)}: {
-                            data_type}".ljust(77))
+                logger.info(f"{"Type of data".ljust(30)}: {data_type}".ljust(77))
 
             if save_to_csv:
                 summary['Data type'].append(data_type)
@@ -62,7 +60,7 @@ def PrimaryAnalysisByColumns(data_frame: pd.DataFrame,
         except Exception as exception:
             if print_to_console:
                 logger.warning(
-                    f"{"Data type:EXCEPTION".ljust(30)}: {exception}".ljust(77))
+                    f"{"Data type: EXCEPTION".ljust(30)}: {exception}".ljust(77))
 
             if save_to_csv:
                 summary['Data type'].append("")
@@ -74,8 +72,7 @@ def PrimaryAnalysisByColumns(data_frame: pd.DataFrame,
                 non_null_count += 1
 
         if print_to_console:
-            logger.info(f"{"Non-empty strings".ljust(30)
-                           }: {non_null_count}".ljust(77))
+            logger.info(f"{"Non-empty strings".ljust(30)}: {non_null_count}".ljust(77))
 
         if save_to_csv:
             summary['Non-empty strings'].append(non_null_count)
@@ -90,8 +87,7 @@ def PrimaryAnalysisByColumns(data_frame: pd.DataFrame,
                 common_value = ""
 
             if print_to_console:
-                logger.info(f"{"Common value".ljust(30)}: {
-                            common_value}".ljust(77))
+                logger.info(f"{"Common value".ljust(30)}: {common_value}".ljust(77))
 
             if save_to_csv:
                 summary['Common value'].append(common_value)
@@ -99,7 +95,7 @@ def PrimaryAnalysisByColumns(data_frame: pd.DataFrame,
         except Exception as exception:
             if print_to_console:
                 logger.warning(
-                    f"{"Common value:EXCEPTION".ljust(30)}: {exception}".ljust(77))
+                    f"{"Common value: EXCEPTION".ljust(30)}: {exception}".ljust(77))
 
             if save_to_csv:
                 summary['Common value'].append("")
@@ -135,9 +131,9 @@ def PrimaryAnalysisByColumns(data_frame: pd.DataFrame,
         except Exception as exception:
             if print_to_console:
                 logger.warning(
-                    f"{"Max value:EXCEPTION".ljust(30)}: {exception}".ljust(77))
+                    f"{"Max value: EXCEPTION".ljust(30)}: {exception}".ljust(77))
                 logger.warning(
-                    f"{"Min value:EXCEPTION".ljust(30)}: {exception}".ljust(77))
+                    f"{"Min value: EXCEPTION".ljust(30)}: {exception}".ljust(77))
 
             if save_to_csv:
                 summary['Max value'].append("")
@@ -156,6 +152,6 @@ def PrimaryAnalysisByColumns(data_frame: pd.DataFrame,
                 "Saving primary analysis to .csv file: SUCCESS".ljust(77))
 
         except Exception as exception:
-            PrintException(exception, logger_label, "fg #C48BC0")
+            LogException(exception)  # type: ignore
 
     logger.success(f"End analysis of '{data_name}'".ljust(77))

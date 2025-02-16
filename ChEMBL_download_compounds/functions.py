@@ -1,5 +1,3 @@
-# type: ignore
-
 # from icecream import ic
 
 from io import TextIOWrapper
@@ -14,7 +12,7 @@ from Utils.primary_analysis import *
 
 
 @Retry()
-def QuerySetCompoundsByMWRange(less_limit: int = 0, greater_limit: int = 12_546_42) -> QuerySet:
+def QuerySetCompoundsByMWRange(less_limit: int, greater_limit: int) -> QuerySet:
     """
     Возвращает молекулы в диапазоне молекулярной массы [less_limit; greater_limit) из базы ChEMBL.
 
@@ -38,8 +36,9 @@ def QuerySetCompoundsByMWRange(less_limit: int = 0, greater_limit: int = 12_546_
         raise ValueError(
             "QuerySetMWRangeFilter: greater_limit should be greater than less_limit")
 
-    return new_client.molecule.filter(molecule_properties__mw_freebase__lt=greater_limit,
-                                      molecule_properties__mw_freebase__gte=less_limit)
+    return new_client.molecule.filter(  # type: ignore
+        molecule_properties__mw_freebase__lt=greater_limit,
+        molecule_properties__mw_freebase__gte=less_limit)
 
 
 def ExpandedFromDictionariesCompoundsDF(data: pd.DataFrame) -> pd.DataFrame:
@@ -53,13 +52,17 @@ def ExpandedFromDictionariesCompoundsDF(data: pd.DataFrame) -> pd.DataFrame:
         pd.DataFrame: "раскрытый" pd.DataFrame
     """
 
-    def ExtractedValuesFromColumn(df: pd.DataFrame, column_name: str,
-                                  key: str, is_list: bool = True) -> pd.Series:
+    def ExtractedValuesFromColumn(df: pd.DataFrame,
+                                  column_name: str,
+                                  key: str,
+                                  is_list: bool = True
+                                  ) -> pd.Series:
         if is_list:
             return df[column_name].apply(lambda x: [d[key] for d in x] if x else [])
-        return [item[key] if isinstance(item, dict) else None for item in df[column_name]]
+        return [item[key] if isinstance(  # type: ignore
+            item, dict) else None for item in df[column_name]]
 
-    # cSpell:disable
+    # cSpell: disable
 
     exposed_data = pd.DataFrame({
         #! cross_references
@@ -108,17 +111,17 @@ def ExpandedFromDictionariesCompoundsDF(data: pd.DataFrame) -> pd.DataFrame:
     data = data.drop(['cross_references', 'molecule_hierarchy',
                      'molecule_properties', 'molecule_structures', 'molecule_synonyms'], axis=1)
 
-    # cSpell:enable
+    # cSpell: enable
 
     return pd.concat([data, exposed_data], axis=1)
 
 
-def DownloadCompoundsByMWRange(less_limit: int = 0,
-                               greater_limit: int = 12_546_42,
-                               results_folder_name: str = "results/compounds",
-                               primary_analysis_folder_name: str = "primary_analysis",
-                               need_primary_analysis: bool = False,
-                               print_to_console: bool = False):
+def DownloadCompoundsByMWRange(less_limit: int,
+                               greater_limit: int,
+                               results_folder_name: str,
+                               primary_analysis_folder_name: str,
+                               need_primary_analysis: bool,
+                               print_to_console: bool):
     """
     Возвращает молекулы в диапазоне молекулярной массы [less_limit; greater_limit) из базы ChEMBL,
     сохраняя их в .csv файл.
@@ -139,7 +142,7 @@ def DownloadCompoundsByMWRange(less_limit: int = 0,
             less_limit, greater_limit)
 
         logger.info(
-            ("Amount:" + f"{len(mols_in_mw_range)}").ljust(77))
+            (f"Amount: {len(mols_in_mw_range)}").ljust(77))  # type: ignore
         logger.success(
             f"Downloading molecules with mw in range [{less_limit}, {greater_limit}): SUCCESS".ljust(77))
 
@@ -147,7 +150,7 @@ def DownloadCompoundsByMWRange(less_limit: int = 0,
             logger.info(
                 "Collecting molecules to pandas.DataFrame()...".ljust(77))
             data_frame = ExpandedFromDictionariesCompoundsDF(pd.DataFrame(
-                mols_in_mw_range))
+                mols_in_mw_range))  # type: ignore
             logger.success(
                 "Collecting molecules to pandas.DataFrame(): SUCCESS".ljust(77))
 
@@ -156,41 +159,38 @@ def DownloadCompoundsByMWRange(less_limit: int = 0,
 
             if need_primary_analysis:
                 PrimaryAnalysisByColumns(data_frame=data_frame,
-                                         data_name=f"mols_in_mw_range_{
-                                             less_limit}_{greater_limit}",
+                                         data_name=f"mols_in_mw_range_{less_limit}_{greater_limit}",
                                          folder_name=f"{
                                              results_folder_name}/{primary_analysis_folder_name}",
                                          print_to_console=print_to_console)
                 UpdateLoggerFormat("ChEMBL_compound", "fg #CCA87A")
 
-            file_name: str = f"{results_folder_name}/range_{
-                less_limit}_{greater_limit}_mw_mols.csv"
+            file_name: str = f"{results_folder_name}/range_"\
+                f"{less_limit}_{greater_limit}_mw_mols.csv"
 
             data_frame.to_csv(file_name, sep=';', index=False)
             logger.success(
                 f"Collecting molecules to .csv file in '{results_folder_name}': SUCCESS".ljust(77))
 
         except Exception as exception:
-            PrintException(exception, "ChEMBL_compound", "fg #CCA87A")
+            LogException(exception)
 
     except Exception as exception:
-        PrintException(exception, "ChEMBL_compound", "fg #CCA87A")
+        LogException(exception)
 
 
-def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str], file_name: str,
-                              extra_data: pd.DataFrame = pd.DataFrame(),
-                              print_to_console: bool = False) -> None:
+def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str],
+                              file_name: str,
+                              print_to_console: bool,
+                              extra_data: pd.DataFrame = pd.DataFrame()):
     """
     Сохраняет molfiles из списка id в .sdf файл.
 
     Args:
         molecule_chembl_id_list (list[str]): список id
         file_name (str): имя файла (без .sdf)
+        print_to_console (bool, optional): нужно ли выводить логирование в консоль.
         extra_data (pd.DataFrame, optional): дополнительная информация. Defaults to pd.DataFrame().
-        print_to_console (bool, optional): нужно ли выводить логирование в консоль. Defaults to False.
-
-    Returns:
-        _type_: _description_
     """
 
     if not molecule_chembl_id_list:
@@ -210,11 +210,11 @@ def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str], file_name: str
             pd.DataFrame: DataFrame, который содержит molecule_chembl_id и соотв. molfile
         """
 
-        qs_data: QuerySet = new_client.molecule.filter(
+        qs_data: QuerySet = new_client.molecule.filter(  # type: ignore
             molecule_chembl_id__in=molecule_chembl_id_list).only([
                 'molecule_chembl_id', 'molecule_structures'])
 
-        data = pd.DataFrame(qs_data)
+        data = pd.DataFrame(qs_data)  # type: ignore
 
         data['molfile'] = data['molecule_structures'].apply(
             lambda x: x['molfile'] if isinstance(x, dict) else None)
@@ -223,20 +223,21 @@ def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str], file_name: str
 
         return data
 
-    def SaveMolfilesToSDF(data: pd.DataFrame, file_name: str,
-                          extra_data: pd.DataFrame = pd.DataFrame(),
-                          print_to_console: bool = False) -> None:
+    def SaveMolfilesToSDF(data: pd.DataFrame,
+                          file_name: str,
+                          print_to_console: bool,
+                          extra_data: pd.DataFrame = pd.DataFrame()):
         """
         Сохраняет molfiles из pd.DataFrame в .sdf файл.
 
         Args:
             data (pd.DataFrame): DataFrame с molfile и molecule_chembl_id
-            file_name (str): имя файла (без .sdf)
+            file_name (str): имя файла (без ".sdf")
+            print_to_console (bool, optional): нужно ли выводить логирование в консоль.
             extra_data (pd.DataFrame, optional): дополнительная информация. Defaults to pd.DataFrame().
-            print_to_console (bool, optional): нужно ли выводить логирование в консоль. Defaults to False.
         """
 
-        def WriteColumnAndValueToSDF(file: TextIOWrapper, value, column: str = "") -> None:
+        def WriteColumnAndValueToSDF(file: TextIOWrapper, value, column: str = ""):
             """
             Записывает столбец и значение в .sdf файл.
 
@@ -308,8 +309,7 @@ def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str], file_name: str
                                     f, df.loc[molecule_chembl_id, column], column)
 
                             except Exception as exception:
-                                PrintException(
-                                    exception, "ChEMBL_compound", "fg #CCA87A")
+                                LogException(exception)
 
                     f.write("$$$$\n")
 
@@ -318,7 +318,7 @@ def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str], file_name: str
                             f"Writing {molecule_chembl_id} data to .sdf file...".ljust(77))
 
                 except Exception as exception:
-                    PrintException(exception, "ChEMBL_compound", "fg #CCA87A")
+                    LogException(exception)
 
     if print_to_console:
         logger.info("Collecting molfiles to pandas.DataFrame()...".ljust(77))
@@ -328,5 +328,7 @@ def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str], file_name: str
     if print_to_console:
         logger.success("Collecting molfiles to pandas.DataFrame()".ljust(77))
 
-    SaveMolfilesToSDF(data=data, file_name=file_name, extra_data=extra_data,
-                      print_to_console=print_to_console)
+    SaveMolfilesToSDF(data=data,
+                      file_name=file_name,
+                      print_to_console=print_to_console,
+                      extra_data=extra_data)

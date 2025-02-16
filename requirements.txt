@@ -6,3 +6,4 @@ icecream
 loguru
 ipykernel
 IPython
+gdown

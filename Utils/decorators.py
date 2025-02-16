@@ -28,13 +28,16 @@ def IgnoreWarnings(func: Callable) -> Callable:
     return Wrapper
 
 
-def Retry(attempts_amount=3, exception_to_check=Exception, sleep_time=1) -> Callable:
+def Retry(attempts_amount: int = 3,
+          exception_to_check: type[Exception] = Exception,
+          sleep_time: float = 1
+          ) -> Callable:
     """
     Декоратор для повторения попыток выполнения функции.
 
     Args:
         attempts_amount (int, optional): кол-во попыток. Defaults to 3.
-        exception_to_check (_type_, optional): улавливаемое исключение. Defaults to Exception.
+        exception_to_check (type[Exception], optional): улавливаемое исключение. Defaults to Exception.
         sleep_time (int, optional): время ожидания между попытками. Defaults to 1.
 
     Returns:
@@ -49,12 +52,12 @@ def Retry(attempts_amount=3, exception_to_check=Exception, sleep_time=1) -> Call
                     return func(*args, **kwargs)
 
                 except exception_to_check as exception:
-                    logger.warning(f"{exception} | Attempt: {
-                                   attempt}".ljust(77))
+                    logger.warning(f"{exception} | Attempt: {attempt}".ljust(77))
                     if attempt < attempts_amount:
                         time.sleep(sleep_time)
 
             logger.error("All attempts failed".ljust(77))
             return None
+
         return Wrapper
     return Decorate

@@ -5,11 +5,13 @@ import sys
 import os
 import traceback
 import re
+import json
 
 from loguru import logger
 
 
-def DeleteFilesInFolder(folder_name: str, except_files: list[str] = []) -> None:
+def DeleteFilesInFolder(folder_name: str,
+                        except_files: list[str] = []):
     """
     Удаляет все файлы в указанной папке, кроме файлов в списке исключений.
 
@@ -41,7 +43,8 @@ def IsFileInFolder(folder_name: str, file_name: str) -> bool:
     return os.path.exists(full_file_name)
 
 
-def CreateFolder(folder_name: str, folder_name_for_log: str = "") -> None:
+def CreateFolder(folder_name: str,
+                 folder_name_for_log: str = ""):
     """
     Создает папку, использует логирование.
     (в случае исключения также выводит об этом в консоль)
@@ -56,20 +59,19 @@ def CreateFolder(folder_name: str, folder_name_for_log: str = "") -> None:
 
     try:
         if not os.path.exists(folder_name):
-            logger.info(f"Creating folder '{
-                        folder_name_for_log}'...".ljust(77))
+            logger.info(f"Creating folder '{folder_name_for_log}'...".ljust(77))
             os.makedirs(folder_name, exist_ok=True)
-            logger.success(f"Creating folder '{
-                folder_name_for_log}': SUCCESS".ljust(77))
+            logger.success(f"Creating folder '{folder_name_for_log}': SUCCESS".ljust(77))
 
     except Exception as exception:
         logger.warning(f"{exception}".ljust(77))
 
 
-def CombineCSVInFolder(folder_name: str, combined_file_name: str,
+def CombineCSVInFolder(folder_name: str,
+                       combined_file_name: str,
                        logger_label: str = "ChEMBL__combine",
                        print_to_console: bool = False,
-                       skip_downloaded_files: bool = False) -> None:
+                       skip_downloaded_files: bool = False):
     """
     Склеивает все .csv файлы в папке в один.
 
@@ -122,7 +124,7 @@ def CombineCSVInFolder(folder_name: str, combined_file_name: str,
                         f"Concatenating '{file_name}' to combined_data_frame: SUCCESS".ljust(77))
 
             except Exception as exception:
-                PrintException(exception, logger_label, "fg #474747")
+                LogException(exception)
 
             if print_to_console:
                 logger.info(f"{'-' * 77}")
@@ -136,14 +138,15 @@ def CombineCSVInFolder(folder_name: str, combined_file_name: str,
             f"Collecting to combined .csv file in '{folder_name}': SUCCESS".ljust(77))
 
     except Exception as exception:
-        PrintException(exception, logger_label, "fg #474747")
+        LogException(exception)
 
     logger.info(f"{'-' * 77}")
     logger.success(f"End combining all downloads".ljust(77))
 
 
-def UpdateLoggerFormat(logger_label: str, color: str,
-                       out: TextIO | TextIOWrapper = sys.stdout) -> None:
+def UpdateLoggerFormat(logger_label: str,
+                       color: str,
+                       out: TextIO | TextIOWrapper = sys.stdout):
     """
     Обновляет формат вывода логирования.
 
@@ -160,25 +163,38 @@ def UpdateLoggerFormat(logger_label: str, color: str,
                       " <white>{message}</white>" +
                       " [<level>{level}</level>]")
 
+    with open("logger.json", "w", encoding="utf-8") as file:
+        json.dump(
+            {
+                "logger_label": logger_label,
+                "color": color
+            },
+            file,
+            ensure_ascii=False, indent=2
+        )
 
-def PrintException(exception: Exception, logger_label: str, color: str,
-                   file_name: str = "exceptions.log") -> None:
+
+def LogException(exception: Exception,
+                 file_name: str = "exceptions.log"):
     """
     Выводит исключение в консоль и записывает в файл.
 
     Args:
-        exception (Exception): исключение
-        logger_label (str): текст заголовка для логирования
-        color (str): цвет заголовка для логирования
+        exception (Exception): исключение.
         file_name (str, optional): имя файла. Defaults to "exceptions.log".
     """
 
     logger.error(f"{exception}".ljust(77))
 
+    logger_config: dict = {}
+    with open("logger.json", "r", encoding="utf-8") as f:
+        logger_config = json.load(f)
+
     with open(file_name, 'a', encoding='utf-8') as f:
-        UpdateLoggerFormat(logger_label, color, f)
+        UpdateLoggerFormat(logger_config["logger_label"], logger_config["color"], f)
 
         logger.error(
             f"{re.sub(r'"(.*?)\",\s+line\s+(\d+)', r'\1:\2', traceback.format_exc())}")
+        logger.add(sink=sys.stdout)
 
-    UpdateLoggerFormat(logger_label, color)
+    UpdateLoggerFormat(logger_config["logger_label"], logger_config["color"], sys.stdout)
