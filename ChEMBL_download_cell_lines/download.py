@@ -50,3 +50,4 @@ def DownloadChEMBLCellLines(config: dict):
             f"{cell_lines_config["results_file_name"]} is already downloaded, skip".ljust(77))
 
     logger.success(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
+    logger.info(f"{'-' * 77}")

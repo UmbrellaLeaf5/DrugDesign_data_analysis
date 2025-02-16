@@ -87,7 +87,7 @@ def AddedIC50andGI50ToCellLinesDF(data: pd.DataFrame,
         logger.info(
             f"Getting raw cell_lines from Google.Drive...".ljust(77))
         GetRawCellLinesData(config["ChEMBL_download_cell_lines"]["raw_csv_g_drive_id"],
-                            config["ChEMBL_download_cell_lines"]["raw/cell_lines_activities"])
+                            config["ChEMBL_download_cell_lines"]["raw_csv_folder_name"])
         logger.success(
             f"Getting raw cell_lines from Google.Drive: SUCCESS".ljust(77))
 

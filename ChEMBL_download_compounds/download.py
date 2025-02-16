@@ -82,3 +82,4 @@ def DownloadChEMBLCompounds(config: dict):
             LogException(exception)
 
     logger.success(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
+    logger.info(f"{'-' * 77}")

@@ -53,4 +53,5 @@ def DownloadPubChemCompoundsToxicity(config: dict):
                                      print_to_console_verbosely=config["print_to_console_verbosely"],
                                      limit=toxicity["limit"])
 
-        logger.info(f"{'-' * 77}")
+    logger.success(f"{'-' * 21} PubChem downloading for DrugDesign {'-' * 20}")
+    logger.info(f"{'-' * 77}")
