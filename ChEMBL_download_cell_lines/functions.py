@@ -1,5 +1,3 @@
-# type: ignore
-
 from chembl_webresource_client.new_client import new_client
 from chembl_webresource_client.query_set import QuerySet
 
@@ -9,23 +7,27 @@ from Utils.primary_analysis import *
 from ChEMBL_download_activities.download import GetCellLineChEMBLActivitiesFromCSV
 from ChEMBL_download_activities.functions import CountCellLineActivitiesByFile
 
+import gdown
+import zipfile
+import os
+
 
 @Retry()
 def QuerySetAllCellLines() -> QuerySet:
     """
-    Возвращает все цели из базы ChEMBL.
+    Возвращает все клеточные линии из базы ChEMBL.
 
     Returns:
         QuerySet: набор всех целей
     """
 
-    return new_client.cell_line.filter()
+    return new_client.cell_line.filter()  # type: ignore
 
 
 @Retry()
 def QuerySetCellLinesFromIdList(cell_line_chembl_id_list: list[str]) -> QuerySet:
     """
-    Возвращает цели по списку id из базы ChEMBL.
+    Возвращает клеточные линии по списку id из базы ChEMBL.
 
     Args:
         cell_line_chembl_id_list (list[str]): список id
@@ -34,141 +36,129 @@ def QuerySetCellLinesFromIdList(cell_line_chembl_id_list: list[str]) -> QuerySet
         QuerySet: набор целей по списку id
     """
 
-    return new_client.cell_line.filter(cell_chembl_id__in=cell_line_chembl_id_list)
+    return new_client.cell_line.filter(cell_chembl_id__in=cell_line_chembl_id_list)  # type: ignore
+
+
+def GetRawCellLinesData(file_id: str, output_path: str):
+    """
+    Скачивает zip-файл из Google.Drive, 
+    извлекает его содержимое, а затем удаляет zip-файл.
+
+    Args:
+        file_id: ID файла в Google Drive.
+        output_path: путь к каталогу, куда будут помещены извлеченные файлы.
+    """
+
+    os.makedirs(output_path, exist_ok=True)
+
+    url = f"https://drive.google.com/uc?id={file_id}&export=download"
+
+    zip_file_path = f"{output_path}.zip"
+    gdown.download(url, zip_file_path, quiet=False)
+
+    with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
+        zip_ref.extractall(output_path)
+
+    os.remove(zip_file_path)
 
 
 def AddedIC50andGI50ToCellLinesDF(data: pd.DataFrame,
-                                  get_activities: bool = True,
-                                  raw_csv_folder_name: str = "raw/cell_lines_activities",
-                                  activities_results_folder_name: str = "results/activities",
-                                  download_compounds_sdf: bool = True,
-                                  print_to_console: bool = False,
-                                  skip_gotten_activities: bool = False) -> pd.DataFrame:
-    """
-    Добавляет в pd.DataFrame два столбца: IC50 и GI50.
-
-    Args:
-        data (pd.DataFrame): исходный pd.DataFrame
-        need_to_download_activities (bool, optional): нужно ли получать activities отдельно. Defaults to True.
-        raw_csv_folder_name (str, optional): название папки, откуда необходимо получить activities. Defaults to "raw/cell_lines_activities".
-        activities_results_folder_name (str, optional): название папки для полученных activities. Defaults to "results/activities".
-        download_compounds_sdf (bool, optional): нужно ли скачивать .sdf файл с molfile для каждой молекулы. Defaults to True.
-        print_to_console (bool, optional): нужно ли выводить логирование в консоль. Defaults to False.
-        skip_gotten_activities (bool, optional): пропускать ли уже скачанные файлы activities. Defaults to False.
-
-    Returns:
-        pd.DataFrame: расширенный pd.DataFrame
-    """
+                                  config: dict
+                                  ) -> pd.DataFrame:
+    cell_lines_config: dict = config["ChEMBL_download_cell_lines"]
 
     logger.info(
         f"Adding 'IC50' and 'GI50' columns to pandas.DataFrame()...".ljust(77))
 
     try:
+        logger.info(
+            f"Getting raw cell_lines from Google.Drive...".ljust(77))
+        GetRawCellLinesData(config["ChEMBL_download_cell_lines"]["raw_csv_g_drive_id"],
+                            config["ChEMBL_download_cell_lines"]["raw/cell_lines_activities"])
+        logger.success(
+            f"Getting raw cell_lines from Google.Drive: SUCCESS".ljust(77))
+
         data["IC50"] = data.apply(
             lambda value: CountCellLineActivitiesByFile(
-                f"{raw_csv_folder_name}/{value["cell_chembl_id"]}_IC50_activities.csv"), axis=1)
+                f"{cell_lines_config["raw_csv_folder_name"]}/{value["cell_chembl_id"]}_IC50_activities.csv"), axis=1)
+
         data["GI50"] = data.apply(
             lambda value: CountCellLineActivitiesByFile(
-                f"{raw_csv_folder_name}/{value["cell_chembl_id"]}_GI50_activities.csv"), axis=1)
+                f"{cell_lines_config["raw_csv_folder_name"]}/{value["cell_chembl_id"]}_GI50_activities.csv"), axis=1)
 
         logger.success(
             f"Adding 'IC50' and 'GI50' columns to pandas.DataFrame(): SUCCESS".ljust(77))
 
-        if get_activities:
-            GetCellLineChEMBLActivitiesFromCSV(data,
-                                               raw_csv_folder_name=raw_csv_folder_name,
-                                               results_folder_name=activities_results_folder_name,
-                                               download_compounds_sdf=download_compounds_sdf,
-                                               print_to_console=print_to_console,
-                                               skip_gotten_activities=skip_gotten_activities)
+        if cell_lines_config["download_activities"]:
+            GetCellLineChEMBLActivitiesFromCSV(data, config)
+
             try:
                 data["IC50_new"] = data["IC50_new"].astype(int)
                 data["GI50_new"] = data["GI50_new"].astype(int)
 
             except Exception as exception:  # это исключение может возникнуть, если колонки нет
-                if not skip_gotten_activities:  # новых activities не скачалось, т.е. значение пересчитывать не надо
+                # новых activities не скачалось, т.е. значение пересчитывать не надо
+                if not config["skip_downloaded"]:
                     raise exception
-
                 else:
                     pass
 
     except Exception as exception:
-        PrintException(exception, "ChEMBL____cells", "fg #CB507C")
+        LogException(exception)
 
     return data
 
 
-def DownloadCellLinesFromIdList(cell_line_chembl_id_list: list[str] = [],
-                                results_folder_name: str = "results/cell_lines",
-                                primary_analysis_folder_name: str = "primary_analysis",
-                                need_primary_analysis: bool = False,
-                                get_activities: bool = True,
-                                activities_results_folder_name: str = "results/activities",
-                                print_to_console: bool = False,
-                                skip_gotten_activities: bool = False) -> None:
-    """
-    Скачивает клеточные линии по списку id из базы ChEMBL, сохраняя их в .csv файл.
+def DownloadCellLinesFromIdList(config: dict):
+    cell_lines_config: dict = config["ChEMBL_download_cell_lines"]
 
-    Args:
-        cell_line_chembl_id_list (list[str], optional): список id. Defaults to []: для скачивания всех клеточных линий.
-        results_folder_name (str, optional): имя папки для закачки. Defaults to "results/cell_lines".
-        primary_analysis_folder_name (str, optional): имя папки для сохранения данных о первичном анализе. Defaults to "primary_analysis".
-        need_primary_analysis (bool, optional): нужно ли проводить первичный анализ. Defaults to False.
-        get_activities (bool, optional): нужно ли получать активности к клеточным линиям по IC50 и GI50. Defaults to True.
-        activities_results_folder_name (str, optional): имя папки для закачки activities. Defaults to "results/activities".
-        print_to_console (bool, optional): нужно ли выводить логирование в консоль. Defaults to False.
-        skip_gotten_activities (bool, optional): пропускать ли уже скачанные файлы activities. Defaults to False.
-    """
+    print_to_console = (
+        config["print_to_console_verbosely"] or config["testing_flag"])
 
     try:
         logger.info(
             f"Downloading cell lines...".ljust(77))
         cell_lines_with_ids: QuerySet = QuerySetCellLinesFromIdList(
-            cell_line_chembl_id_list)
+            cell_lines_config["id_list"])
 
-        if cell_line_chembl_id_list == []:
+        if cell_lines_config["id_list"] == []:
             cell_lines_with_ids = QuerySetAllCellLines()
 
-        logger.info(f"Amount: {len(cell_lines_with_ids)}".ljust(77))
+        logger.info(f"Amount: {len(cell_lines_with_ids)}".ljust(77))  # type: ignore
         logger.success(f"Downloading cell lines: SUCCESS".ljust(77))
 
         try:
             logger.info(
                 "Collecting cell lines to pandas.DataFrame()...".ljust(77))
 
-            data_frame = AddedIC50andGI50ToCellLinesDF(
-                pd.DataFrame(cell_lines_with_ids),
-                get_activities=get_activities,
-                activities_results_folder_name=activities_results_folder_name,
-                print_to_console=print_to_console,
-                skip_gotten_activities=skip_gotten_activities)
+            data_frame = AddedIC50andGI50ToCellLinesDF(pd.DataFrame(cell_lines_with_ids),  # type: ignore
+                                                       config=config)
 
-            UpdateLoggerFormat("ChEMBL____cells", "fg #CB507C")
+            UpdateLoggerFormat(cell_lines_config["logger_label"], cell_lines_config["logger_color"])
 
             logger.success(
                 "Collecting cell lines to pandas.DataFrame(): SUCCESS".ljust(77))
 
             logger.info(
-                f"Collecting cell lines to .csv file in '{results_folder_name}'...".ljust(77))
+                f"Collecting cell lines to .csv file in '{cell_lines_config["results_folder_name"]}'...".ljust(77))
 
-            if need_primary_analysis:
+            if config["need_primary_analysis"]:
                 PrimaryAnalysisByColumns(data_frame=data_frame,
-                                         data_name=f"cell_lines_data_from_ChEMBL",
-                                         folder_name=f"{
-                                             results_folder_name}/{primary_analysis_folder_name}",
+                                         data_name=cell_lines_config["results_file_name"],
+                                         folder_name=f"{cell_lines_config["results_folder_name"]}/{config["primary_analysis_folder_name"]}",
                                          print_to_console=print_to_console)
 
-                UpdateLoggerFormat("ChEMBL____cells", "fg #CB507C")
+                UpdateLoggerFormat(cell_lines_config["logger_label"],
+                                   cell_lines_config["logger_color"])
 
-            file_name: str = f"{
-                results_folder_name}/cell_lines_data_from_ChEMBL.csv"
+            file_name: str = f"{cell_lines_config["results_folder_name"]}/{cell_lines_config["results_file_name"]}.csv"
 
             data_frame.to_csv(file_name, sep=';', index=False)
             logger.success(
-                f"Collecting cell lines to .csv file in '{results_folder_name}': SUCCESS".ljust(77))
+                f"Collecting cell lines to .csv file in '{cell_lines_config["results_folder_name"]}': SUCCESS".ljust(77))
 
         except Exception as exception:
-            PrintException(exception, "ChEMBL____cells", "fg #CB507C")
+            LogException(exception)
 
     except Exception as exception:
-        PrintException(exception, "ChEMBL____cells", "fg #CB507C")
+        LogException(exception)

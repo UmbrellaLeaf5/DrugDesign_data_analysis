@@ -167,6 +167,7 @@ cython_debug/
 # Own files
 pip.txt
 temp.py
+logger.json
 
 # Own folders
 results/

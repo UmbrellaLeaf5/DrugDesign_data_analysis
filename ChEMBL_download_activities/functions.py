@@ -1,5 +1,3 @@
-# type: ignore
-
 # from icecream import ic
 
 from chembl_webresource_client.new_client import new_client
@@ -24,7 +22,8 @@ def QuerySetActivitiesByIC50(target_id: str) -> QuerySet:
         QuerySet: набор активностей
     """
 
-    return new_client.activity.filter(target_chembl_id=target_id).filter(standard_type="IC50")
+    return new_client.activity.filter(  # type: ignore
+        target_chembl_id=target_id).filter(standard_type="IC50")
 
 
 @Retry()
@@ -39,7 +38,8 @@ def QuerySetActivitiesByKi(target_id: str) -> QuerySet:
         QuerySet: набор активностей
     """
 
-    return new_client.activity.filter(target_chembl_id=target_id).filter(standard_type="Ki")
+    return new_client.activity.filter(  # type: ignore
+        target_chembl_id=target_id).filter(standard_type="Ki")
 
 
 def CountTargetActivitiesByIC50(target_id: str) -> int:
@@ -54,7 +54,7 @@ def CountTargetActivitiesByIC50(target_id: str) -> int:
         int: количество
     """
 
-    return len(QuerySetActivitiesByIC50(target_id))
+    return len(QuerySetActivitiesByIC50(target_id))  # type: ignore
 
 
 def CountTargetActivitiesByKi(target_id: str) -> int:
@@ -69,7 +69,7 @@ def CountTargetActivitiesByKi(target_id: str) -> int:
         int: количество
     """
 
-    return len(QuerySetActivitiesByKi(target_id))
+    return len(QuerySetActivitiesByKi(target_id))  # type: ignore
 
 
 def CountCellLineActivitiesByFile(file_name: str) -> int:
@@ -86,8 +86,11 @@ def CountCellLineActivitiesByFile(file_name: str) -> int:
     return sum(1 for _ in open(file_name, 'r'))
 
 
-def CleanedTargetActivitiesDF(data: pd.DataFrame, target_id: str, activities_type: str,
-                              print_to_console: bool = False) -> pd.DataFrame:
+def CleanedTargetActivitiesDF(data: pd.DataFrame,
+                              target_id: str,
+                              activities_type: str,
+                              print_to_console: bool
+                              ) -> pd.DataFrame:
     """
     Производит чистку выборки activities конкретной цели по IC50 и Ki.
 
@@ -102,8 +105,8 @@ def CleanedTargetActivitiesDF(data: pd.DataFrame, target_id: str, activities_typ
     """
 
     if print_to_console:
-        logger.info(f"Start cleaning {activities_type} activities DataFrame from {
-            target_id}...".ljust(77))
+        logger.info((f"Start cleaning {activities_type} activities DataFrame from "
+                    f"{target_id}...").ljust(77))
 
         logger.info(f"Deleting useless columns...".ljust(77))
 
@@ -121,9 +124,9 @@ def CleanedTargetActivitiesDF(data: pd.DataFrame, target_id: str, activities_typ
                           'value', 'ligand_efficiency', 'relation'], axis=1)
 
         if print_to_console:
-            logger.success(f"Deleting useless columns: SUCCESS".ljust(77))
+            logger.success("Deleting useless columns: SUCCESS".ljust(77))
 
-            logger.info(f"Deleting inappropriate elements...".ljust(77))
+            logger.info("Deleting inappropriate elements...".ljust(77))
 
         data = data[data['standard_relation'] == '=']
         data = data[data['standard_units'] == 'nM']
@@ -132,6 +135,7 @@ def CleanedTargetActivitiesDF(data: pd.DataFrame, target_id: str, activities_typ
         data = data[data['assay_type'] == 'B']
 
         data['standard_value'] = data['standard_value'].astype(float)
+        # неправдоподобные значения
         data = data[data['standard_value'] <= 1000000000]
 
         data['activity_comment'] = data['activity_comment'].replace(
@@ -141,10 +145,10 @@ def CleanedTargetActivitiesDF(data: pd.DataFrame, target_id: str, activities_typ
 
         if print_to_console:
             logger.success(
-                f"Deleting inappropriate elements: SUCCESS".ljust(77))
+                "Deleting inappropriate elements: SUCCESS".ljust(77))
 
             logger.info(
-                f"Calculating median for 'standard value'...".ljust(77))
+                "Calculating median for 'standard value'...".ljust(77))
 
         data = MedianDedupedDF(data, "molecule_chembl_id", "standard_value")
 
@@ -167,11 +171,11 @@ def CleanedTargetActivitiesDF(data: pd.DataFrame, target_id: str, activities_typ
             logger.success(
                 f"Reindexing columns in logical order: SUCCESS".ljust(77))
 
-            logger.success(f"End cleaning activities DataFrame from {
-                target_id}".ljust(77))
+            logger.success(("End cleaning activities DataFrame from "
+                           f"{target_id}").ljust(77))
 
     except Exception as exception:
-        PrintException(exception, "ChEMBL__IC50&Ki", "fg #61B78C")
+        LogException(exception)
 
     if print_to_console:
         logger.info(f"{'-' * 77}")
@@ -179,8 +183,11 @@ def CleanedTargetActivitiesDF(data: pd.DataFrame, target_id: str, activities_typ
     return data
 
 
-def CleanedCellLineActivitiesDF(data: pd.DataFrame, cell_id: str, activities_type: str,
-                                print_to_console: bool = False) -> pd.DataFrame:
+def CleanedCellLineActivitiesDF(data: pd.DataFrame,
+                                cell_id: str,
+                                activities_type: str,
+                                print_to_console: bool
+                                ) -> pd.DataFrame:
     """
     Производит чистку выборки activities конкретной клеточной линии по IC50 и GI50.
 
@@ -195,8 +202,8 @@ def CleanedCellLineActivitiesDF(data: pd.DataFrame, cell_id: str, activities_typ
     """
 
     if print_to_console:
-        logger.info(f"Start cleaning {activities_type} activities DataFrame from {
-            cell_id}...".ljust(77))
+        logger.info((f"Start cleaning {activities_type} activities DataFrame from "
+                    f"{cell_id}...").ljust(77))
 
         logger.info(f"Deleting useless columns...".ljust(77))
 
@@ -212,9 +219,9 @@ def CleanedCellLineActivitiesDF(data: pd.DataFrame, cell_id: str, activities_typ
                         for column_name in data.columns]
 
         if print_to_console:
-            logger.success(f"Deleting useless columns: SUCCESS".ljust(77))
+            logger.success("Deleting useless columns: SUCCESS".ljust(77))
 
-            logger.info(f"Deleting inappropriate elements...".ljust(77))
+            logger.info("Deleting inappropriate elements...".ljust(77))
 
         data = data[data['standard_relation'] == "'='"]
         data['standard_relation'] = data['standard_relation'].str.replace(
@@ -259,11 +266,10 @@ def CleanedCellLineActivitiesDF(data: pd.DataFrame, cell_id: str, activities_typ
             logger.success(
                 f"Reindexing columns in logical order: SUCCESS".ljust(77))
 
-            logger.success(f"End cleaning activities DataFrame from {
-                cell_id}".ljust(77))
+            logger.success(f"End cleaning activities DataFrame from {cell_id}".ljust(77))
 
     except Exception as exception:
-        PrintException(exception, "ChEMBL__IC&GI50", "fg #6785C6")
+        LogException(exception)
 
     if print_to_console:
         logger.info(f"{'-' * 77}")

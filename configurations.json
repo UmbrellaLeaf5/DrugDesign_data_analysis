@@ -1,0 +1,419 @@
+{
+  "print_to_console_verbosely": true,
+  "need_primary_analysis": false,
+  "primary_analysis_folder_name": "primary_analysis",
+  "testing_flag": true,
+  "skip_downloaded": false,
+  "ChEMBL_download_activities": {
+    "logger_label": "ChEMBL__IC50&Ki",
+    "logger_color": "fg #61B78C",
+    "results_folder_name": "results/chembl/activities",
+    "download_compounds_sdf": true
+  },
+  "ChEMBL_download_cell_lines": {
+    "logger_label": "ChEMBL____cells",
+    "logger_color": "fg #CB507C",
+    "results_folder_name": "results/chembl/cell_lines",
+    "results_file_name": "cell_lines_data_from_ChEMBL",
+    "download_activities": true,
+    "raw_csv_folder_name": "raw/cell_lines_activities",
+    "raw_csv_g_drive_id": "1xw5nFTVZdycSG4BhaoeludtCwJU0gsXI",
+    "download_all": false,
+    "download_compounds_sdf": true,
+    "id_list": [
+      "CHEMBL4295386",
+      "CHEMBL3307781",
+      "CHEMBL4295453",
+      "CHEMBL4295483",
+      "CHEMBL3308509",
+      "CHEMBL3706569",
+      "CHEMBL3307715",
+      "CHEMBL3307525",
+      "CHEMBL3307970",
+      "CHEMBL4295409",
+      "CHEMBL3307501",
+      "CHEMBL3307364",
+      "CHEMBL3308499",
+      "CHEMBL3307481",
+      "CHEMBL3308021",
+      "CHEMBL3307755",
+      "CHEMBL3307614"
+    ]
+  },
+  "ChEMBL_download_compounds": {
+    "logger_label": "ChEMBL_compound",
+    "logger_color": "fg #BBDD7C",
+    "results_folder_name": "results/chembl/compounds",
+    "molfiles_folder_name": "results/chembl/compounds/molfiles",
+    "need_combining": true,
+    "delete_after_combining": true,
+    "combined_file_name": "combined_compounds_data_from_ChEMBL",
+    "mw_ranges": [
+      [
+        0,
+        190
+      ],
+      [
+        190,
+        215
+      ],
+      [
+        215,
+        230
+      ],
+      [
+        230,
+        240
+      ],
+      [
+        240,
+        250
+      ],
+      [
+        250,
+        260
+      ],
+      [
+        260,
+        267
+      ],
+      [
+        267,
+        273
+      ],
+      [
+        273,
+        280
+      ],
+      [
+        280,
+        285
+      ],
+      [
+        285,
+        290
+      ],
+      [
+        290,
+        295
+      ],
+      [
+        295,
+        299
+      ],
+      [
+        299,
+        303
+      ],
+      [
+        303,
+        307
+      ],
+      [
+        307,
+        311
+      ],
+      [
+        311,
+        315
+      ],
+      [
+        315,
+        319
+      ],
+      [
+        319,
+        323
+      ],
+      [
+        323,
+        327
+      ],
+      [
+        327,
+        330
+      ],
+      [
+        330,
+        334
+      ],
+      [
+        334,
+        337
+      ],
+      [
+        337,
+        340
+      ],
+      [
+        340,
+        343
+      ],
+      [
+        343,
+        346
+      ],
+      [
+        346,
+        349
+      ],
+      [
+        349,
+        352
+      ],
+      [
+        352,
+        355
+      ],
+      [
+        355,
+        359
+      ],
+      [
+        359,
+        363
+      ],
+      [
+        363,
+        367
+      ],
+      [
+        367,
+        371
+      ],
+      [
+        371,
+        375
+      ],
+      [
+        375,
+        379
+      ],
+      [
+        379,
+        383
+      ],
+      [
+        383,
+        387
+      ],
+      [
+        387,
+        391
+      ],
+      [
+        391,
+        395
+      ],
+      [
+        395,
+        399
+      ],
+      [
+        399,
+        403
+      ],
+      [
+        403,
+        407
+      ],
+      [
+        407,
+        411
+      ],
+      [
+        411,
+        415
+      ],
+      [
+        415,
+        419
+      ],
+      [
+        419,
+        423
+      ],
+      [
+        423,
+        427
+      ],
+      [
+        427,
+        431
+      ],
+      [
+        431,
+        435
+      ],
+      [
+        435,
+        439
+      ],
+      [
+        439,
+        443
+      ],
+      [
+        443,
+        447
+      ],
+      [
+        447,
+        451
+      ],
+      [
+        451,
+        456
+      ],
+      [
+        456,
+        461
+      ],
+      [
+        461,
+        466
+      ],
+      [
+        466,
+        471
+      ],
+      [
+        471,
+        476
+      ],
+      [
+        476,
+        481
+      ],
+      [
+        481,
+        487
+      ],
+      [
+        487,
+        493
+      ],
+      [
+        493,
+        499
+      ],
+      [
+        499,
+        506
+      ],
+      [
+        506,
+        514
+      ],
+      [
+        514,
+        522
+      ],
+      [
+        522,
+        531
+      ],
+      [
+        531,
+        541
+      ],
+      [
+        541,
+        552
+      ],
+      [
+        552,
+        565
+      ],
+      [
+        565,
+        579
+      ],
+      [
+        579,
+        596
+      ],
+      [
+        596,
+        617
+      ],
+      [
+        617,
+        648
+      ],
+      [
+        648,
+        693
+      ],
+      [
+        693,
+        758
+      ],
+      [
+        758,
+        868
+      ],
+      [
+        868,
+        1101
+      ],
+      [
+        1101,
+        1200
+      ],
+      [
+        1200,
+        1254642
+      ]
+    ]
+  },
+  "ChEMBL_download_targets": {
+    "logger_label": "ChEMBL__targets",
+    "logger_color": "fg #CBDD7C",
+    "results_folder_name": "results/chembl/targets",
+    "results_file_name": "targets_data_from_ChEMBL",
+    "download_activities": true,
+    "download_all": false,
+    "download_compounds_sdf": true,
+    "id_list": [
+      "CHEMBL220",
+      "CHEMBL251",
+      "CHEMBL229",
+      "CHEMBL1867",
+      "CHEMBL213",
+      "CHEMBL210",
+      "CHEMBL1871",
+      "CHEMBL216",
+      "CHEMBL211",
+      "CHEMBL245",
+      "CHEMBL218",
+      "CHEMBL253",
+      "CHEMBL2056",
+      "CHEMBL217",
+      "CHEMBL252",
+      "CHEMBL231",
+      "CHEMBL214",
+      "CHEMBL1898",
+      "CHEMBL224",
+      "CHEMBL1833",
+      "CHEMBL240",
+      "CHEMBL258",
+      "CHEMBL1951",
+      "CHEMBL4777",
+      "CHEMBL2034",
+      "CHEMBL236",
+      "CHEMBL233",
+      "CHEMBL222",
+      "CHEMBL228"
+    ]
+  },
+  "PubChem_download_toxicity": {
+    "logger_label": "PubChem_toxcomp",
+    "logger_color": "fg #AEBA66",
+    "results_folder_name": "results/pubchem/toxicity",
+    "sleep_time": 0.3,
+    "start_page": 1,
+    "end_page": 113,
+    "limit": 10000000
+  }
+}

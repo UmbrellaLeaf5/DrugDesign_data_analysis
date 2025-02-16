@@ -1,5 +1,3 @@
-# type: ignore
-
 # from icecream import ic
 
 import pandas as pd
@@ -40,7 +38,10 @@ def DedupedList(l: list) -> list:
         return list({frozenset(item.items()): item for item in NonNoneList(l)}.values())
 
 
-def MedianDedupedDF(df: pd.DataFrame, id_column_name: str, median_column_name: str) -> pd.DataFrame:
+def MedianDedupedDF(df: pd.DataFrame,
+                    id_column_name: str,
+                    median_column_name: str
+                    ) -> pd.DataFrame:
     """
     Удаляет дубликаты в колонке идентификаторов элементов DataFrame,
     заменяя их медианой соответствующих значений в колонке median_column_name.
@@ -59,6 +60,8 @@ def MedianDedupedDF(df: pd.DataFrame, id_column_name: str, median_column_name: s
 
     # значения в столбце, где будут медианы - должно быть типа float
     df[median_column_name] = df[median_column_name].astype(float)
+
+    name_values_dict: dict[str, float | list]
 
     for name in df[id_column_name].unique():
         name_subset_df: pd.DataFrame = df.loc[df[id_column_name] == name]
@@ -79,16 +82,16 @@ def MedianDedupedDF(df: pd.DataFrame, id_column_name: str, median_column_name: s
                         name_subset_df[col].tolist())
 
                 # если в списке 1 элемент, то список бесполезен
-                if len(name_values_dict[col]) == 1:
-                    name_values_dict[col] = name_values_dict[col][0]
+                if len(name_values_dict[col]) == 1:  # type: ignore
+                    name_values_dict[col] = name_values_dict[col][0]  # type: ignore
 
                 def IsAllNan(l: list):
                     return all(str(elem) == "nan" for elem in l)
 
                 # если в списке нет элементов, или они все == "nan", то это не список
                 if (isinstance(name_values_dict[col], list)):
-                    if len(name_values_dict[col]) == 0 or IsAllNan(name_values_dict[col]):
-                        name_values_dict[col] = None
+                    if len(name_values_dict[col]) == 0 or IsAllNan(name_values_dict[col]):  # type: ignore
+                        name_values_dict[col] = None  # type: ignore
 
         # сохраняем данные для данного имени
         median_and_id_data[name] = name_values_dict

@@ -13,8 +13,10 @@ from Utils.file_and_logger_funcs import *
 
 
 @Retry()
-def GetResponse(request_url: str, stream: bool = False,
-                sleep_time: float = 0.3) -> requests.Response:
+def GetResponse(request_url: str,
+                stream: bool,
+                sleep_time: float
+                ) -> requests.Response:
     """
     Отправляет GET-запрос по указанному URL, повторяет попытку в случае ошибки.
 
@@ -34,8 +36,9 @@ def GetResponse(request_url: str, stream: bool = False,
     return response
 
 
-def GetDataFrameFromUrl(request_url: str, stream=True,
-                        sleep_time: float = 0.3) -> pd.DataFrame:
+def GetDataFrameFromUrl(request_url: str,
+                        sleep_time: float
+                        ) -> pd.DataFrame:
     """
     Скачивает данные из CSV-файла по URL и преобразует их в pandas DataFrame.
 
@@ -48,7 +51,7 @@ def GetDataFrameFromUrl(request_url: str, stream=True,
         pd.DataFrame: DataFrame, содержащий данные из CSV-файла.
     """
 
-    res = GetResponse(request_url, stream=stream, sleep_time=sleep_time)
+    res = GetResponse(request_url, True, sleep_time)
 
     # определяем кодировку из заголовков ответа
     if res.encoding is None:
@@ -57,7 +60,10 @@ def GetDataFrameFromUrl(request_url: str, stream=True,
     return pd.read_csv(StringIO(res.content.decode(res.encoding)))
 
 
-def GetLinkFromSid(sid: int, limit: int = 10000000, collection: str = "chemidplus") -> str:
+def GetLinkFromSid(sid: int,
+                   collection: str,
+                   limit: int
+                   ) -> str:
     """
     Формирует URL для скачивания данных из PubChem SDQ API по SID (Structure ID).
 
@@ -105,20 +111,18 @@ def GetLinkFromSid(sid: int, limit: int = 10000000, collection: str = "chemidplu
     return start + "&" + QueryDictToStr(query)
 
 
-def DownloadCompoundToxicity(compound_data, page_dir: str,
-                             logger_label: str = "PubChem_toxcomp",
-                             label_color: str = "fg #AEBA66",
-                             sleep_time: float = 0.3,
-                             skip_downloaded_files: bool = False,
-                             print_to_console_verbosely: bool = False):
+def DownloadCompoundToxicity(compound_data: dict,
+                             page_dir: str,
+                             sleep_time: float,
+                             skip_downloaded_files: bool,
+                             print_to_console_verbosely: bool,
+                             limit: int):
     """
     Скачивает данные о токсичности соединения по информации из JSON PubChem и сохраняет их в CSV-файл.
 
     Args:
         compound_data (dict): словарь с информацией о соединении из JSON PubChem.
         page_dir (str): путь к директории, в которой будет сохранен файл.
-        logger_label (str, optional): метка для логирования. Defaults to "PubChem_toxcomp".
-        label_color (str, optional): цвет метки для логирования. Defaults to "fg #AEBA66".
         sleep_time (float, optional): время ожидания между запросами в секундах. Defaults to 0.3.
         skip_downloaded_files (bool, optional): если True, то уже скачанные файлы пропускаются. Defaults to False.
         print_to_console_verbosely (bool, optional): если True, то в консоль выводится подробная информация о процессе скачивания. Defaults to False.
@@ -150,12 +154,17 @@ def DownloadCompoundToxicity(compound_data, page_dir: str,
         acute_effects = GetDataFrameFromUrl(
             GetLinkFromSid(
                 sid=sid,
-                collection=table_info["collection"]
+                collection=table_info["collection"],
+                limit=limit
             ),
-            sleep_time=sleep_time
+            sleep_time=sleep_time,
         )
 
         # вот тут производить анализ и преобразования
+        # TODO: оставить все столбцы,
+        # TODO: Dose: только число [mg/kg]
+        # TODO: добавить MW: молекулярный вес каждого элемента
+        # TODO: добавить pLD50 = -log10((Dose(mg/kg)/MW)/1000000)
 
         acute_effects.to_csv(f"{compound_filename}.csv", index=False, mode='w')
 
@@ -163,4 +172,4 @@ def DownloadCompoundToxicity(compound_data, page_dir: str,
             logger.success(f"Downloading compound_{sid} toxicity: SUCCESS".ljust(77))
 
     except Exception as exception:
-        PrintException(exception, logger_label, label_color)
+        LogException(exception)
