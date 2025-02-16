@@ -12,6 +12,15 @@ from Utils.decorators import IgnoreWarnings
 @IgnoreWarnings
 def DownloadTargetChEMBLActivities(targets_data: pd.DataFrame,
                                    config: dict):
+    """
+    Скачивает информацию об активностях, связанных с заданными мишенями,
+    из базы данных ChEMBL на основе конфигурации (`config.json`).
+
+    Args:
+        targets_data (pd.DataFrame): DataFrame, содержащий информацию о мишенях.
+        config (dict): словарь, содержащий параметры конфигурации для процесса скачивания.
+    """
+
     activities_config = config["ChEMBL_download_activities"]
     compounds_config = config["ChEMBL_download_compounds"]
 
@@ -165,6 +174,16 @@ def DownloadTargetChEMBLActivities(targets_data: pd.DataFrame,
 @IgnoreWarnings
 def GetCellLineChEMBLActivitiesFromCSV(cell_lines_data: pd.DataFrame,
                                        config: dict):
+    """
+    "Скачивает" (получает) информацию об активностях, связанных с
+    заданными клеточными линиями, из базы данных ChEMBL на основе
+    конфигурации (`config.json`).
+
+    Args:
+        targets_data (pd.DataFrame): DataFrame, содержащий информацию о клеточных линиях.
+        config (dict): словарь, содержащий параметры конфигурации для процесса скачивания.
+    """
+
     activities_config = config["ChEMBL_download_activities"]
     cell_lines_config = config["ChEMBL_download_cell_lines"]
     compounds_config = config["ChEMBL_download_compounds"]

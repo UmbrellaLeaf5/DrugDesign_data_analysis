@@ -22,8 +22,8 @@ def GetResponse(request_url: str,
 
     Args:
         request_url (str): URL для запроса.
-        stream (bool, optional): если True, ответ будет получен потоком. Defaults to False.
-        sleep_time (float, optional): время ожидания перед повторной попыткой в секундах. Defaults to 0.3.
+        stream (bool): если True, ответ будет получен потоком.
+        sleep_time (float): время ожидания перед повторной попыткой в секундах.
 
     Returns:
         requests.Response: объект ответа requests.
@@ -44,8 +44,7 @@ def GetDataFrameFromUrl(request_url: str,
 
     Args:
         request_url (str): URL CSV-файла.
-        stream (bool, optional): если True, ответ будет получен потоком. Defaults to True.
-        sleep_time (float, optional): время ожидания перед повторной попыткой в секундах. Defaults to 0.3.
+        sleep_time (float): время ожидания перед повторной попыткой в секундах.
 
     Returns:
         pd.DataFrame: DataFrame, содержащий данные из CSV-файла.
@@ -69,8 +68,8 @@ def GetLinkFromSid(sid: int,
 
     Args:
         sid (int): SID соединения.
-        limit (int, optional): максимальное количество возвращаемых записей. Defaults to 10000000.
-        collection (str, optional): коллекция для поиска. Defaults to "chemidplus".
+        collection (str): коллекция для поиска.
+        limit (int): максимальное количество возвращаемых записей.
 
     Returns:
         str: URL для скачивания данных.
@@ -123,9 +122,10 @@ def DownloadCompoundToxicity(compound_data: dict,
     Args:
         compound_data (dict): словарь с информацией о соединении из JSON PubChem.
         page_dir (str): путь к директории, в которой будет сохранен файл.
-        sleep_time (float, optional): время ожидания между запросами в секундах. Defaults to 0.3.
-        skip_downloaded_files (bool, optional): если True, то уже скачанные файлы пропускаются. Defaults to False.
-        print_to_console_verbosely (bool, optional): если True, то в консоль выводится подробная информация о процессе скачивания. Defaults to False.
+        sleep_time (float): время ожидания между запросами в секундах.
+        skip_downloaded_files (bool): если True, то уже скачанные файлы пропускаются.
+        print_to_console_verbosely (bool): если True, то в консоль выводится подробная информация о процессе скачивания.
+        limit (int): максимальное количество объектов в запросе на скачивание.
     """
 
     try:
@@ -161,7 +161,7 @@ def DownloadCompoundToxicity(compound_data: dict,
         )
 
         # вот тут производить анализ и преобразования
-        # TODO: оставить все столбцы,
+        # TODO: оставить все столбцы
         # TODO: Dose: только число [mg/kg]
         # TODO: добавить MW: молекулярный вес каждого элемента
         # TODO: добавить pLD50 = -log10((Dose(mg/kg)/MW)/1000000)

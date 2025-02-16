@@ -6,6 +6,13 @@ from PubChem_download_toxicity.functions import *
 
 
 def DownloadPubChemCompoundsToxicity(config: dict):
+    """
+    Скачивает информацию о токсичности соединений из базы данных PubChem на основе конфигурации (`config.json`).
+
+    Args:
+        config (dict): словарь, содержащий параметры конфигурации для процесса скачивания.
+    """
+
     toxicity = config["PubChem_download_toxicity"]
 
     if config["testing_flag"]:

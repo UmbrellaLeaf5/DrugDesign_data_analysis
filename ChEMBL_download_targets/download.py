@@ -10,6 +10,13 @@ from Utils.decorators import IgnoreWarnings
 
 @IgnoreWarnings
 def DownloadChEMBLTargets(config: dict):
+    """
+    Скачивает информацию о мишенях из базы данных ChEMBL на основе конфигурации (`config.json`).
+
+    Args:
+        config (dict): словарь, содержащий параметры конфигурации для процесса скачивания.
+    """
+
     targets_config = config["ChEMBL_download_targets"]
     activities_config = config["ChEMBL_download_activities"]
 

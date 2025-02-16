@@ -9,6 +9,13 @@ from Utils.decorators import IgnoreWarnings
 
 @IgnoreWarnings
 def DownloadChEMBLCompounds(config: dict):
+    """
+    Скачивает информацию о соединениях из базы данных ChEMBL на основе конфигурации (`config.json`).
+
+    Args:
+        config (dict): словарь, содержащий параметры конфигурации для процесса скачивания.
+    """
+
     compounds = config["ChEMBL_download_compounds"]
 
     if compounds["delete_after_combining"] and not compounds["need_combining"]:

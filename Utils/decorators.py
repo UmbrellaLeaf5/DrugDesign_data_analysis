@@ -11,10 +11,10 @@ def IgnoreWarnings(func: Callable) -> Callable:
     Декоратор для игнорирования предупреждений RuntimeWarning и UserWarning.
 
     Args:
-        func (Callable): декорируемая функция
+        func (Callable): декорируемая функция.
 
     Returns:
-        Callable: декорируемая функция
+        Callable: декорируемая функция.
     """
 
     @wraps(func)
@@ -41,7 +41,7 @@ def Retry(attempts_amount: int = 3,
         sleep_time (int, optional): время ожидания между попытками. Defaults to 1.
 
     Returns:
-        Callable: декорируемая функция
+        Callable: декорируемая функция.
     """
 
     def Decorate(func: Callable) -> Callable:

@@ -9,6 +9,13 @@ from Utils.decorators import IgnoreWarnings
 
 @IgnoreWarnings
 def DownloadChEMBLCellLines(config: dict):
+    """
+    Скачивает информацию о клеточных линиях из базы данных ChEMBL на основе конфигурации (`config.json`).
+
+    Args:
+        config (dict): словарь, содержащий параметры конфигурации для процесса скачивания.
+    """
+
     cell_lines_config: dict = config["ChEMBL_download_cell_lines"]
     activities_config: dict = config["ChEMBL_download_activities"]
 

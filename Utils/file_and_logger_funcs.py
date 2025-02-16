@@ -76,10 +76,11 @@ def CombineCSVInFolder(folder_name: str,
     Склеивает все .csv файлы в папке в один.
 
     Args:
-        folder_name (str): имя папки с .csv файлами
-        combined_file_name (str): имя склеенного .csv файла
+        folder_name (str): имя папки с .csv файлами.
+        combined_file_name (str): имя склеенного .csv файла.
         logger_label (str, optional): текст заголовка для логирования. Defaults to "ChEMBL__combine".
         print_to_console (bool, optional): нужно ли выводить логирование в консоль. Defaults to False.
+        skip_downloaded_files (bool, optional): Пропускать ли уже скачанные файлы. Defaults to False.
     """
 
     UpdateLoggerFormat(logger_label, "fg #474747")
@@ -151,8 +152,8 @@ def UpdateLoggerFormat(logger_label: str,
     Обновляет формат вывода логирования.
 
     Args:
-        logger_label (str): текст заголовка для логирования
-        color (str): цвет заголовка для логирования
+        logger_label (str): текст заголовка для логирования.
+        color (str): цвет заголовка для логирования.
         out (TextIO | TextIOWrapper, optional): способ вывода. Defaults to sys.stdout.
     """
 

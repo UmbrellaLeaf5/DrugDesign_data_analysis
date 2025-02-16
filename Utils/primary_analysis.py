@@ -19,10 +19,11 @@ def PrimaryAnalysisByColumns(data_frame: pd.DataFrame,
     Проводит первичный анализ pd.DataFrame с возможностью вывода в консоль и сохранения в .csv файл.
 
     Args:
-        data_frame (pd.DataFrame): исходный pd.DataFrame
-        data_name (str): имя исходных данных (нужно для логирования)
-        folder_name (str): имя папки, куда сохранять .csv файл
+        data_frame (pd.DataFrame): исходный pd.DataFrame.
+        data_name (str): имя исходных данных (нужно для логирования).
+        folder_name (str): имя папки, куда сохранять .csv файл.
         logger_label (str, optional): текст заголовка логирования. Defaults to "ChEMBL_analysis".
+        logger_color (str, optional): цвет заголовка логирования .Defaults to "fg #C48BC0",
         print_to_console (bool, optional): нужно ли выводить информацию в консоль. Defaults to False.
         save_to_csv (bool, optional): нужно ли сохранять информацию в .csv файл. Defaults to True.
     """
