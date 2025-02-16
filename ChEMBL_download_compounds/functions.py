@@ -17,15 +17,15 @@ def QuerySetCompoundsByMWRange(less_limit: int, greater_limit: int) -> QuerySet:
     Возвращает молекулы в диапазоне молекулярной массы [less_limit; greater_limit) из базы ChEMBL.
 
     Args:
-        less_limit (int, optional): нижняя граница. Defaults to 0.
-        greater_limit (int, optional): верхняя граница. Defaults to 12_546_42.
+        less_limit (int): нижняя граница.
+        greater_limit (int): верхняя граница.
 
     Raises:
-        ValueError: границы должны быть больше нуля
-        ValueError: greater_limit должен быть больше less_limit
+        ValueError: границы должны быть больше нуля.
+        ValueError: greater_limit должен быть больше less_limit.
 
     Returns:
-        QuerySet: набор молекул в диапазоне
+        QuerySet: набор молекул в диапазоне.
     """
 
     if greater_limit < 0 or less_limit < 0:
@@ -46,10 +46,10 @@ def ExpandedFromDictionariesCompoundsDF(data: pd.DataFrame) -> pd.DataFrame:
     Избавляет pd.DataFrame от словарей и списков словарей в столбцах, разбивая их на подстолбцы.
 
     Args:
-        data (pd.DataFrame): исходный pd.DataFrame
+        data (pd.DataFrame): исходный pd.DataFrame.
 
     Returns:
-        pd.DataFrame: "раскрытый" pd.DataFrame
+        pd.DataFrame: "раскрытый" pd.DataFrame.
     """
 
     def ExtractedValuesFromColumn(df: pd.DataFrame,
@@ -57,6 +57,19 @@ def ExpandedFromDictionariesCompoundsDF(data: pd.DataFrame) -> pd.DataFrame:
                                   key: str,
                                   is_list: bool = True
                                   ) -> pd.Series:
+        """
+        Извлекает значения из указанного столбца DataFrame на основе заданного ключа.
+
+        Args:
+            df (pd.DataFrame): DataFrame, из которого нужно извлечь значения.
+            column_name (str): название столбца, из которого нужно извлечь значения.
+            key (str): ключ, по которому нужно извлечь значения из словарей.
+            is_list (bool, optional): флаг, указывающий, является ли значение в столбце списком словарей.
+
+        Returns:
+            pd.Series: Series, содержащий извлеченные значения.
+        """
+
         if is_list:
             return df[column_name].apply(lambda x: [d[key] for d in x] if x else [])
         return [item[key] if isinstance(  # type: ignore
@@ -127,12 +140,12 @@ def DownloadCompoundsByMWRange(less_limit: int,
     сохраняя их в .csv файл.
 
     Args:
-        less_limit (int, optional): нижняя граница. Defaults to 0.
-        greater_limit (int, optional): верхняя граница. Defaults to 12_546_42.
-        results_folder_name (str, optional): имя папки для закачки. Defaults to "results/compounds".
-        primary_analysis_folder_name (str, optional): имя папки для сохранения данных о первичном анализе. Defaults to "primary_analysis".
-        need_primary_analysis (bool, optional): нужно ли проводить первичный анализ. Defaults to False.
-        print_to_console (bool, optional): нужно ли выводить логирование в консоль. Defaults to False.
+        less_limit (int): нижняя граница.
+        greater_limit (int): верхняя граница.
+        results_folder_name (str): имя папки для закачки.
+        primary_analysis_folder_name (str): имя папки для сохранения данных о первичном анализе.
+        need_primary_analysis (bool): нужно ли проводить первичный анализ.
+        print_to_console (bool): нужно ли выводить логирование в консоль.
     """
 
     try:
@@ -187,10 +200,10 @@ def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str],
     Сохраняет molfiles из списка id в .sdf файл.
 
     Args:
-        molecule_chembl_id_list (list[str]): список id
-        file_name (str): имя файла (без .sdf)
-        print_to_console (bool, optional): нужно ли выводить логирование в консоль.
-        extra_data (pd.DataFrame, optional): дополнительная информация. Defaults to pd.DataFrame().
+        molecule_chembl_id_list (list[str]): список id.
+        file_name (str): имя файла (без .sdf).
+        print_to_console (bool): нужно ли выводить логирование в консоль.
+        extra_data (pd.DataFrame): дополнительная информация. Defaults to pd.DataFrame().
     """
 
     if not molecule_chembl_id_list:
@@ -204,10 +217,10 @@ def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str],
         Возвращает pd.DataFrame из molfile по каждой молекуле из списка molecule_chembl_id.
 
         Args:
-            molecule_chembl_id_list (list[str]): список id
+            molecule_chembl_id_list (list[str]): список id.
 
         Returns:
-            pd.DataFrame: DataFrame, который содержит molecule_chembl_id и соотв. molfile
+            pd.DataFrame: DataFrame, который содержит molecule_chembl_id и соотв. molfile.
         """
 
         qs_data: QuerySet = new_client.molecule.filter(  # type: ignore
@@ -231,9 +244,9 @@ def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str],
         Сохраняет molfiles из pd.DataFrame в .sdf файл.
 
         Args:
-            data (pd.DataFrame): DataFrame с molfile и molecule_chembl_id
-            file_name (str): имя файла (без ".sdf")
-            print_to_console (bool, optional): нужно ли выводить логирование в консоль.
+            data (pd.DataFrame): DataFrame с molfile и molecule_chembl_id.
+            file_name (str): имя файла (без ".sdf").
+            print_to_console (bool): нужно ли выводить логирование в консоль.
             extra_data (pd.DataFrame, optional): дополнительная информация. Defaults to pd.DataFrame().
         """
 
@@ -244,7 +257,7 @@ def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str],
             Args:
                 file (TextIOWrapper): открытый файл для записи.
                 value: значение, которое нужно записать.
-                column (str, optional): имя столбца.  Defaults to "". 
+                column (str, optional): имя столбца. Defaults to "". 
             """
 
             if isinstance(value, list):

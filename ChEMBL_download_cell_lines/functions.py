@@ -30,10 +30,10 @@ def QuerySetCellLinesFromIdList(cell_line_chembl_id_list: list[str]) -> QuerySet
     Возвращает клеточные линии по списку id из базы ChEMBL.
 
     Args:
-        cell_line_chembl_id_list (list[str]): список id
+        cell_line_chembl_id_list (list[str]): список id.
 
     Returns:
-        QuerySet: набор целей по списку id
+        QuerySet: набор целей по списку id.
     """
 
     return new_client.cell_line.filter(cell_chembl_id__in=cell_line_chembl_id_list)  # type: ignore
@@ -65,6 +65,19 @@ def GetRawCellLinesData(file_id: str, output_path: str):
 def AddedIC50andGI50ToCellLinesDF(data: pd.DataFrame,
                                   config: dict
                                   ) -> pd.DataFrame:
+    """
+    Добавляет столбцы `IC50` и `GI50` в DataFrame с данными о клеточных линиях, подсчитывая
+    количество соответствующих активностей из CSV-файлов, а также опционально скачивает новые активности.
+
+    Args:
+        data (pd.DataFrame): DataFrame с данными о клеточных линиях.
+        config (dict): словарь, содержащий параметры конфигурации для процесса скачивания.
+
+    Returns:
+        pd.DataFrame: DataFrame с добавленными столбцами `IC50` и `GI50`,
+                      содержащими количество соответствующих активностей.
+    """
+
     cell_lines_config: dict = config["ChEMBL_download_cell_lines"]
 
     logger.info(
@@ -110,6 +123,15 @@ def AddedIC50andGI50ToCellLinesDF(data: pd.DataFrame,
 
 
 def DownloadCellLinesFromIdList(config: dict):
+    """
+    Скачивает данные о клеточных линиях из ChEMBL по списку идентификаторов,
+    добавляет информацию об активностях IC50 и GI50, проводит первичный анализ
+    и сохраняет результаты в CSV-файл.
+
+    Args:
+        config (dict): словарь, содержащий параметры конфигурации для процесса скачивания.
+    """
+
     cell_lines_config: dict = config["ChEMBL_download_cell_lines"]
 
     print_to_console = (

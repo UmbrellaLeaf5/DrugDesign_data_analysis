@@ -10,10 +10,10 @@ def NonNoneList(l: list) -> list:
     Убирает все None из списка.
 
     Args:
-        l (list): исходный список
+        l (list): исходный список.
 
     Returns:
-        list: список без None
+        list: список без None.
     """
 
     return list(filter(None, l))
@@ -24,10 +24,10 @@ def DedupedList(l: list) -> list:
     Убирает все дубликаты и None из списка.
 
     Args:
-        l (list): исходный список
+        l (list): исходный список.
 
     Returns:
-        list: список без None и дубликатов
+        list: список без None и дубликатов.
     """
 
     try:
@@ -45,7 +45,8 @@ def MedianDedupedDF(df: pd.DataFrame,
     """
     Удаляет дубликаты в колонке идентификаторов элементов DataFrame,
     заменяя их медианой соответствующих значений в колонке median_column_name.
-    Сохраняет значения из всех остальных столбцов в списки, если они различны, иначе - одиночными элементами.
+    Сохраняет значения из всех остальных столбцов в списки, если они различны, 
+    иначе - одиночными элементами.
 
     Args:
         df (pd.DataFrame): исходный DataFrame
@@ -85,7 +86,16 @@ def MedianDedupedDF(df: pd.DataFrame,
                 if len(name_values_dict[col]) == 1:  # type: ignore
                     name_values_dict[col] = name_values_dict[col][0]  # type: ignore
 
-                def IsAllNan(l: list):
+                def IsAllNan(l: list) -> bool:
+                    """
+                    Проверяет, состоит ли список только из значений "nan".
+
+                    Args:
+                        l (list): список, который необходимо проверить.
+
+                    Returns:
+                        bool: True, если все элементы списка (после приведения к строке) равны "nan", иначе False.
+                    """
                     return all(str(elem) == "nan" for elem in l)
 
                 # если в списке нет элементов, или они все == "nan", то это не список

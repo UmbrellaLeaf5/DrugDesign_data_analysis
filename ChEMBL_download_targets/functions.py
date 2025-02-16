@@ -51,6 +51,18 @@ def ExpandedFromDictionariesTargetsDF(data: pd.DataFrame) -> pd.DataFrame:
     def ExtractedValuesFromColumn(df: pd.DataFrame,
                                   column_name: str,
                                   key: str) -> pd.Series:
+        """
+        Извлекает значения из указанного столбца DataFrame, который содержит списки словарей,
+        на основе заданного ключа.
+
+        Args:
+            df (pd.DataFrame): DataFrame, из которого нужно извлечь значения.
+            column_name (str): название столбца, содержащего списки словарей.
+            key (str): ключ, по которому нужно извлечь значения из словарей.
+
+        Returns:
+            pd.Series: Series, содержащий списки извлеченных значений.
+        """
         return df[column_name].apply(lambda x: [d[key] for d in x] if x else [])
 
     exposed_data = pd.DataFrame({
@@ -100,6 +112,20 @@ def ExpandedFromDictionariesTargetsDF(data: pd.DataFrame) -> pd.DataFrame:
 def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
                               config: dict
                               ) -> pd.DataFrame:
+    """
+    Добавляет столбцы 'IC50' и 'Ki' в DataFrame с данными о целевых белках (targets),
+    подсчитывая количество соответствующих активностей из базы данных ChEMBL,
+    а также опционально скачивает новые активности.
+
+    Args:
+        data (pd.DataFrame): DataFrame с данными о целевых белках.
+        config (dict): словарь, содержащий параметры конфигурации для процесса скачивания.
+
+    Returns:
+        pd.DataFrame: DataFrame с добавленными столбцами 'IC50' и 'Ki', содержащими количество
+                      соответствующих активностей.
+    """
+
     targets_config = config["ChEMBL_download_targets"]
 
     logger.info(
@@ -134,6 +160,15 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
 
 
 def DownloadTargetsFromIdList(config: dict):
+    """
+    Скачивает данные о целевых белках (targets) из ChEMBL по списку идентификаторов,
+    добавляет информацию об активностях IC50 и Ki, проводит первичный анализ
+    и сохраняет результаты в CSV-файл.
+
+    Args:
+        config (dict): словарь, содержащий параметры конфигурации для процесса скачивания.
+    """
+
     targets_config = config["ChEMBL_download_targets"]
 
     print_to_console = (
