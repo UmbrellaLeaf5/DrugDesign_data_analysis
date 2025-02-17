@@ -6,6 +6,7 @@ import time
 from io import StringIO
 import json
 import urllib.parse
+import numpy as np
 
 import pubchempy as pcp
 
@@ -235,6 +236,9 @@ def DownloadCompoundToxicity(compound_data: dict,
 
             return df
 
+        if print_to_console_verbosely:
+            logger.info(f"Adding 'mw' for {compound_name}...")
+
         acute_effects = CalcMolecularWeight(
             acute_effects,
             "cid",
@@ -242,20 +246,60 @@ def DownloadCompoundToxicity(compound_data: dict,
         )
 
         # calculate_molecular_weight не нашла cid, то попробуем по sid
-        if 'mw' not in acute_effects.columns:
+        if "mw" not in acute_effects.columns:
             acute_effects = CalcMolecularWeight(
                 acute_effects,
                 "sid",
                 GetMolecularWeightBySid,
             )
 
+        acute_effects["mw"] = pd.to_numeric(acute_effects["mw"], errors='coerce')
+
+        if print_to_console_verbosely:
+            logger.success(f"Adding 'mw' for {compound_name}!")
+
+            logger.info(f"Filtering 'organism' and 'route' for {compound_name}...")
+
+        acute_effects = acute_effects[acute_effects["organism"].isin(["rat", "mouse"])]
+        acute_effects = acute_effects[acute_effects["route"].isin(
+            ["oral", "intraperitoneal", "intravenous", "subcutaneous"])]
+
+        if print_to_console_verbosely:
+            logger.success(f"Filtering 'organism' and 'route' for {compound_name}!")
+
+            logger.info(f"Filtering 'dose' for {compound_name}...")
+
+        acute_effects = acute_effects[acute_effects["dose"].astype(
+            str).str.lower().str.endswith('mg/kg')]
+
+        acute_effects["dose"] = acute_effects["dose"].astype(
+            str).str.extract(r'(\d+(?:\.\d+)?)', expand=False)
+
+        acute_effects["dose"] = pd.to_numeric(acute_effects["dose"], errors='coerce')
+
+        if print_to_console_verbosely:
+            logger.success(f"Filtering 'dose' for {compound_name}!")
+
+        if "mw" not in acute_effects.columns:
+            if print_to_console_verbosely:
+                logger.info(f"Adding 'pLD50' for {compound_name}...")
+
+            acute_effects["pLD50"] = -np.log10(
+                (acute_effects["dose"] / acute_effects["mw"]) / 1000000)
+
+            if print_to_console_verbosely:
+                logger.success(f"Adding 'pLD50' for {compound_name}!")
+
+        if print_to_console_verbosely:
+            logger.info(f"Saving {compound_name} to .csv...")
+
         acute_effects.to_csv(f"{compound_filename}.csv", index=False, mode='w')
 
         if print_to_console_verbosely:
+            logger.success(f"Saving {compound_name} to .csv!")
+
             logger.success(f"Downloading {compound_name}!")
+            logger.info(f"{'-' * 77}")
 
     except Exception as exception:
         LogException(exception)
-
-        print(compound_data)    # TEMP
-        exit()                  # TEMP
