@@ -162,11 +162,12 @@ cython_debug/
 #.idea/
 
 # VS Code
-.vscode
+.vscode/
+!.vscode/settings.json
 
 # Own files
 pip.txt
-temp.py
+temp.*
 logger.json
 
 # Own folders

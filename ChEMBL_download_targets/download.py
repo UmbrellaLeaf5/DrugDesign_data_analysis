@@ -48,7 +48,7 @@ def DownloadChEMBLTargets(config: dict):
 
     else:
         logger.warning(
-            f"{targets_config["results_file_name"]} is already downloaded, skip".ljust(77))
+            f"{targets_config["results_file_name"]} is already downloaded, skip")
 
     logger.success(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
     logger.info(f"{'-' * 77}")

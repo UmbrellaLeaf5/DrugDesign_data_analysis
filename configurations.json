@@ -411,7 +411,7 @@
     "logger_label": "PubChem_toxcomp",
     "logger_color": "fg #AEBA66",
     "results_folder_name": "results/pubchem/toxicity",
-    "sleep_time": 0.3,
+    "sleep_time": 0.211,
     "start_page": 1,
     "end_page": 113,
     "limit": 10000000

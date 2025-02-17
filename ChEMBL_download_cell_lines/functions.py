@@ -41,7 +41,7 @@ def QuerySetCellLinesFromIdList(cell_line_chembl_id_list: list[str]) -> QuerySet
 
 def GetRawCellLinesData(file_id: str, output_path: str):
     """
-    Скачивает zip-файл из Google.Drive, 
+    Скачивает zip-файл из Google.Drive,
     извлекает его содержимое, а затем удаляет zip-файл.
 
     Args:
@@ -81,15 +81,15 @@ def AddedIC50andGI50ToCellLinesDF(data: pd.DataFrame,
     cell_lines_config: dict = config["ChEMBL_download_cell_lines"]
 
     logger.info(
-        f"Adding 'IC50' and 'GI50' columns to pandas.DataFrame()...".ljust(77))
+        f"Adding 'IC50' and 'GI50' columns to pandas.DataFrame()...")
 
     try:
         logger.info(
-            f"Getting raw cell_lines from Google.Drive...".ljust(77))
+            f"Getting raw cell_lines from Google.Drive...")
         GetRawCellLinesData(config["ChEMBL_download_cell_lines"]["raw_csv_g_drive_id"],
                             config["ChEMBL_download_cell_lines"]["raw_csv_folder_name"])
         logger.success(
-            f"Getting raw cell_lines from Google.Drive: SUCCESS".ljust(77))
+            f"Getting raw cell_lines from Google.Drive!")
 
         data["IC50"] = data.apply(
             lambda value: CountCellLineActivitiesByFile(
@@ -100,7 +100,7 @@ def AddedIC50andGI50ToCellLinesDF(data: pd.DataFrame,
                 f"{cell_lines_config["raw_csv_folder_name"]}/{value["cell_chembl_id"]}_GI50_activities.csv"), axis=1)
 
         logger.success(
-            f"Adding 'IC50' and 'GI50' columns to pandas.DataFrame(): SUCCESS".ljust(77))
+            f"Adding 'IC50' and 'GI50' columns to pandas.DataFrame()!")
 
         if cell_lines_config["download_activities"]:
             GetCellLineChEMBLActivitiesFromCSV(data, config)
@@ -139,19 +139,19 @@ def DownloadCellLinesFromIdList(config: dict):
 
     try:
         logger.info(
-            f"Downloading cell lines...".ljust(77))
+            f"Downloading cell lines...")
         cell_lines_with_ids: QuerySet = QuerySetCellLinesFromIdList(
             cell_lines_config["id_list"])
 
         if cell_lines_config["id_list"] == []:
             cell_lines_with_ids = QuerySetAllCellLines()
 
-        logger.info(f"Amount: {len(cell_lines_with_ids)}".ljust(77))  # type: ignore
-        logger.success(f"Downloading cell lines: SUCCESS".ljust(77))
+        logger.info(f"Amount: {len(cell_lines_with_ids)}")  # type: ignore
+        logger.success(f"Downloading cell lines!")
 
         try:
             logger.info(
-                "Collecting cell lines to pandas.DataFrame()...".ljust(77))
+                "Collecting cell lines to pandas.DataFrame()...")
 
             data_frame = AddedIC50andGI50ToCellLinesDF(pd.DataFrame(cell_lines_with_ids),  # type: ignore
                                                        config=config)
@@ -159,10 +159,10 @@ def DownloadCellLinesFromIdList(config: dict):
             UpdateLoggerFormat(cell_lines_config["logger_label"], cell_lines_config["logger_color"])
 
             logger.success(
-                "Collecting cell lines to pandas.DataFrame(): SUCCESS".ljust(77))
+                "Collecting cell lines to pandas.DataFrame()!")
 
             logger.info(
-                f"Collecting cell lines to .csv file in '{cell_lines_config["results_folder_name"]}'...".ljust(77))
+                f"Collecting cell lines to .csv file in '{cell_lines_config["results_folder_name"]}'...")
 
             if config["need_primary_analysis"]:
                 PrimaryAnalysisByColumns(data_frame=data_frame,
@@ -177,7 +177,7 @@ def DownloadCellLinesFromIdList(config: dict):
 
             data_frame.to_csv(file_name, sep=';', index=False)
             logger.success(
-                f"Collecting cell lines to .csv file in '{cell_lines_config["results_folder_name"]}': SUCCESS".ljust(77))
+                f"Collecting cell lines to .csv file in '{cell_lines_config["results_folder_name"]}'!")
 
         except Exception as exception:
             LogException(exception)

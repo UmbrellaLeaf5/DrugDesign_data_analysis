@@ -1,10 +1,13 @@
 # from icecream import ic
 
+from typing import Callable
 import requests
 import time
 from io import StringIO
 import json
 import urllib.parse
+
+import pubchempy as pcp
 
 from Utils.decorators import Retry
 from Utils.file_and_logger_funcs import *
@@ -129,14 +132,16 @@ def DownloadCompoundToxicity(compound_data: dict,
     """
 
     try:
-        cid = compound_data["LinkedRecords"]["CID"][0]
-        compound_filename = f"{page_dir}/compound_{cid}_toxicity"
+        cid: int | None
 
-        if os.path.exists(compound_filename) and skip_downloaded_files:
-            logger.info(f"Skipping existing file {compound_filename}".ljust(77))
-            return
+        try:
+            cid = compound_data["LinkedRecords"]["CID"][0]
+        except Exception as exception:
+            logger.warning(
+                f"No 'cid' for 'sid': {compound_data["LinkedRecords"]["SID"][0]}")
+            cid = None
 
-        raw_table = compound_data["Data"][0]["Value"]["ExternalTableName"]
+        raw_table: str = compound_data["Data"][0]["Value"]["ExternalTableName"]
         table_info: dict = {}
 
         for row in raw_table.split("&"):
@@ -144,12 +149,24 @@ def DownloadCompoundToxicity(compound_data: dict,
             table_info[key] = value
 
         if table_info["query_type"] != "sid":
-            logger.warning(f"Unknown query type at page {page_dir}".ljust(77))
+            LogException(ValueError(f"Unknown query type at page {page_dir}"))
 
         sid = int(table_info["query"])
 
+        compound_name: str = ""
+        if cid:
+            compound_name = f"compound_{cid}_{sid}_toxicity"
+        else:
+            compound_name = f"compound_{sid}_toxicity"
+
+        compound_filename = f"{page_dir}/{compound_name}"
+
+        if os.path.exists(compound_filename) and skip_downloaded_files:
+            logger.info(f"Skipping existing file {compound_name}")
+            return
+
         if print_to_console_verbosely:
-            logger.info(f"Downloading compound_{sid} toxicity...".ljust(77))
+            logger.info(f"Downloading {compound_name}...")
 
         acute_effects = GetDataFrameFromUrl(
             GetLinkFromSid(
@@ -160,16 +177,85 @@ def DownloadCompoundToxicity(compound_data: dict,
             sleep_time=sleep_time,
         )
 
-        # вот тут производить анализ и преобразования
-        # TODO: оставить все столбцы
-        # TODO: Dose: только число [mg/kg]
-        # TODO: добавить MW: молекулярный вес каждого элемента
-        # TODO: добавить pLD50 = -log10((Dose(mg/kg)/MW)/1000000)
+        @Retry()
+        def GetMolecularWeightByCid(cid):
+            if pd.isna(cid) or not cid:
+                return None
+
+            return pcp.Compound.from_cid(str(cid)).molecular_weight
+
+        @Retry()
+        def GetMolecularWeightBySid(sid):
+            if pd.isna(sid) or not sid:
+                return None
+
+            cids = pcp.Substance.from_sid(str(sid)).cids
+            if len(cids):
+                return GetMolecularWeightByCid(cids[0])
+
+            else:
+                return None
+
+        def CalcMolecularWeight(df: pd.DataFrame,
+                                id_column: str,
+                                weight_function: Callable,
+                                ) -> pd.DataFrame:
+            unique_ids = df[id_column].dropna().unique()
+
+            if len(unique_ids) == 1:
+                mw = weight_function(unique_ids[0])
+
+                if mw is not None:
+                    df["mw"] = mw
+
+                    if print_to_console_verbosely:
+                        logger.info(
+                            f"Found 'mw' by '{id_column}' for {compound_name}")
+
+                else:
+                    logger.warning(
+                        f"Could not retrieve molecular weight by '{id_column}' for {unique_ids[0]}")
+
+                    return df
+
+            elif len(unique_ids) == 0:
+                logger.warning(f"No '{id_column}' found for {compound_name}")
+                return df
+
+            else:
+                if print_to_console_verbosely:
+                    logger.warning(
+                        f"Non-unique 'mw' by {id_column} for {compound_name}")
+
+                df["mw"] = df[id_column].apply(weight_function)
+
+                if df["mw"].isnull().any():
+                    logger.warning(f"Some 'mw' could not be retrieved by {id_column} "
+                                   f"for {compound_name}")
+
+            return df
+
+        acute_effects = CalcMolecularWeight(
+            acute_effects,
+            "cid",
+            GetMolecularWeightByCid,
+        )
+
+        # calculate_molecular_weight не нашла cid, то попробуем по sid
+        if 'mw' not in acute_effects.columns:
+            acute_effects = CalcMolecularWeight(
+                acute_effects,
+                "sid",
+                GetMolecularWeightBySid,
+            )
 
         acute_effects.to_csv(f"{compound_filename}.csv", index=False, mode='w')
 
         if print_to_console_verbosely:
-            logger.success(f"Downloading compound_{sid} toxicity: SUCCESS".ljust(77))
+            logger.success(f"Downloading {compound_name}!")
 
     except Exception as exception:
         LogException(exception)
+
+        print(compound_data)    # TEMP
+        exit()                  # TEMP

@@ -150,25 +150,25 @@ def DownloadCompoundsByMWRange(less_limit: int,
 
     try:
         logger.info(
-            f"Downloading molecules with mw in range [{less_limit}, {greater_limit})...".ljust(77))
+            f"Downloading molecules with mw in range [{less_limit}, {greater_limit})...")
         mols_in_mw_range: QuerySet = QuerySetCompoundsByMWRange(
             less_limit, greater_limit)
 
         logger.info(
-            (f"Amount: {len(mols_in_mw_range)}").ljust(77))  # type: ignore
+            (f"Amount: {len(mols_in_mw_range)}"))  # type: ignore
         logger.success(
-            f"Downloading molecules with mw in range [{less_limit}, {greater_limit}): SUCCESS".ljust(77))
+            f"Downloading molecules with mw in range [{less_limit}, {greater_limit})!")
 
         try:
             logger.info(
-                "Collecting molecules to pandas.DataFrame()...".ljust(77))
+                "Collecting molecules to pandas.DataFrame()...")
             data_frame = ExpandedFromDictionariesCompoundsDF(pd.DataFrame(
                 mols_in_mw_range))  # type: ignore
             logger.success(
-                "Collecting molecules to pandas.DataFrame(): SUCCESS".ljust(77))
+                "Collecting molecules to pandas.DataFrame()!")
 
             logger.info(
-                f"Collecting molecules to .csv file in '{results_folder_name}'...".ljust(77))
+                f"Collecting molecules to .csv file in '{results_folder_name}'...")
 
             if need_primary_analysis:
                 PrimaryAnalysisByColumns(data_frame=data_frame,
@@ -183,7 +183,7 @@ def DownloadCompoundsByMWRange(less_limit: int,
 
             data_frame.to_csv(file_name, sep=';', index=False)
             logger.success(
-                f"Collecting molecules to .csv file in '{results_folder_name}': SUCCESS".ljust(77))
+                f"Collecting molecules to .csv file in '{results_folder_name}'!")
 
         except Exception as exception:
             LogException(exception)
@@ -208,7 +208,7 @@ def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str],
 
     if not molecule_chembl_id_list:
         logger.warning(
-            "Molecules list is empty, nothing to save to .sdf!".ljust(77))
+            "Molecules list is empty, nothing to save to .sdf!")
         return
 
     @Retry()
@@ -301,11 +301,11 @@ def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str],
                     file.write(f"{value}\n\n")
 
         if print_to_console:
-            logger.info(f"Opening {file_name}...".ljust(77))
+            logger.info(f"Opening {file_name}...")
 
         with open(f"{file_name}.sdf", 'w', encoding='utf-8') as f:
             if print_to_console:
-                logger.success(f"Opening {file_name}".ljust(77))
+                logger.success(f"Opening {file_name}")
 
             for value in data.values:
                 try:
@@ -328,18 +328,18 @@ def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str],
 
                     if print_to_console:
                         logger.info(
-                            f"Writing {molecule_chembl_id} data to .sdf file...".ljust(77))
+                            f"Writing {molecule_chembl_id} data to .sdf file...")
 
                 except Exception as exception:
                     LogException(exception)
 
     if print_to_console:
-        logger.info("Collecting molfiles to pandas.DataFrame()...".ljust(77))
+        logger.info("Collecting molfiles to pandas.DataFrame()...")
 
     data = DataFrameMolfilesFromIdList(molecule_chembl_id_list)
 
     if print_to_console:
-        logger.success("Collecting molfiles to pandas.DataFrame()".ljust(77))
+        logger.success("Collecting molfiles to pandas.DataFrame()")
 
     SaveMolfilesToSDF(data=data,
                       file_name=file_name,

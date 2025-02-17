@@ -38,7 +38,7 @@ def DownloadPubChemCompoundsToxicity(config: dict):
             LogException(exception)
             return
 
-        logger.info(f"Amount: {len(data["Annotation"])}".ljust(77))
+        logger.info(f"Amount: {len(data["Annotation"])}")
 
         total_pages = int(data["TotalPages"])
         if page > total_pages:

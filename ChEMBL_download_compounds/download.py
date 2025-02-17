@@ -55,8 +55,8 @@ def DownloadChEMBLCompounds(config: dict):
                 primary_analysis_folder_name=config["primary_analysis_folder_name"])
 
         else:
-            logger.warning((f"Molecules with mw in range [{less_limit}, "
-                           f"{greater_limit}) is already downloaded, skip").ljust(77))
+            logger.warning(f"Molecules with mw in range [{less_limit}, "
+                           f"{greater_limit}) is already downloaded, skip")
 
         logger.info(f"{'-' * 77}")
 
@@ -70,13 +70,13 @@ def DownloadChEMBLCompounds(config: dict):
 
     if compounds["delete_after_combining"]:
         logger.info(
-            f"Deleting files after combining in '{compounds["results_folder_name"]}'...".ljust(77))
+            f"Deleting files after combining in '{compounds["results_folder_name"]}'...")
 
         try:
             DeleteFilesInFolder(compounds["results_folder_name"], [
                                 f"{compounds["combined_file_name"]}.csv"])
             logger.success(
-                f"Deleting files after combining in '{compounds["results_folder_name"]}'".ljust(77))
+                f"Deleting files after combining in '{compounds["results_folder_name"]}'")
 
         except Exception as exception:
             LogException(exception)

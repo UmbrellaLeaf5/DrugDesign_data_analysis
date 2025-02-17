@@ -105,10 +105,10 @@ def CleanedTargetActivitiesDF(data: pd.DataFrame,
     """
 
     if print_to_console:
-        logger.info((f"Start cleaning {activities_type} activities DataFrame from "
-                    f"{target_id}...").ljust(77))
+        logger.info(f"Start cleaning {activities_type} activities DataFrame from "
+                    f"{target_id}...")
 
-        logger.info(f"Deleting useless columns...".ljust(77))
+        logger.info(f"Deleting useless columns...")
 
     try:
 
@@ -124,9 +124,9 @@ def CleanedTargetActivitiesDF(data: pd.DataFrame,
                           'value', 'ligand_efficiency', 'relation'], axis=1)
 
         if print_to_console:
-            logger.success("Deleting useless columns: SUCCESS".ljust(77))
+            logger.success("Deleting useless columns!")
 
-            logger.info("Deleting inappropriate elements...".ljust(77))
+            logger.info("Deleting inappropriate elements...")
 
         data = data[data['standard_relation'] == '=']
         data = data[data['standard_units'] == 'nM']
@@ -145,19 +145,19 @@ def CleanedTargetActivitiesDF(data: pd.DataFrame,
 
         if print_to_console:
             logger.success(
-                "Deleting inappropriate elements: SUCCESS".ljust(77))
+                "Deleting inappropriate elements!")
 
             logger.info(
-                "Calculating median for 'standard value'...".ljust(77))
+                "Calculating median for 'standard value'...")
 
         data = MedianDedupedDF(data, "molecule_chembl_id", "standard_value")
 
         if print_to_console:
             logger.success(
-                f"Calculating median for 'standard value': SUCCESS".ljust(77))
+                f"Calculating median for 'standard value'!")
 
             logger.info(
-                f"Reindexing columns in logical order...".ljust(77))
+                f"Reindexing columns in logical order...")
 
         data = data.reindex(columns=["molecule_chembl_id", "parent_molecule_chembl_id",
                                      "canonical_smiles", "document_chembl_id", "standard_relation",
@@ -169,10 +169,10 @@ def CleanedTargetActivitiesDF(data: pd.DataFrame,
 
         if print_to_console:
             logger.success(
-                f"Reindexing columns in logical order: SUCCESS".ljust(77))
+                f"Reindexing columns in logical order!")
 
-            logger.success(("End cleaning activities DataFrame from "
-                           f"{target_id}").ljust(77))
+            logger.success("End cleaning activities DataFrame from "
+                           f"{target_id}")
 
     except Exception as exception:
         LogException(exception)
@@ -202,10 +202,10 @@ def CleanedCellLineActivitiesDF(data: pd.DataFrame,
     """
 
     if print_to_console:
-        logger.info((f"Start cleaning {activities_type} activities DataFrame from "
-                    f"{cell_id}...").ljust(77))
+        logger.info(f"Start cleaning {activities_type} activities DataFrame from "
+                    f"{cell_id}...")
 
-        logger.info(f"Deleting useless columns...".ljust(77))
+        logger.info(f"Deleting useless columns...")
 
     try:
         data = data[['Molecule ChEMBL ID', 'Smiles', 'Document ChEMBL ID',
@@ -219,9 +219,9 @@ def CleanedCellLineActivitiesDF(data: pd.DataFrame,
                         for column_name in data.columns]
 
         if print_to_console:
-            logger.success("Deleting useless columns: SUCCESS".ljust(77))
+            logger.success("Deleting useless columns!")
 
-            logger.info("Deleting inappropriate elements...".ljust(77))
+            logger.info("Deleting inappropriate elements...")
 
         data = data[data['standard_relation'] == "'='"]
         data['standard_relation'] = data['standard_relation'].str.replace(
@@ -240,19 +240,19 @@ def CleanedCellLineActivitiesDF(data: pd.DataFrame,
 
         if print_to_console:
             logger.success(
-                f"Deleting inappropriate elements: SUCCESS".ljust(77))
+                f"Deleting inappropriate elements!")
 
             logger.info(
-                f"Calculating median for 'standard value'...".ljust(77))
+                f"Calculating median for 'standard value'...")
 
         data = MedianDedupedDF(data, "molecule_chembl_id", "standard_value")
 
         if print_to_console:
             logger.success(
-                f"Calculating median for 'standard value': SUCCESS".ljust(77))
+                f"Calculating median for 'standard value'!")
 
             logger.info(
-                f"Reindexing columns in logical order...".ljust(77))
+                f"Reindexing columns in logical order...")
 
         data = data.reindex(columns=["molecule_chembl_id",
                                      "canonical_smiles", "document_chembl_id", "standard_relation",
@@ -264,9 +264,9 @@ def CleanedCellLineActivitiesDF(data: pd.DataFrame,
 
         if print_to_console:
             logger.success(
-                f"Reindexing columns in logical order: SUCCESS".ljust(77))
+                f"Reindexing columns in logical order!")
 
-            logger.success(f"End cleaning activities DataFrame from {cell_id}".ljust(77))
+            logger.success(f"End cleaning activities DataFrame from {cell_id}")
 
     except Exception as exception:
         LogException(exception)

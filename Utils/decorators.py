@@ -3,7 +3,7 @@ from typing import Callable
 import time
 from functools import wraps
 
-from Utils.file_and_logger_funcs import logger
+from Utils.file_and_logger_funcs import logger, LogException
 
 
 def IgnoreWarnings(func: Callable) -> Callable:
@@ -52,11 +52,13 @@ def Retry(attempts_amount: int = 3,
                     return func(*args, **kwargs)
 
                 except exception_to_check as exception:
-                    logger.warning(f"{exception} | Attempt: {attempt}".ljust(77))
+                    LogException(exception)
+                    logger.warning(f"Attempt: {attempt}")
+
                     if attempt < attempts_amount:
                         time.sleep(sleep_time)
 
-            logger.error("All attempts failed".ljust(77))
+            logger.error("All attempts failed!")
             return None
 
         return Wrapper

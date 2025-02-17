@@ -46,7 +46,7 @@ def ExpandedFromDictionariesTargetsDF(data: pd.DataFrame) -> pd.DataFrame:
         pd.DataFrame: "раскрытый" pd.DataFrame
     """
 
-    logger.info(f"Expanding pandas.DataFrame() from dictionaries...".ljust(77))
+    logger.info(f"Expanding pandas.DataFrame() from dictionaries...")
 
     def ExtractedValuesFromColumn(df: pd.DataFrame,
                                   column_name: str,
@@ -104,7 +104,7 @@ def ExpandedFromDictionariesTargetsDF(data: pd.DataFrame) -> pd.DataFrame:
     data = pd.concat([data, exposed_data, target_components_data], axis=1)
 
     logger.success(
-        f"Expanding pandas.DataFrame() from dictionaries: SUCCESS".ljust(77))
+        f"Expanding pandas.DataFrame() from dictionaries!")
 
     return data
 
@@ -129,7 +129,7 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
     targets_config = config["ChEMBL_download_targets"]
 
     logger.info(
-        f"Adding 'IC50' and 'Ki' columns to pandas.DataFrame()...".ljust(77))
+        f"Adding 'IC50' and 'Ki' columns to pandas.DataFrame()...")
 
     try:
         data["IC50"] = data["target_chembl_id"].apply(
@@ -138,7 +138,7 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
             CountTargetActivitiesByKi)
 
         logger.success(
-            f"Adding 'IC50' and 'Ki' columns to pandas.DataFrame(): SUCCESS".ljust(77))
+            f"Adding 'IC50' and 'Ki' columns to pandas.DataFrame()!")
 
         if targets_config["download_activities"]:
             DownloadTargetChEMBLActivities(data, config)
@@ -176,19 +176,19 @@ def DownloadTargetsFromIdList(config: dict):
 
     try:
         logger.info(
-            f"Downloading targets...".ljust(77))
+            f"Downloading targets...")
         targets_with_ids: QuerySet = QuerySetTargetsFromIdList(
             targets_config["id_list"])
 
         if targets_config["id_list"] == []:
             targets_with_ids = QuerySetAllTargets()
 
-        logger.info(f"Amount: {len(targets_with_ids)}".ljust(77))  # type: ignore
-        logger.success(f"Downloading targets: SUCCESS".ljust(77))
+        logger.info(f"Amount: {len(targets_with_ids)}")  # type: ignore
+        logger.success(f"Downloading targets!")
 
         try:
             logger.info(
-                "Collecting targets to pandas.DataFrame()...".ljust(77))
+                "Collecting targets to pandas.DataFrame()...")
 
             data_frame = AddedIC50andKiToTargetsDF(
                 ExpandedFromDictionariesTargetsDF(pd.DataFrame(targets_with_ids)),  # type: ignore
@@ -198,10 +198,10 @@ def DownloadTargetsFromIdList(config: dict):
             UpdateLoggerFormat("ChEMBL__targets", "fg #CBDD7C")
 
             logger.success(
-                "Collecting targets to pandas.DataFrame(): SUCCESS".ljust(77))
+                "Collecting targets to pandas.DataFrame()!")
 
             logger.info(
-                f"Collecting targets to .csv file in '{targets_config["results_folder_name"]}'...".ljust(77))
+                f"Collecting targets to .csv file in '{targets_config["results_folder_name"]}'...")
 
             if config["need_primary_analysis"]:
                 PrimaryAnalysisByColumns(data_frame=data_frame,
@@ -216,7 +216,7 @@ def DownloadTargetsFromIdList(config: dict):
 
             data_frame.to_csv(file_name, sep=';', index=False)
             logger.success(
-                f"Collecting targets to .csv file in '{targets_config["results_folder_name"]}': SUCCESS".ljust(77))
+                f"Collecting targets to .csv file in '{targets_config["results_folder_name"]}'!")
 
         except Exception as exception:
             LogException(exception)
