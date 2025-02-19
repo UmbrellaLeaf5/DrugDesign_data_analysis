@@ -69,7 +69,9 @@ def CreateFolder(folder_name: str,
 
 def CombineCSVInFolder(folder_name: str,
                        combined_file_name: str,
+                       sep: str = ";",
                        logger_label: str = "ChEMBL__combine",
+                       logger_color: str = "fg #474747",
                        print_to_console: bool = False,
                        skip_downloaded_files: bool = False):
     """
@@ -78,12 +80,13 @@ def CombineCSVInFolder(folder_name: str,
     Args:
         folder_name (str): имя папки с .csv файлами.
         combined_file_name (str): имя склеенного .csv файла.
+        sep (str, optional): разделитель между колонками внутри .csv файлов. Defaults to ";".
         logger_label (str, optional): текст заголовка для логирования. Defaults to "ChEMBL__combine".
         print_to_console (bool, optional): нужно ли выводить логирование в консоль. Defaults to False.
         skip_downloaded_files (bool, optional): Пропускать ли уже скачанные файлы. Defaults to False.
     """
 
-    UpdateLoggerFormat(logger_label, "fg #474747")
+    UpdateLoggerFormat(logger_label, logger_color)
 
     logger.info(f"Start combining all downloads...")
     logger.info(f"{'-' * 77}")
@@ -109,7 +112,7 @@ def CombineCSVInFolder(folder_name: str,
                 logger.info(
                     f"Collecting '{file_name}' to pandas.DataFrame()...")
             try:
-                df = pd.read_csv(full_file_name, sep=';', low_memory=False)
+                df = pd.read_csv(full_file_name, sep=sep, low_memory=False)
 
                 if print_to_console:
                     logger.success(
@@ -134,7 +137,7 @@ def CombineCSVInFolder(folder_name: str,
         f"Collecting to combined .csv file in '{folder_name}'...")
     try:
         combined_df.to_csv(
-            f"{folder_name}/{combined_file_name}.csv", sep=';', index=False)
+            f"{folder_name}/{combined_file_name}.csv", sep=sep, index=False)
         logger.success(
             f"Collecting to combined .csv file in '{folder_name}'!")
 
@@ -146,21 +149,21 @@ def CombineCSVInFolder(folder_name: str,
 
 
 def UpdateLoggerFormat(logger_label: str,
-                       color: str,
+                       logger_color: str,
                        out: TextIO | TextIOWrapper = sys.stdout):
     """
     Обновляет формат вывода логирования.
 
     Args:
         logger_label (str): текст заголовка для логирования.
-        color (str): цвет заголовка для логирования.
+        logger_color (str): цвет заголовка для логирования.
         out (TextIO | TextIOWrapper, optional): способ вывода. Defaults to sys.stdout.
     """
     def AlignedFormat(record):
         return "[{time:DD.MM.YYYY HH:mm:ss}] " +\
-               f"<{color}>{logger_label}:</{color}> " +\
+               f"<{logger_color}>{logger_label}:</{logger_color}> " +\
                f"{record["message"]} ".ljust(78) +\
-               f"[<level>{record['level']}</level>]\n"
+               f"[<level>{record["level"]}</level>]\n"
 
     logger.remove()
     logger.add(sink=out,
@@ -170,7 +173,7 @@ def UpdateLoggerFormat(logger_label: str,
         json.dump(
             {
                 "logger_label": logger_label,
-                "color": color
+                "color": logger_color
             },
             file,
             ensure_ascii=False,
@@ -194,10 +197,12 @@ def LogException(exception: Exception,
     with open("logger.json", "r", encoding="utf-8") as f:
         logger_config = json.load(f)
 
-    with open(file_name, 'a', encoding='utf-8') as f:
-        UpdateLoggerFormat(logger_config["logger_label"], logger_config["color"], f)
+    with open(file_name, "a", encoding="utf-8") as f:
+        UpdateLoggerFormat(logger_config["logger_label"],
+                           logger_config["color"], f)
 
         logger.error(
             f"{re.sub(r'"(.*?)\",\s+line\s+(\d+)', r'\1:\2', traceback.format_exc())}")
 
-    UpdateLoggerFormat(logger_config["logger_label"], logger_config["color"], sys.stdout)
+    UpdateLoggerFormat(logger_config["logger_label"],
+                       logger_config["color"], sys.stdout)

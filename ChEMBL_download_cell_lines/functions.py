@@ -56,7 +56,7 @@ def GetRawCellLinesData(file_id: str, output_path: str):
     zip_file_path = f"{output_path}.zip"
     gdown.download(url, zip_file_path, quiet=False)
 
-    with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
+    with zipfile.ZipFile(zip_file_path, "r") as zip_ref:
         zip_ref.extractall(output_path)
 
     os.remove(zip_file_path)
@@ -139,7 +139,7 @@ def DownloadCellLinesFromIdList(config: dict):
 
     try:
         logger.info(
-            f"Downloading cell lines...")
+            f"Downloading cell_lines...")
         cell_lines_with_ids: QuerySet = QuerySetCellLinesFromIdList(
             cell_lines_config["id_list"])
 
@@ -147,22 +147,23 @@ def DownloadCellLinesFromIdList(config: dict):
             cell_lines_with_ids = QuerySetAllCellLines()
 
         logger.info(f"Amount: {len(cell_lines_with_ids)}")  # type: ignore
-        logger.success(f"Downloading cell lines!")
+        logger.success(f"Downloading cell_lines!")
 
         try:
             logger.info(
-                "Collecting cell lines to pandas.DataFrame()...")
+                "Collecting cell_lines to pandas.DataFrame()...")
 
             data_frame = AddedIC50andGI50ToCellLinesDF(pd.DataFrame(cell_lines_with_ids),  # type: ignore
                                                        config=config)
 
-            UpdateLoggerFormat(cell_lines_config["logger_label"], cell_lines_config["logger_color"])
+            UpdateLoggerFormat(cell_lines_config["logger_label"],
+                               cell_lines_config["logger_color"])
 
             logger.success(
-                "Collecting cell lines to pandas.DataFrame()!")
+                "Collecting cell_lines to pandas.DataFrame()!")
 
             logger.info(
-                f"Collecting cell lines to .csv file in '{cell_lines_config["results_folder_name"]}'...")
+                f"Collecting cell_lines to .csv file in '{cell_lines_config["results_folder_name"]}'...")
 
             if config["need_primary_analysis"]:
                 PrimaryAnalysisByColumns(data_frame=data_frame,
@@ -175,9 +176,9 @@ def DownloadCellLinesFromIdList(config: dict):
 
             file_name: str = f"{cell_lines_config["results_folder_name"]}/{cell_lines_config["results_file_name"]}.csv"
 
-            data_frame.to_csv(file_name, sep=';', index=False)
+            data_frame.to_csv(file_name, sep=";", index=False)
             logger.success(
-                f"Collecting cell lines to .csv file in '{cell_lines_config["results_folder_name"]}'!")
+                f"Collecting cell_lines to .csv file in '{cell_lines_config["results_folder_name"]}'!")
 
         except Exception as exception:
             LogException(exception)

@@ -19,7 +19,8 @@ def DownloadChEMBLCellLines(config: dict):
     cell_lines_config: dict = config["ChEMBL_download_cell_lines"]
     activities_config: dict = config["ChEMBL_download_activities"]
 
-    UpdateLoggerFormat(cell_lines_config["logger_label"], cell_lines_config["logger_color"])
+    UpdateLoggerFormat(cell_lines_config["logger_label"],
+                       cell_lines_config["logger_color"])
 
     logger.info(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
 

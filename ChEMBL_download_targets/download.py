@@ -20,7 +20,8 @@ def DownloadChEMBLTargets(config: dict):
     targets_config = config["ChEMBL_download_targets"]
     activities_config = config["ChEMBL_download_activities"]
 
-    UpdateLoggerFormat(targets_config["logger_label"], targets_config["logger_color"])
+    UpdateLoggerFormat(targets_config["logger_label"],
+                       targets_config["logger_color"])
 
     logger.info(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
 

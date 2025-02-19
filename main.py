@@ -14,7 +14,7 @@ if __name__ == "__main__":
         config = json.load(f)
 
     # DownloadChEMBLCompounds(config)
-    # DownloadChEMBLCellLines(config)
-    # DownloadChEMBLTargets(config)
+    DownloadChEMBLCellLines(config)
+    DownloadChEMBLTargets(config)
 
     DownloadPubChemCompoundsToxicity(config)

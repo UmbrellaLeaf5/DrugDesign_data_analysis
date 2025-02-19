@@ -58,7 +58,7 @@ def GetDataFrameFromUrl(request_url: str,
 
     # определяем кодировку из заголовков ответа
     if res.encoding is None:
-        res.encoding = 'utf-8'  # (UTF-8, если кодировка не указана)
+        res.encoding = "utf-8"  # (UTF-8, если кодировка не указана)
 
     return pd.read_csv(StringIO(res.content.decode(res.encoding)))
 
@@ -253,7 +253,7 @@ def DownloadCompoundToxicity(compound_data: dict,
                 GetMolecularWeightBySid,
             )
 
-        acute_effects["mw"] = pd.to_numeric(acute_effects["mw"], errors='coerce')
+        acute_effects["mw"] = pd.to_numeric(acute_effects["mw"], errors="coerce")
 
         if print_to_console_verbosely:
             logger.success(f"Adding 'mw' for {compound_name}!")
@@ -270,12 +270,12 @@ def DownloadCompoundToxicity(compound_data: dict,
             logger.info(f"Filtering 'dose' for {compound_name}...")
 
         acute_effects = acute_effects[acute_effects["dose"].astype(
-            str).str.lower().str.endswith('mg/kg')]
+            str).str.lower().str.endswith("mg/kg")]
 
         acute_effects["dose"] = acute_effects["dose"].astype(
-            str).str.extract(r'(\d+(?:\.\d+)?)', expand=False)
+            str).str.extract(r"(\d+(?:\.\d+)?)", expand=False)
 
-        acute_effects["dose"] = pd.to_numeric(acute_effects["dose"], errors='coerce')
+        acute_effects["dose"] = pd.to_numeric(acute_effects["dose"], errors="coerce")
 
         if print_to_console_verbosely:
             logger.success(f"Filtering 'dose' for {compound_name}!")
@@ -293,13 +293,14 @@ def DownloadCompoundToxicity(compound_data: dict,
         if print_to_console_verbosely:
             logger.info(f"Saving {compound_name} to .csv...")
 
-        acute_effects.to_csv(f"{compound_filename}.csv", index=False, mode='w')
+        acute_effects.to_csv(f"{compound_filename}.csv", sep=";",
+                             index=False, mode="w")
 
         if print_to_console_verbosely:
             logger.success(f"Saving {compound_name} to .csv!")
 
             logger.success(f"Downloading {compound_name}!")
-            logger.info(f"{'-' * 77}")
+            logger.info(f"{"-" * 77}")
 
     except Exception as exception:
         LogException(exception)

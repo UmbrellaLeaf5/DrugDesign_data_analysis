@@ -83,7 +83,7 @@ def CountCellLineActivitiesByFile(file_name: str) -> int:
         int: количество.
     """
 
-    return sum(1 for _ in open(file_name, 'r'))
+    return sum(1 for _ in open(file_name, "r"))
 
 
 def CleanedTargetActivitiesDF(data: pd.DataFrame,
@@ -112,36 +112,36 @@ def CleanedTargetActivitiesDF(data: pd.DataFrame,
 
     try:
 
-        data = data.drop(['activity_id', 'activity_properties',
-                          'document_journal', 'document_year',
-                          'molecule_pref_name', 'pchembl_value',
-                          'potential_duplicate', 'qudt_units',
-                          'record_id', 'src_id', 'standard_flag',
-                          'standard_text_value', 'standard_upper_value',
-                          'target_chembl_id', 'target_pref_name',
-                          'target_tax_id', 'text_value', 'toid',
-                          'type', 'units', 'uo_units', 'upper_value',
-                          'value', 'ligand_efficiency', 'relation'], axis=1)
+        data = data.drop(["activity_id", "activity_properties",
+                          "document_journal", "document_year",
+                          "molecule_pref_name", "pchembl_value",
+                          "potential_duplicate", "qudt_units",
+                          "record_id", "src_id", "standard_flag",
+                          "standard_text_value", "standard_upper_value",
+                          "target_chembl_id", "target_pref_name",
+                          "target_tax_id", "text_value", "toid",
+                          "type", "units", "uo_units", "upper_value",
+                          "value", "ligand_efficiency", "relation"], axis=1)
 
         if print_to_console:
             logger.success("Deleting useless columns!")
 
             logger.info("Deleting inappropriate elements...")
 
-        data = data[data['standard_relation'] == '=']
-        data = data[data['standard_units'] == 'nM']
-        data = data[data['target_organism'] == "Homo sapiens"]
-        data = data[data['standard_type'].isin(['IC50', 'Ki'])]
-        data = data[data['assay_type'] == 'B']
+        data = data[data["standard_relation"] == "="]
+        data = data[data["standard_units"] == "nM"]
+        data = data[data["target_organism"] == "Homo sapiens"]
+        data = data[data["standard_type"].isin(["IC50", "Ki"])]
+        data = data[data["assay_type"] == "B"]
 
-        data['standard_value'] = data['standard_value'].astype(float)
+        data["standard_value"] = data["standard_value"].astype(float)
         # неправдоподобные значения
-        data = data[data['standard_value'] <= 1000000000]
+        data = data[data["standard_value"] <= 1000000000]
 
         data['activity_comment'] = data['activity_comment'].replace(
             "Not Determined", None)
 
-        data = data.drop(['target_organism', 'standard_type'], axis=1)
+        data = data.drop(["target_organism", "standard_type"], axis=1)
 
         if print_to_console:
             logger.success(
@@ -161,11 +161,11 @@ def CleanedTargetActivitiesDF(data: pd.DataFrame,
 
         data = data.reindex(columns=["molecule_chembl_id", "parent_molecule_chembl_id",
                                      "canonical_smiles", "document_chembl_id", "standard_relation",
-                                     "standard_value", "standard_units", 'assay_chembl_id',
-                                     'assay_description', 'assay_type', 'assay_variant_accession',
-                                     'assay_variant_mutation', 'action_type', 'activity_comment',
-                                     'data_validity_comment', 'data_validity_description',
-                                     'bao_endpoint', 'bao_format', 'bao_label'])
+                                     "standard_value", "standard_units", "assay_chembl_id",
+                                     "assay_description", "assay_type", "assay_variant_accession",
+                                     "assay_variant_mutation", "action_type", "activity_comment",
+                                     "data_validity_comment", "data_validity_description",
+                                     "bao_endpoint", "bao_format", "bao_label"])
 
         if print_to_console:
             logger.success(
@@ -208,14 +208,14 @@ def CleanedCellLineActivitiesDF(data: pd.DataFrame,
         logger.info(f"Deleting useless columns...")
 
     try:
-        data = data[['Molecule ChEMBL ID', 'Smiles', 'Document ChEMBL ID',
-                    'Standard Type', 'Standard Relation', 'Standard Value',
-                     'Standard Units', 'Assay ChEMBL ID', 'Assay Description',
-                     'Assay Type', 'Assay Variant Accession', 'Assay Variant Mutation',
-                     'Action Type', 'Data Validity Comment', 'BAO Format ID', 'BAO Label',
-                     'Assay Organism']]
+        data = data[["Molecule ChEMBL ID", "Smiles", "Document ChEMBL ID",
+                     "Standard Type", "Standard Relation", "Standard Value",
+                     "Standard Units", "Assay ChEMBL ID", "Assay Description",
+                     "Assay Type", "Assay Variant Accession", "Assay Variant Mutation",
+                     "Action Type", "Data Validity Comment", "BAO Format ID", "BAO Label",
+                     "Assay Organism"]]
 
-        data.columns = [column_name.lower().replace(' ', '_')
+        data.columns = [column_name.lower().replace(" ", "_")
                         for column_name in data.columns]
 
         if print_to_console:
@@ -223,20 +223,20 @@ def CleanedCellLineActivitiesDF(data: pd.DataFrame,
 
             logger.info("Deleting inappropriate elements...")
 
-        data = data[data['standard_relation'] == "'='"]
-        data['standard_relation'] = data['standard_relation'].str.replace(
+        data = data[data["standard_relation"] == "'='"]
+        data["standard_relation"] = data["standard_relation"].str.replace(
             "'='", "=")
 
-        data = data[data['standard_units'] == 'nM']
+        data = data[data['standard_units'] == "nM"]
         data = data[data['assay_organism'] == "Homo sapiens"]
-        data = data[data['standard_type'].isin(['IC50', 'GI50'])]
+        data = data[data['standard_type'].isin(["IC50", "GI50"])]
 
         data['standard_value'] = data['standard_value'].astype(float)
         data = data[data['standard_value'] <= 1000000000]
 
-        data = data.drop(['assay_organism', 'standard_type'], axis=1)
+        data = data.drop(["assay_organism", "standard_type"], axis=1)
 
-        data = data.rename(columns={'smiles': 'canonical_smiles'})
+        data = data.rename(columns={'smiles': "canonical_smiles"})
 
         if print_to_console:
             logger.success(
@@ -256,11 +256,11 @@ def CleanedCellLineActivitiesDF(data: pd.DataFrame,
 
         data = data.reindex(columns=["molecule_chembl_id",
                                      "canonical_smiles", "document_chembl_id", "standard_relation",
-                                     "standard_value", "standard_units", 'assay_chembl_id',
-                                     'assay_description', 'assay_type', 'assay_variant_accession',
-                                     'assay_variant_mutation', 'action_type',
-                                     'data_validity_description',
-                                     'bao_format', 'bao_label'])
+                                     "standard_value", "standard_units", "assay_chembl_id",
+                                     "assay_description", "assay_type", "assay_variant_accession",
+                                     "assay_variant_mutation", "action_type",
+                                     "data_validity_description",
+                                     "bao_format", "bao_label"])
 
         if print_to_console:
             logger.success(

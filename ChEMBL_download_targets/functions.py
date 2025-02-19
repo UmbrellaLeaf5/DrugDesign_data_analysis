@@ -67,40 +67,40 @@ def ExpandedFromDictionariesTargetsDF(data: pd.DataFrame) -> pd.DataFrame:
 
     exposed_data = pd.DataFrame({
         #! cross_references
-        'xref_id':                                ExtractedValuesFromColumn(data, 'cross_references', 'xref_id'),
-        'xref_name':                              ExtractedValuesFromColumn(data, 'cross_references', 'xref_name'),
-        'xref_src':                               ExtractedValuesFromColumn(data, 'cross_references', 'xref_src'),
+        "xref_id":              ExtractedValuesFromColumn(data, "cross_references", "xref_id"),
+        "xref_name":            ExtractedValuesFromColumn(data, "cross_references", "xref_name"),
+        "xref_src":             ExtractedValuesFromColumn(data, "cross_references", "xref_src"),
     })
 
     # избавлюсь от списков, так как в них находятся одиночные словари
-    data['target_components'] = data['target_components'].apply(
-        lambda x: x[0] if x else {'accession': None,
-                                  'component_description': None,
-                                  'component_id': None,
-                                  'component_type': None,
-                                  'relationship': None,
-                                  'target_component_synonyms': [],
-                                  'target_component_xrefs': []})
+    data["target_components"] = data["target_components"].apply(
+        lambda x: x[0] if x else {"accession": None,
+                                  "component_description": None,
+                                  "component_id": None,
+                                  "component_type": None,
+                                  "relationship": None,
+                                  "target_component_synonyms": [],
+                                  "target_component_xrefs": []})
 
     target_components_data = pd.DataFrame(
-        data['target_components'].values.tolist())
+        data["target_components"].values.tolist())
 
     exposed_target_components_data = pd.DataFrame({
         #! target_component_synonyms
-        'component_synonym':                      ExtractedValuesFromColumn(target_components_data, 'target_component_synonyms', 'component_synonym'),
-        'syn_type':                               ExtractedValuesFromColumn(target_components_data, 'target_component_synonyms', 'syn_type'),
+        "component_synonym":                      ExtractedValuesFromColumn(target_components_data, "target_component_synonyms", "component_synonym"),
+        "syn_type":                               ExtractedValuesFromColumn(target_components_data, "target_component_synonyms", "syn_type"),
         #! target_component_xrefs
-        'xref_id_target_component_xrefs':         ExtractedValuesFromColumn(target_components_data, 'target_component_xrefs', 'xref_id'),
-        'xref_name_target_component_xrefs':       ExtractedValuesFromColumn(target_components_data, 'target_component_xrefs', 'xref_name'),
-        'xref_src_db_target_component_xrefs':     ExtractedValuesFromColumn(target_components_data, 'target_component_xrefs', 'xref_src_db'),
+        "xref_id_target_component_xrefs":         ExtractedValuesFromColumn(target_components_data, "target_component_xrefs", "xref_id"),
+        "xref_name_target_component_xrefs":       ExtractedValuesFromColumn(target_components_data, "target_component_xrefs", "xref_name"),
+        "xref_src_db_target_component_xrefs":     ExtractedValuesFromColumn(target_components_data, "target_component_xrefs", "xref_src_db"),
     })
 
     target_components_data = target_components_data.drop(
-        ['target_component_synonyms', 'target_component_xrefs'], axis=1)
+        ["target_component_synonyms", "target_component_xrefs"], axis=1)
     target_components_data = pd.concat(
         [target_components_data, exposed_target_components_data], axis=1)
 
-    data = data.drop(['cross_references', 'target_components'], axis=1)
+    data = data.drop(["cross_references", "target_components"], axis=1)
     data = pd.concat([data, exposed_data, target_components_data], axis=1)
 
     logger.success(
@@ -195,7 +195,8 @@ def DownloadTargetsFromIdList(config: dict):
                 config=config
             )
 
-            UpdateLoggerFormat("ChEMBL__targets", "fg #CBDD7C")
+            UpdateLoggerFormat(targets_config["logger_label"],
+                               targets_config["logger_color"])
 
             logger.success(
                 "Collecting targets to pandas.DataFrame()!")
@@ -210,11 +211,12 @@ def DownloadTargetsFromIdList(config: dict):
                                              targets_config["results_folder_name"]}/{config["primary_analysis_folder_name"]}",
                                          print_to_console=print_to_console)
 
-                UpdateLoggerFormat("ChEMBL__targets", "fg #CBDD7C")
+                UpdateLoggerFormat(targets_config["logger_label"],
+                                   targets_config["logger_color"])
 
             file_name: str = f"{targets_config["results_folder_name"]}/{targets_config["results_file_name"]}.csv"
 
-            data_frame.to_csv(file_name, sep=';', index=False)
+            data_frame.to_csv(file_name, sep=";", index=False)
             logger.success(
                 f"Collecting targets to .csv file in '{targets_config["results_folder_name"]}'!")
 

@@ -102,8 +102,8 @@ def DownloadTargetChEMBLActivities(targets_data: pd.DataFrame,
             full_file_name_ic50: str = f"{activities_config["results_folder_name"]}/{file_name_ic50}.csv"
             full_file_name_ki: str = f"{activities_config["results_folder_name"]}/{file_name_ki}.csv"
 
-            data_frame_ic50.to_csv(full_file_name_ic50, sep=';', index=False)
-            data_frame_ki.to_csv(full_file_name_ki, sep=';', index=False)
+            data_frame_ic50.to_csv(full_file_name_ic50, sep=";", index=False)
+            data_frame_ki.to_csv(full_file_name_ki, sep=";", index=False)
 
             if config["print_to_console_verbosely"]:
                 logger.success(
@@ -188,10 +188,11 @@ def GetCellLineChEMBLActivitiesFromCSV(cell_lines_data: pd.DataFrame,
     cell_lines_config = config["ChEMBL_download_cell_lines"]
     compounds_config = config["ChEMBL_download_compounds"]
 
-    UpdateLoggerFormat(activities_config["logger_label"], activities_config["logger_color"])
+    UpdateLoggerFormat(activities_config["logger_label"],
+                       activities_config["logger_color"])
 
     logger.info(
-        f"Start getting activities connected with cell lines...")
+        f"Start getting activities connected with cell_lines...")
 
     logger.info(f"{'-' * 77}")
 
@@ -213,17 +214,17 @@ def GetCellLineChEMBLActivitiesFromCSV(cell_lines_data: pd.DataFrame,
 
         data_frame_ic50 = pd.read_csv(
             f"{cell_lines_config["raw_csv_folder_name"]}/{file_name_ic50}.csv",
-            sep=';', low_memory=False)
+            sep=";", low_memory=False)
 
         data_frame_gi50 = pd.read_csv(
             f"{cell_lines_config["raw_csv_folder_name"]}/{file_name_gi50}.csv",
-            sep=';', low_memory=False)
+            sep=";", low_memory=False)
 
         if config["print_to_console_verbosely"]:
             logger.info(f"Amount: IC50: {len(data_frame_ic50)}; "
                         f"GI50: {len(data_frame_gi50)}")
 
-            logger.success("Getting activities connected with {cell_id}!")
+            logger.success(f"Getting activities connected with {cell_id}!")
 
             logger.info(
                 "Cleaning activities...")
@@ -265,8 +266,8 @@ def GetCellLineChEMBLActivitiesFromCSV(cell_lines_data: pd.DataFrame,
             full_file_name_ic50: str = f"{activities_config["results_folder_name"]}/{file_name_ic50}.csv"
             full_file_name_gi50: str = f"{activities_config["results_folder_name"]}/{file_name_gi50}.csv"
 
-            data_frame_ic50.to_csv(full_file_name_ic50, sep=';', index=False)
-            data_frame_gi50.to_csv(full_file_name_gi50, sep=';', index=False)
+            data_frame_ic50.to_csv(full_file_name_ic50, sep=";", index=False)
+            data_frame_gi50.to_csv(full_file_name_gi50, sep=";", index=False)
 
             if config["print_to_console_verbosely"]:
                 logger.success(
@@ -274,8 +275,8 @@ def GetCellLineChEMBLActivitiesFromCSV(cell_lines_data: pd.DataFrame,
 
             if activities_config["download_compounds_sdf"]:
                 if config["print_to_console_verbosely"]:
-                    UpdateLoggerFormat(
-                        compounds_config["logger_label"], compounds_config["logger_color"])
+                    UpdateLoggerFormat(compounds_config["logger_label"],
+                                       compounds_config["logger_color"])
 
                     logger.info(
                         f"Start download molfiles connected with {cell_id} to .sdf...")
@@ -321,7 +322,8 @@ def GetCellLineChEMBLActivitiesFromCSV(cell_lines_data: pd.DataFrame,
                 except Exception as exception:
                     LogException(exception)
 
-            UpdateLoggerFormat(activities_config["logger_label"], activities_config["logger_color"])
+            UpdateLoggerFormat(activities_config["logger_label"],
+                               activities_config["logger_color"])
 
             if config["print_to_console_verbosely"]:
                 logger.info(f"{'-' * 77}")
@@ -330,4 +332,4 @@ def GetCellLineChEMBLActivitiesFromCSV(cell_lines_data: pd.DataFrame,
             LogException(exception)
 
     logger.success(
-        f"End download activities connected with cell lines!")
+        f"End download activities connected with cell_lines!")

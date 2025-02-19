@@ -108,7 +108,7 @@ def MedianDedupedDF(df: pd.DataFrame,
 
     # новый pd.DataFrame с уникальными значениями id_column_name и соответствующими данными
     new_df = pd.DataFrame.from_dict(
-        median_and_id_data, orient='index').reset_index()
-    new_df.rename(columns={'index': id_column_name}, inplace=True)
+        median_and_id_data, orient="index").reset_index()
+    new_df.rename(columns={"index": id_column_name}, inplace=True)
 
     return new_df

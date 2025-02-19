@@ -23,7 +23,7 @@ def PrimaryAnalysisByColumns(data_frame: pd.DataFrame,
         data_name (str): имя исходных данных (нужно для логирования).
         folder_name (str): имя папки, куда сохранять .csv файл.
         logger_label (str, optional): текст заголовка логирования. Defaults to "ChEMBL_analysis".
-        logger_color (str, optional): цвет заголовка логирования .Defaults to "fg #C48BC0",
+        logger_color (str, optional): цвет заголовка логирования. Defaults to "fg #C48BC0".
         print_to_console (bool, optional): нужно ли выводить информацию в консоль. Defaults to False.
         save_to_csv (bool, optional): нужно ли сохранять информацию в .csv файл. Defaults to True.
     """
@@ -32,12 +32,12 @@ def PrimaryAnalysisByColumns(data_frame: pd.DataFrame,
 
     logger.info(f"Start analysis of '{data_name}'...")
 
-    summary: dict[str, list] = {'Column':            [],
-                                'Data type':         [],
-                                'Non-empty strings': [],
-                                'Common value':      [],
-                                'Max value':         [],
-                                'Min value':         []}
+    summary: dict[str, list] = {"Column":            [],
+                                "Data type":         [],
+                                "Non-empty strings": [],
+                                "Common value":      [],
+                                "Max value":         [],
+                                "Min value":         []}
 
     for column in data_frame.columns:
         # имя столбца
@@ -46,7 +46,7 @@ def PrimaryAnalysisByColumns(data_frame: pd.DataFrame,
             logger.info(f"{"Column".ljust(30)}: {column}")
 
         if save_to_csv:
-            summary['Column'].append(column)
+            summary["Column"].append(column)
 
         # тип данных
         try:
@@ -56,7 +56,7 @@ def PrimaryAnalysisByColumns(data_frame: pd.DataFrame,
                 logger.info(f"{"Type of data".ljust(30)}: {data_type}")
 
             if save_to_csv:
-                summary['Data type'].append(data_type)
+                summary["Data type"].append(data_type)
 
         except Exception as exception:
             if print_to_console:
@@ -64,7 +64,7 @@ def PrimaryAnalysisByColumns(data_frame: pd.DataFrame,
                     f"{"Data type: EXCEPTION".ljust(30)}: {exception}")
 
             if save_to_csv:
-                summary['Data type'].append("")
+                summary["Data type"].append("")
 
         # количество ненулевых строк
         non_null_count = 0
@@ -76,7 +76,7 @@ def PrimaryAnalysisByColumns(data_frame: pd.DataFrame,
             logger.info(f"{"Non-empty strings".ljust(30)}: {non_null_count}")
 
         if save_to_csv:
-            summary['Non-empty strings'].append(non_null_count)
+            summary["Non-empty strings"].append(non_null_count)
 
         # наиболее часто встречающееся значение
         try:
@@ -91,7 +91,7 @@ def PrimaryAnalysisByColumns(data_frame: pd.DataFrame,
                 logger.info(f"{"Common value".ljust(30)}: {common_value}")
 
             if save_to_csv:
-                summary['Common value'].append(common_value)
+                summary["Common value"].append(common_value)
 
         except Exception as exception:
             if print_to_console:
@@ -99,7 +99,7 @@ def PrimaryAnalysisByColumns(data_frame: pd.DataFrame,
                     f"{"Common value: EXCEPTION".ljust(30)}: {exception}")
 
             if save_to_csv:
-                summary['Common value'].append("")
+                summary["Common value"].append("")
 
         # максимальное и минимальное значения
         try:
@@ -126,8 +126,8 @@ def PrimaryAnalysisByColumns(data_frame: pd.DataFrame,
                 logger.info(f"{"Min value".ljust(30)}: {min_value}")
 
             if save_to_csv:
-                summary['Max value'].append(max_value)
-                summary['Min value'].append(min_value)
+                summary["Max value"].append(max_value)
+                summary["Min value"].append(min_value)
 
         except Exception as exception:
             if print_to_console:
@@ -137,8 +137,8 @@ def PrimaryAnalysisByColumns(data_frame: pd.DataFrame,
                     f"{"Min value: EXCEPTION".ljust(30)}: {exception}")
 
             if save_to_csv:
-                summary['Max value'].append("")
-                summary['Min value'].append("")
+                summary["Max value"].append("")
+                summary["Min value"].append("")
 
     if save_to_csv:
         try:
@@ -147,7 +147,7 @@ def PrimaryAnalysisByColumns(data_frame: pd.DataFrame,
 
             file_name: str = f"{folder_name}/{data_name}_analysis.csv"
 
-            pd.DataFrame(summary).to_csv(file_name, sep=';', index=False)
+            pd.DataFrame(summary).to_csv(file_name, sep=";", index=False)
 
             logger.success(
                 "Saving primary analysis to .csv file!")

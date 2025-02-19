@@ -1,1 +1,1 @@
-Здесь скачиваются `cell lines` необходимые `DrugDesign`.
+Здесь скачиваются `cell_lines` необходимые `DrugDesign`.

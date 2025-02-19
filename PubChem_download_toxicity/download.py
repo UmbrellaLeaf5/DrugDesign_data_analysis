@@ -13,17 +13,17 @@ def DownloadPubChemCompoundsToxicity(config: dict):
         config (dict): словарь, содержащий параметры конфигурации для процесса скачивания.
     """
 
-    toxicity = config["PubChem_download_toxicity"]
+    toxicity_config = config["PubChem_download_toxicity"]
 
     if config["testing_flag"]:
-        toxicity["start_page"] = toxicity["end_page"] = 1
+        toxicity_config["start_page"] = toxicity_config["end_page"] = 1
 
-    UpdateLoggerFormat(toxicity["logger_label"], toxicity["logger_color"])
+    UpdateLoggerFormat(toxicity_config["logger_label"], toxicity_config["logger_color"])
 
     logger.info(f"{'-' * 21} PubChem downloading for DrugDesign {'-' * 20}")
 
-    for page in range(toxicity["start_page"], toxicity["end_page"] + 1):
-        page_dir = f"{toxicity["results_folder_name"]}/page_{page}"
+    for page in range(toxicity_config["start_page"], toxicity_config["end_page"] + 1):
+        page_dir = f"{toxicity_config["results_folder_name"]}/page_{page}"
 
         CreateFolder(page_dir)
 
@@ -32,7 +32,8 @@ def DownloadPubChemCompoundsToxicity(config: dict):
             f"&page={page}"
 
         try:
-            data = GetResponse(compound_link, False,  toxicity["sleep_time"]).json()["Annotations"]
+            data = GetResponse(compound_link, False,  toxicity_config["sleep_time"]).json()[
+                "Annotations"]
 
         except Exception as exception:
             LogException(exception)
@@ -48,10 +49,10 @@ def DownloadPubChemCompoundsToxicity(config: dict):
         for _, compound_data in enumerate(data["Annotation"]):
             DownloadCompoundToxicity(compound_data,
                                      page_dir,
-                                     sleep_time=toxicity["sleep_time"],
+                                     sleep_time=toxicity_config["sleep_time"],
                                      skip_downloaded_files=config["skip_downloaded"],
                                      print_to_console_verbosely=config["print_to_console_verbosely"],
-                                     limit=toxicity["limit"])
+                                     limit=toxicity_config["limit"])
 
     logger.success(f"{'-' * 21} PubChem downloading for DrugDesign {'-' * 20}")
     logger.info(f"{'-' * 77}")

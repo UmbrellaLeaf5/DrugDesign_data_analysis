@@ -28,7 +28,7 @@ def IgnoreWarnings(func: Callable) -> Callable:
     return Wrapper
 
 
-def Retry(attempts_amount: int = 3,
+def Retry(attempts_amount: int = 5,
           exception_to_check: type[Exception] = Exception,
           sleep_time: float = 1
           ) -> Callable:
@@ -36,7 +36,7 @@ def Retry(attempts_amount: int = 3,
     Декоратор для повторения попыток выполнения функции.
 
     Args:
-        attempts_amount (int, optional): кол-во попыток. Defaults to 3.
+        attempts_amount (int, optional): кол-во попыток. Defaults to 5.
         exception_to_check (type[Exception], optional): улавливаемое исключение. Defaults to Exception.
         sleep_time (int, optional): время ожидания между попытками. Defaults to 1.
 
