@@ -1,7 +1,7 @@
-import warnings
-from typing import Callable
-import time
 from functools import wraps
+import time
+from typing import Callable
+import warnings
 
 from Utils.file_and_logger_funcs import logger, LogException
 

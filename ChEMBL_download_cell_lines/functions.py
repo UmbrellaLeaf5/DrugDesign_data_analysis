@@ -1,15 +1,14 @@
+import gdown
+import zipfile
+
 from chembl_webresource_client.new_client import new_client
 from chembl_webresource_client.query_set import QuerySet
-
-from Utils.decorators import ReTry
-from Utils.primary_analysis import *
 
 from ChEMBL_download_activities.download import GetCellLineChEMBLActivitiesFromCSV
 from ChEMBL_download_activities.functions import CountCellLineActivitiesByFile
 
-import gdown
-import zipfile
-import os
+from Utils.decorators import ReTry
+from Utils.file_and_logger_funcs import IsFolderEmpty, logger, os, pd, UpdateLoggerFormat
 
 
 @ReTry()
@@ -83,7 +82,7 @@ def AddedIC50andGI50ToCellLinesDF(data: pd.DataFrame,
 
     logger.info("Adding 'IC50' and 'GI50' columns to pandas.DataFrame()...")
 
-    if not IsFolderEmpty(cell_lines_config["raw_csv_folder_name"]):
+    if IsFolderEmpty(cell_lines_config["raw_csv_folder_name"]):
         logger.info("Getting raw cell_lines from Google.Drive...")
 
         GetRawCellLinesData(cell_lines_config["raw_csv_g_drive_id"],
@@ -152,12 +151,6 @@ def DownloadCellLinesFromIdList(config: dict):
 
     logger.info(
         f"Collecting cell_lines to .csv file in '{cell_lines_config["results_folder_name"]}'...")
-
-    if config["need_primary_analysis"]:
-        PrimaryAnalysisByColumns(data_frame=data_frame,
-                                 data_name=cell_lines_config["results_file_name"],
-                                 folder_name=f"{cell_lines_config["results_folder_name"]}/{config["primary_analysis_folder_name"]}",
-                                 print_to_console=config["print_to_console_verbosely"])
 
     file_name: str = f"{cell_lines_config["results_folder_name"]}/{cell_lines_config["results_file_name"]}.csv"
 

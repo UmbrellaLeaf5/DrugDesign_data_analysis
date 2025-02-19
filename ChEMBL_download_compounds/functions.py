@@ -1,14 +1,8 @@
-# from icecream import ic
-
-from io import TextIOWrapper
-
 from chembl_webresource_client.new_client import new_client
 from chembl_webresource_client.query_set import QuerySet
 
 from Utils.decorators import ReTry
-from Utils.primary_analysis import *
-
-# ic.disable()
+from Utils.file_and_logger_funcs import logger, pd, TextIOWrapper
 
 
 @ReTry()
@@ -132,10 +126,7 @@ def ExpandedFromDictionariesCompoundsDF(data: pd.DataFrame) -> pd.DataFrame:
 @ReTry(attempts_amount=1)
 def DownloadCompoundsByMWRange(less_limit: int,
                                greater_limit: int,
-                               results_folder_name: str,
-                               primary_analysis_folder_name: str,
-                               need_primary_analysis: bool,
-                               print_to_console: bool):
+                               results_folder_name: str):
     """
     Возвращает молекулы в диапазоне молекулярной массы [less_limit; greater_limit) из базы ChEMBL,
     сохраняя их в .csv файл.
@@ -144,9 +135,6 @@ def DownloadCompoundsByMWRange(less_limit: int,
         less_limit (int): нижняя граница.
         greater_limit (int): верхняя граница.
         results_folder_name (str): имя папки для закачки.
-        primary_analysis_folder_name (str): имя папки для сохранения данных о первичном анализе.
-        need_primary_analysis (bool): нужно ли проводить первичный анализ.
-        print_to_console (bool): нужно ли выводить логирование в консоль.
     """
 
     logger.info(
@@ -171,13 +159,6 @@ def DownloadCompoundsByMWRange(less_limit: int,
 
     logger.info(
         f"Collecting molecules to .csv file in '{results_folder_name}'...")
-
-    if need_primary_analysis:
-        PrimaryAnalysisByColumns(data_frame=data_frame,
-                                 data_name=f"mols_in_mw_range_{less_limit}_{greater_limit}",
-                                 folder_name=f"{
-                                     results_folder_name}/{primary_analysis_folder_name}",
-                                 print_to_console=print_to_console)
 
     file_name: str = f"{results_folder_name}/range_"\
         f"{less_limit}_{greater_limit}_mw_mols.csv"

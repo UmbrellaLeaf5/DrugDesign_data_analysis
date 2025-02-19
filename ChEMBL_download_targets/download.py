@@ -1,11 +1,7 @@
-
-# from icecream import ic
-
 from ChEMBL_download_targets.functions import *
 
 from Utils.decorators import IgnoreWarnings
-
-# ic.disable()
+from Utils.file_and_logger_funcs import CreateFolder, IsFileInFolder
 
 
 @IgnoreWarnings
@@ -26,10 +22,6 @@ def DownloadChEMBLTargets(config: dict):
     logger.info(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
 
     CreateFolder(targets_config["results_folder_name"])
-
-    if config["need_primary_analysis"]:
-        CreateFolder(
-            f"{targets_config["results_folder_name"]}/{config["primary_analysis_folder_name"]}")
 
     if targets_config["download_activities"]:
         CreateFolder(activities_config["results_folder_name"])

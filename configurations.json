@@ -1,7 +1,5 @@
 {
   "print_to_console_verbosely": true,
-  "need_primary_analysis": false,
-  "primary_analysis_folder_name": "primary_analysis",
   "testing_flag": true,
   "skip_downloaded": true,
   "ChEMBL_download_activities": {

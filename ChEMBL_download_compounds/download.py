@@ -1,10 +1,7 @@
-# from icecream import ic
-
 from ChEMBL_download_compounds.functions import *
 
 from Utils.decorators import IgnoreWarnings
-
-# ic.disable()
+from Utils.file_and_logger_funcs import *
 
 
 @IgnoreWarnings
@@ -23,19 +20,11 @@ def DownloadChEMBLCompounds(config: dict):
         raise ValueError(
             "DownloadChEMBLCompounds: delete_after_combining=True but need_combine=False")
 
-    if config["skip_downloaded"] and config["need_primary_analysis"]:
-        raise ValueError(
-            "DownloadChEMBLCompounds: skip_downloaded_files=True, nothing to analyse")
-
     UpdateLoggerFormat(compounds_config["logger_label"], compounds_config["logger_color"])
 
     logger.info(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
 
     CreateFolder(compounds_config["results_folder_name"])
-
-    if config["need_primary_analysis"]:
-        CreateFolder(
-            f"{compounds_config["results_folder_name"]}/{config["primary_analysis_folder_name"]}")
 
     logger.info(f"{'-' * 77}")
 
@@ -46,15 +35,13 @@ def DownloadChEMBLCompounds(config: dict):
         less_limit = mw_range[0]
         greater_limit = mw_range[1]
 
-        if not config["skip_downloaded"] or not IsFileInFolder(f"range_{less_limit}_{greater_limit}_mw_mols.csv",
-                                                               f"{compounds_config["results_folder_name"]}"):
+        if not config["skip_downloaded"] or\
+            not IsFileInFolder(f"range_{less_limit}_{greater_limit}_mw_mols.csv",
+                               f"{compounds_config["results_folder_name"]}"):
             DownloadCompoundsByMWRange(
                 less_limit,
                 greater_limit,
-                need_primary_analysis=config["need_primary_analysis"],
-                print_to_console=config["print_to_console_verbosely"],
                 results_folder_name=compounds_config["results_folder_name"],
-                primary_analysis_folder_name=config["primary_analysis_folder_name"]
             )
 
         else:

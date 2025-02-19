@@ -1,10 +1,7 @@
-# from icecream import ic
-
 from ChEMBL_download_cell_lines.functions import *
 
 from Utils.decorators import IgnoreWarnings
-
-# ic.disable()
+from Utils.file_and_logger_funcs import CreateFolder, IsFileInFolder
 
 
 @IgnoreWarnings
@@ -26,10 +23,6 @@ def DownloadChEMBLCellLines(config: dict):
 
     CreateFolder(cell_lines_config["results_folder_name"])
 
-    if config["need_primary_analysis"]:
-        CreateFolder(
-            f"{cell_lines_config["results_folder_name"]}/{config["primary_analysis_folder_name"]}")
-
     if cell_lines_config["download_activities"]:
         CreateFolder(activities_config["results_folder_name"])
 
@@ -38,8 +31,9 @@ def DownloadChEMBLCellLines(config: dict):
     if config["testing_flag"]:
         cell_lines_config["id_list"] = ["CHEMBL4295386", "CHEMBL3307781"]
 
-    if not config["skip_downloaded"] or not IsFileInFolder(f"{cell_lines_config["results_file_name"]}.csv",
-                                                           f"{cell_lines_config["results_folder_name"]}"):
+    if not config["skip_downloaded"] or\
+        not IsFileInFolder(f"{cell_lines_config["results_file_name"]}.csv",
+                           f"{cell_lines_config["results_folder_name"]}"):
         if cell_lines_config["download_all"]:
             # в случае пустого списка в DownloadCellLinesFromIdList скачаются все
             cell_lines_config["id_list"] = []

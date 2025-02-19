@@ -1,10 +1,10 @@
-requests
-pubchempy
 chembl-webresource-client
-pandas
-numpy
+gdown
 icecream
-loguru
 ipykernel
 IPython
-gdown
+loguru
+numpy
+pandas
+pubchempy
+requests

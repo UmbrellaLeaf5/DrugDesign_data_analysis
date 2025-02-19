@@ -1,11 +1,11 @@
 from chembl_webresource_client.new_client import new_client
 from chembl_webresource_client.query_set import QuerySet
 
-from Utils.decorators import ReTry
-from Utils.primary_analysis import *
-
 from ChEMBL_download_activities.download import DownloadTargetChEMBLActivities
 from ChEMBL_download_activities.functions import CountTargetActivitiesByIC50, CountTargetActivitiesByKi
+
+from Utils.decorators import ReTry
+from Utils.file_and_logger_funcs import logger, pd, UpdateLoggerFormat
 
 
 @ReTry()
@@ -195,13 +195,6 @@ def DownloadTargetsFromIdList(config: dict):
 
     logger.info(
         f"Collecting targets to .csv file in '{targets_config["results_folder_name"]}'...")
-
-    if config["need_primary_analysis"]:
-        PrimaryAnalysisByColumns(data_frame=data_frame,
-                                 data_name=targets_config["results_file_name"],
-                                 folder_name=f"{targets_config["results_folder_name"]}"
-                                 f"/{config["primary_analysis_folder_name"]}",
-                                 print_to_console=config["print_to_console_verbosely"])
 
     file_name: str = f"{targets_config["results_folder_name"]}/{targets_config["results_file_name"]}.csv"
 

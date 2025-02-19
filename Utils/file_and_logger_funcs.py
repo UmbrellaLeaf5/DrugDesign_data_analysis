@@ -1,12 +1,12 @@
-from io import TextIOWrapper
-from typing import TextIO
-import pandas as pd
-import sys
-import os
-import traceback
-import re
 import json
+from io import TextIOWrapper
+import os
+import pandas as pd
+import re
 import shutil
+import sys
+import traceback
+from typing import TextIO
 
 from loguru import logger
 

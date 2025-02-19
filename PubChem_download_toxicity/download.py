@@ -1,8 +1,6 @@
-# from icecream import ic
-
 from PubChem_download_toxicity.functions import *
 
-# ic.disable()
+from Utils.file_and_logger_funcs import *
 
 
 @ReTry(attempts_amount=1)

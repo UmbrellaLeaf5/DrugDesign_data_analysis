@@ -1,8 +1,4 @@
-# from icecream import ic
-
 import pandas as pd
-
-# ic.disable()
 
 
 def NonNoneList(l: list) -> list:
