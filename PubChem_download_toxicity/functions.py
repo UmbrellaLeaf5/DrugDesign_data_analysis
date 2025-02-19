@@ -232,7 +232,7 @@ def DownloadCompoundToxicity(compound_data: dict,
 
                 if df["mw"].isnull().any():
                     logger.warning(f"Some 'mw' could not be retrieved by {id_column} "
-                                   f"for {compound_name}")
+                                   f"for {compound_name}.")
 
             return df
 
@@ -253,11 +253,16 @@ def DownloadCompoundToxicity(compound_data: dict,
                 GetMolecularWeightBySid,
             )
 
-        acute_effects["mw"] = pd.to_numeric(acute_effects["mw"], errors="coerce")
+        try:
+            acute_effects["mw"] = pd.to_numeric(acute_effects["mw"], errors="coerce")
+
+            if print_to_console_verbosely:
+                logger.success(f"Adding 'mw' for {compound_name}!")
+
+        except KeyError:
+            logger.warning(f"No 'mw' for {compound_name}.")
 
         if print_to_console_verbosely:
-            logger.success(f"Adding 'mw' for {compound_name}!")
-
             logger.info(f"Filtering 'organism' and 'route' for {compound_name}...")
 
         acute_effects = acute_effects[acute_effects["organism"].isin(["rat", "mouse"])]
