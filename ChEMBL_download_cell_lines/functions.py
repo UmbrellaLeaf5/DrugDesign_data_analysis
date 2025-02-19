@@ -1,7 +1,7 @@
 from chembl_webresource_client.new_client import new_client
 from chembl_webresource_client.query_set import QuerySet
 
-from Utils.decorators import Retry
+from Utils.decorators import ReTry
 from Utils.primary_analysis import *
 
 from ChEMBL_download_activities.download import GetCellLineChEMBLActivitiesFromCSV
@@ -12,7 +12,7 @@ import zipfile
 import os
 
 
-@Retry()
+@ReTry()
 def QuerySetAllCellLines() -> QuerySet:
     """
     Возвращает все клеточные линии из базы ChEMBL.
@@ -24,7 +24,7 @@ def QuerySetAllCellLines() -> QuerySet:
     return new_client.cell_line.filter()  # type: ignore
 
 
-@Retry()
+@ReTry()
 def QuerySetCellLinesFromIdList(cell_line_chembl_id_list: list[str]) -> QuerySet:
     """
     Возвращает клеточные линии по списку id из базы ChEMBL.
@@ -62,6 +62,7 @@ def GetRawCellLinesData(file_id: str, output_path: str):
     os.remove(zip_file_path)
 
 
+@ReTry(attempts_amount=1)
 def AddedIC50andGI50ToCellLinesDF(data: pd.DataFrame,
                                   config: dict
                                   ) -> pd.DataFrame:
@@ -80,44 +81,37 @@ def AddedIC50andGI50ToCellLinesDF(data: pd.DataFrame,
 
     cell_lines_config: dict = config["ChEMBL_download_cell_lines"]
 
-    logger.info(
-        f"Adding 'IC50' and 'GI50' columns to pandas.DataFrame()...")
+    logger.info("Adding 'IC50' and 'GI50' columns to pandas.DataFrame()...")
 
-    try:
-        logger.info(
-            f"Getting raw cell_lines from Google.Drive...")
-        GetRawCellLinesData(config["ChEMBL_download_cell_lines"]["raw_csv_g_drive_id"],
-                            config["ChEMBL_download_cell_lines"]["raw_csv_folder_name"])
-        logger.success(
-            f"Getting raw cell_lines from Google.Drive!")
+    if not IsFolderEmpty(cell_lines_config["raw_csv_folder_name"]):
+        logger.info("Getting raw cell_lines from Google.Drive...")
 
-        data["IC50"] = data.apply(
-            lambda value: CountCellLineActivitiesByFile(
-                f"{cell_lines_config["raw_csv_folder_name"]}/{value["cell_chembl_id"]}_IC50_activities.csv"), axis=1)
+        GetRawCellLinesData(cell_lines_config["raw_csv_g_drive_id"],
+                            cell_lines_config["raw_csv_folder_name"])
 
-        data["GI50"] = data.apply(
-            lambda value: CountCellLineActivitiesByFile(
-                f"{cell_lines_config["raw_csv_folder_name"]}/{value["cell_chembl_id"]}_GI50_activities.csv"), axis=1)
+        logger.success("Getting raw cell_lines from Google.Drive!")
 
-        logger.success(
-            f"Adding 'IC50' and 'GI50' columns to pandas.DataFrame()!")
+    data["IC50"] = data.apply(
+        lambda value: CountCellLineActivitiesByFile(
+            f"{cell_lines_config["raw_csv_folder_name"]}/{value["cell_chembl_id"]}_IC50_activities.csv"), axis=1)
 
-        if cell_lines_config["download_activities"]:
-            GetCellLineChEMBLActivitiesFromCSV(data, config)
+    data["GI50"] = data.apply(
+        lambda value: CountCellLineActivitiesByFile(
+            f"{cell_lines_config["raw_csv_folder_name"]}/{value["cell_chembl_id"]}_GI50_activities.csv"), axis=1)
 
-            try:
-                data["IC50_new"] = data["IC50_new"].astype(int)
-                data["GI50_new"] = data["GI50_new"].astype(int)
+    logger.success("Adding 'IC50' and 'GI50' columns to pandas.DataFrame()!")
 
-            except Exception as exception:  # это исключение может возникнуть, если колонки нет
-                # новых activities не скачалось, т.е. значение пересчитывать не надо
-                if not config["skip_downloaded"]:
-                    raise exception
-                else:
-                    pass
+    if cell_lines_config["download_activities"]:
+        GetCellLineChEMBLActivitiesFromCSV(data, config)
 
-    except Exception as exception:
-        LogException(exception)
+        try:
+            data["IC50_new"] = data["IC50_new"].astype(int)
+            data["GI50_new"] = data["GI50_new"].astype(int)
+
+        except KeyError as exception:  # это исключение может возникнуть, если колонки нет
+            # новых activities не скачалось, т.е. значение пересчитывать не надо
+            if not config["skip_downloaded"]:
+                raise exception
 
     return data
 
@@ -134,54 +128,40 @@ def DownloadCellLinesFromIdList(config: dict):
 
     cell_lines_config: dict = config["ChEMBL_download_cell_lines"]
 
-    print_to_console = (
-        config["print_to_console_verbosely"] or config["testing_flag"])
+    logger.info("Downloading cell_lines...")
 
-    try:
-        logger.info(
-            f"Downloading cell_lines...")
-        cell_lines_with_ids: QuerySet = QuerySetCellLinesFromIdList(
-            cell_lines_config["id_list"])
+    cell_lines_with_ids: QuerySet = QuerySetCellLinesFromIdList(
+        cell_lines_config["id_list"])
 
-        if cell_lines_config["id_list"] == []:
-            cell_lines_with_ids = QuerySetAllCellLines()
+    if cell_lines_config["id_list"] == []:
+        cell_lines_with_ids = QuerySetAllCellLines()
 
-        logger.info(f"Amount: {len(cell_lines_with_ids)}")  # type: ignore
-        logger.success(f"Downloading cell_lines!")
+    logger.info(f"Amount: {len(cell_lines_with_ids)}")  # type: ignore
 
-        try:
-            logger.info(
-                "Collecting cell_lines to pandas.DataFrame()...")
+    logger.success("Downloading cell_lines!")
 
-            data_frame = AddedIC50andGI50ToCellLinesDF(pd.DataFrame(cell_lines_with_ids),  # type: ignore
-                                                       config=config)
+    logger.info("Collecting cell_lines to pandas.DataFrame()...")
 
-            UpdateLoggerFormat(cell_lines_config["logger_label"],
-                               cell_lines_config["logger_color"])
+    data_frame = AddedIC50andGI50ToCellLinesDF(pd.DataFrame(cell_lines_with_ids),  # type: ignore
+                                               config=config)
 
-            logger.success(
-                "Collecting cell_lines to pandas.DataFrame()!")
+    UpdateLoggerFormat(cell_lines_config["logger_label"],
+                       cell_lines_config["logger_color"])
 
-            logger.info(
-                f"Collecting cell_lines to .csv file in '{cell_lines_config["results_folder_name"]}'...")
+    logger.success("Collecting cell_lines to pandas.DataFrame()!")
 
-            if config["need_primary_analysis"]:
-                PrimaryAnalysisByColumns(data_frame=data_frame,
-                                         data_name=cell_lines_config["results_file_name"],
-                                         folder_name=f"{cell_lines_config["results_folder_name"]}/{config["primary_analysis_folder_name"]}",
-                                         print_to_console=print_to_console)
+    logger.info(
+        f"Collecting cell_lines to .csv file in '{cell_lines_config["results_folder_name"]}'...")
 
-                UpdateLoggerFormat(cell_lines_config["logger_label"],
-                                   cell_lines_config["logger_color"])
+    if config["need_primary_analysis"]:
+        PrimaryAnalysisByColumns(data_frame=data_frame,
+                                 data_name=cell_lines_config["results_file_name"],
+                                 folder_name=f"{cell_lines_config["results_folder_name"]}/{config["primary_analysis_folder_name"]}",
+                                 print_to_console=config["print_to_console_verbosely"])
 
-            file_name: str = f"{cell_lines_config["results_folder_name"]}/{cell_lines_config["results_file_name"]}.csv"
+    file_name: str = f"{cell_lines_config["results_folder_name"]}/{cell_lines_config["results_file_name"]}.csv"
 
-            data_frame.to_csv(file_name, sep=";", index=False)
-            logger.success(
-                f"Collecting cell_lines to .csv file in '{cell_lines_config["results_folder_name"]}'!")
+    data_frame.to_csv(file_name, sep=";", index=False)
 
-        except Exception as exception:
-            LogException(exception)
-
-    except Exception as exception:
-        LogException(exception)
+    logger.success(
+        f"Collecting cell_lines to .csv file in '{cell_lines_config["results_folder_name"]}'!")

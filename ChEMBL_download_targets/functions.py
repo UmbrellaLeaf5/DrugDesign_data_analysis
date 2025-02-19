@@ -1,14 +1,14 @@
 from chembl_webresource_client.new_client import new_client
 from chembl_webresource_client.query_set import QuerySet
 
-from Utils.decorators import Retry
+from Utils.decorators import ReTry
 from Utils.primary_analysis import *
 
 from ChEMBL_download_activities.download import DownloadTargetChEMBLActivities
 from ChEMBL_download_activities.functions import CountTargetActivitiesByIC50, CountTargetActivitiesByKi
 
 
-@Retry()
+@ReTry()
 def QuerySetAllTargets() -> QuerySet:
     """
     Возвращает все цели из базы ChEMBL.
@@ -20,7 +20,7 @@ def QuerySetAllTargets() -> QuerySet:
     return new_client.target.filter()  # type: ignore
 
 
-@Retry()
+@ReTry()
 def QuerySetTargetsFromIdList(target_chembl_id_list: list[str]) -> QuerySet:
     """
     Возвращает цели по списку id из базы ChEMBL.
@@ -109,6 +109,7 @@ def ExpandedFromDictionariesTargetsDF(data: pd.DataFrame) -> pd.DataFrame:
     return data
 
 
+@ReTry(attempts_amount=1)
 def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
                               config: dict
                               ) -> pd.DataFrame:
@@ -131,34 +132,30 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
     logger.info(
         f"Adding 'IC50' and 'Ki' columns to pandas.DataFrame()...")
 
-    try:
-        data["IC50"] = data["target_chembl_id"].apply(
-            CountTargetActivitiesByIC50)
-        data["Ki"] = data["target_chembl_id"].apply(
-            CountTargetActivitiesByKi)
+    data["IC50"] = data["target_chembl_id"].apply(
+        CountTargetActivitiesByIC50)
+    data["Ki"] = data["target_chembl_id"].apply(
+        CountTargetActivitiesByKi)
 
-        logger.success(
-            f"Adding 'IC50' and 'Ki' columns to pandas.DataFrame()!")
+    logger.success(
+        f"Adding 'IC50' and 'Ki' columns to pandas.DataFrame()!")
 
-        if targets_config["download_activities"]:
-            DownloadTargetChEMBLActivities(data, config)
-            try:
-                data["IC50_new"] = data["IC50_new"].astype(int)
-                data["Ki_new"] = data["Ki_new"].astype(int)
+    if targets_config["download_activities"]:
+        DownloadTargetChEMBLActivities(data, config)
 
-            except Exception as exception:
-                if not config["skip_downloaded"]:  # это исключение может возникнуть, если колонки нет
-                    raise exception  # новых activities не скачалось, т.е. значение пересчитывать не надо
+        try:
+            data["IC50_new"] = data["IC50_new"].astype(int)
+            data["Ki_new"] = data["Ki_new"].astype(int)
 
-                else:
-                    pass
-
-    except Exception as exception:
-        LogException(exception)
+        except KeyError as exception:  # это исключение может возникнуть, если колонки нет
+            # новых activities не скачалось, т.е. значение пересчитывать не надо
+            if not config["skip_downloaded"]:
+                raise exception
 
     return data
 
 
+@ReTry(attempts_amount=1)
 def DownloadTargetsFromIdList(config: dict):
     """
     Скачивает данные о целевых белках (targets) из ChEMBL по списку идентификаторов,
@@ -171,57 +168,43 @@ def DownloadTargetsFromIdList(config: dict):
 
     targets_config = config["ChEMBL_download_targets"]
 
-    print_to_console = (
-        config["print_to_console_verbosely"] or config["testing_flag"])
+    logger.info(
+        f"Downloading targets...")
+    targets_with_ids: QuerySet = QuerySetTargetsFromIdList(
+        targets_config["id_list"])
 
-    try:
-        logger.info(
-            f"Downloading targets...")
-        targets_with_ids: QuerySet = QuerySetTargetsFromIdList(
-            targets_config["id_list"])
+    if targets_config["id_list"] == []:
+        targets_with_ids = QuerySetAllTargets()
 
-        if targets_config["id_list"] == []:
-            targets_with_ids = QuerySetAllTargets()
+    logger.info(f"Amount: {len(targets_with_ids)}")  # type: ignore
+    logger.success(f"Downloading targets!")
 
-        logger.info(f"Amount: {len(targets_with_ids)}")  # type: ignore
-        logger.success(f"Downloading targets!")
+    logger.info(
+        "Collecting targets to pandas.DataFrame()...")
 
-        try:
-            logger.info(
-                "Collecting targets to pandas.DataFrame()...")
+    data_frame = AddedIC50andKiToTargetsDF(
+        ExpandedFromDictionariesTargetsDF(pd.DataFrame(targets_with_ids)),  # type: ignore
+        config=config
+    )
 
-            data_frame = AddedIC50andKiToTargetsDF(
-                ExpandedFromDictionariesTargetsDF(pd.DataFrame(targets_with_ids)),  # type: ignore
-                config=config
-            )
+    UpdateLoggerFormat(targets_config["logger_label"],
+                       targets_config["logger_color"])
 
-            UpdateLoggerFormat(targets_config["logger_label"],
-                               targets_config["logger_color"])
+    logger.success(
+        "Collecting targets to pandas.DataFrame()!")
 
-            logger.success(
-                "Collecting targets to pandas.DataFrame()!")
+    logger.info(
+        f"Collecting targets to .csv file in '{targets_config["results_folder_name"]}'...")
 
-            logger.info(
-                f"Collecting targets to .csv file in '{targets_config["results_folder_name"]}'...")
+    if config["need_primary_analysis"]:
+        PrimaryAnalysisByColumns(data_frame=data_frame,
+                                 data_name=targets_config["results_file_name"],
+                                 folder_name=f"{targets_config["results_folder_name"]}"
+                                 f"/{config["primary_analysis_folder_name"]}",
+                                 print_to_console=config["print_to_console_verbosely"])
 
-            if config["need_primary_analysis"]:
-                PrimaryAnalysisByColumns(data_frame=data_frame,
-                                         data_name=targets_config["results_file_name"],
-                                         folder_name=f"{
-                                             targets_config["results_folder_name"]}/{config["primary_analysis_folder_name"]}",
-                                         print_to_console=print_to_console)
+    file_name: str = f"{targets_config["results_folder_name"]}/{targets_config["results_file_name"]}.csv"
 
-                UpdateLoggerFormat(targets_config["logger_label"],
-                                   targets_config["logger_color"])
-
-            file_name: str = f"{targets_config["results_folder_name"]}/{targets_config["results_file_name"]}.csv"
-
-            data_frame.to_csv(file_name, sep=";", index=False)
-            logger.success(
-                f"Collecting targets to .csv file in '{targets_config["results_folder_name"]}'!")
-
-        except Exception as exception:
-            LogException(exception)
-
-    except Exception as exception:
-        LogException(exception)
+    data_frame.to_csv(file_name, sep=";", index=False)
+    logger.success(
+        f"Collecting targets to .csv file in '{targets_config["results_folder_name"]}'!")

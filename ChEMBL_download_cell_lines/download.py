@@ -38,8 +38,8 @@ def DownloadChEMBLCellLines(config: dict):
     if config["testing_flag"]:
         cell_lines_config["id_list"] = ["CHEMBL4295386", "CHEMBL3307781"]
 
-    if not config["skip_downloaded"] or not IsFileInFolder(f"{cell_lines_config["results_folder_name"]}",
-                                                           f"{cell_lines_config["results_file_name"]}.csv"):
+    if not config["skip_downloaded"] or not IsFileInFolder(f"{cell_lines_config["results_file_name"]}.csv",
+                                                           f"{cell_lines_config["results_folder_name"]}"):
         if cell_lines_config["download_all"]:
             # в случае пустого списка в DownloadCellLinesFromIdList скачаются все
             cell_lines_config["id_list"] = []

@@ -5,13 +5,13 @@ from io import TextIOWrapper
 from chembl_webresource_client.new_client import new_client
 from chembl_webresource_client.query_set import QuerySet
 
-from Utils.decorators import Retry
+from Utils.decorators import ReTry
 from Utils.primary_analysis import *
 
 # ic.disable()
 
 
-@Retry()
+@ReTry()
 def QuerySetCompoundsByMWRange(less_limit: int, greater_limit: int) -> QuerySet:
     """
     Возвращает молекулы в диапазоне молекулярной массы [less_limit; greater_limit) из базы ChEMBL.
@@ -129,14 +129,13 @@ def ExpandedFromDictionariesCompoundsDF(data: pd.DataFrame) -> pd.DataFrame:
     return pd.concat([data, exposed_data], axis=1)
 
 
+@ReTry(attempts_amount=1)
 def DownloadCompoundsByMWRange(less_limit: int,
                                greater_limit: int,
                                results_folder_name: str,
                                primary_analysis_folder_name: str,
                                need_primary_analysis: bool,
-                               print_to_console: bool,
-                               logger_label: str,
-                               logger_color: str):
+                               print_to_console: bool):
     """
     Возвращает молекулы в диапазоне молекулярной массы [less_limit; greater_limit) из базы ChEMBL,
     сохраняя их в .csv файл.
@@ -148,53 +147,44 @@ def DownloadCompoundsByMWRange(less_limit: int,
         primary_analysis_folder_name (str): имя папки для сохранения данных о первичном анализе.
         need_primary_analysis (bool): нужно ли проводить первичный анализ.
         print_to_console (bool): нужно ли выводить логирование в консоль.
-        logger_label (str): текст заголовка логирования.
-        logger_color (str): цвет заголовка логирования.
     """
 
-    try:
-        logger.info(
-            f"Downloading molecules with mw in range [{less_limit}, {greater_limit})...")
-        mols_in_mw_range: QuerySet = QuerySetCompoundsByMWRange(
-            less_limit, greater_limit)
+    logger.info(
+        f"Downloading molecules with mw in range [{less_limit}, {greater_limit})...")
+    mols_in_mw_range: QuerySet = QuerySetCompoundsByMWRange(
+        less_limit, greater_limit)
 
-        logger.info(
-            (f"Amount: {len(mols_in_mw_range)}"))  # type: ignore
-        logger.success(
-            f"Downloading molecules with mw in range [{less_limit}, {greater_limit})!")
+    logger.info(
+        (f"Amount: {len(mols_in_mw_range)}"))  # type: ignore
 
-        try:
-            logger.info(
-                "Collecting molecules to pandas.DataFrame()...")
-            data_frame = ExpandedFromDictionariesCompoundsDF(pd.DataFrame(
-                mols_in_mw_range))  # type: ignore
-            logger.success(
-                "Collecting molecules to pandas.DataFrame()!")
+    logger.success(
+        f"Downloading molecules with mw in range [{less_limit}, {greater_limit})!")
 
-            logger.info(
-                f"Collecting molecules to .csv file in '{results_folder_name}'...")
+    logger.info(
+        "Collecting molecules to pandas.DataFrame()...")
 
-            if need_primary_analysis:
-                PrimaryAnalysisByColumns(data_frame=data_frame,
-                                         data_name=f"mols_in_mw_range_{less_limit}_{greater_limit}",
-                                         folder_name=f"{
-                                             results_folder_name}/{primary_analysis_folder_name}",
-                                         print_to_console=print_to_console)
+    data_frame = ExpandedFromDictionariesCompoundsDF(pd.DataFrame(
+        mols_in_mw_range))  # type: ignore
 
-                UpdateLoggerFormat(logger_label, logger_color)
+    logger.success(
+        "Collecting molecules to pandas.DataFrame()!")
 
-            file_name: str = f"{results_folder_name}/range_"\
-                f"{less_limit}_{greater_limit}_mw_mols.csv"
+    logger.info(
+        f"Collecting molecules to .csv file in '{results_folder_name}'...")
 
-            data_frame.to_csv(file_name, sep=";", index=False)
-            logger.success(
-                f"Collecting molecules to .csv file in '{results_folder_name}'!")
+    if need_primary_analysis:
+        PrimaryAnalysisByColumns(data_frame=data_frame,
+                                 data_name=f"mols_in_mw_range_{less_limit}_{greater_limit}",
+                                 folder_name=f"{
+                                     results_folder_name}/{primary_analysis_folder_name}",
+                                 print_to_console=print_to_console)
 
-        except Exception as exception:
-            LogException(exception)
+    file_name: str = f"{results_folder_name}/range_"\
+        f"{less_limit}_{greater_limit}_mw_mols.csv"
 
-    except Exception as exception:
-        LogException(exception)
+    data_frame.to_csv(file_name, sep=";", index=False)
+    logger.success(
+        f"Collecting molecules to .csv file in '{results_folder_name}'!")
 
 
 def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str],
@@ -212,11 +202,10 @@ def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str],
     """
 
     if not molecule_chembl_id_list:
-        logger.warning(
-            "Molecules list is empty, nothing to save to .sdf!")
+        logger.warning("Molecules list is empty, nothing to save to .sdf!")
         return
 
-    @Retry()
+    @ReTry()
     def DataFrameMolfilesFromIdList(molecule_chembl_id_list: list[str]) -> pd.DataFrame:
         """
         Возвращает pd.DataFrame из molfile по каждой молекуле из списка molecule_chembl_id.
@@ -305,38 +294,24 @@ def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str],
 
                     file.write(f"{value}\n\n")
 
-        if print_to_console:
-            logger.info(f"Opening {file_name}...")
-
         with open(f"{file_name}.sdf", "w", encoding="utf-8") as f:
-            if print_to_console:
-                logger.success(f"Opening {file_name}")
-
             for value in data.values:
-                try:
-                    molecule_chembl_id, molfile = value
+                molecule_chembl_id, molfile = value
 
-                    f.write(f"{molecule_chembl_id}{molfile}\n\n")
+                f.write(f"{molecule_chembl_id}{molfile}\n\n")
 
-                    if not extra_data.empty:
-                        df = extra_data.set_index("molecule_chembl_id")
+                if not extra_data.empty:
+                    df = extra_data.set_index("molecule_chembl_id")
 
-                        for column in df.columns:
-                            try:
-                                WriteColumnAndValueToSDF(
-                                    f, df.loc[molecule_chembl_id, column], column)
+                    for column in df.columns:
+                        WriteColumnAndValueToSDF(
+                            f, df.loc[molecule_chembl_id, column], column)
 
-                            except Exception as exception:
-                                LogException(exception)
+                f.write("$$$$\n")
 
-                    f.write("$$$$\n")
-
-                    if print_to_console:
-                        logger.info(
-                            f"Writing {molecule_chembl_id} data to .sdf file...")
-
-                except Exception as exception:
-                    LogException(exception)
+                if print_to_console:
+                    logger.info(
+                        f"Writing {molecule_chembl_id} data to .sdf file...")
 
     if print_to_console:
         logger.info("Collecting molfiles to pandas.DataFrame()...")
@@ -344,7 +319,7 @@ def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str],
     data = DataFrameMolfilesFromIdList(molecule_chembl_id_list)
 
     if print_to_console:
-        logger.success("Collecting molfiles to pandas.DataFrame()")
+        logger.success("Collecting molfiles to pandas.DataFrame()!")
 
     SaveMolfilesToSDF(data=data,
                       file_name=file_name,

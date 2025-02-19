@@ -39,8 +39,8 @@ def DownloadChEMBLTargets(config: dict):
     if config["testing_flag"]:
         targets_config["id_list"] = ["CHEMBL1951", "CHEMBL2034"]
 
-    if not config["skip_downloaded"] or not IsFileInFolder(targets_config["results_folder_name"],
-                                                           targets_config["results_file_name"]):
+    if not config["skip_downloaded"] or not IsFileInFolder(targets_config["results_file_name"],
+                                                           targets_config["results_folder_name"]):
         if targets_config["download_all"]:
             # в случае пустого списка в DownloadTargetsFromIdList скачаются все
             targets_config["id_list"] = []

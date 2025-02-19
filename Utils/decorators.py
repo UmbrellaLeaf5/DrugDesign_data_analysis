@@ -28,7 +28,7 @@ def IgnoreWarnings(func: Callable) -> Callable:
     return Wrapper
 
 
-def Retry(attempts_amount: int = 5,
+def ReTry(attempts_amount: int = 5,
           exception_to_check: type[Exception] = Exception,
           sleep_time: float = 1
           ) -> Callable:
@@ -47,18 +47,21 @@ def Retry(attempts_amount: int = 5,
     def Decorate(func: Callable) -> Callable:
         @wraps(func)
         def Wrapper(*args, **kwargs):
-            for attempt in range(1, attempts_amount+1):
+            for attempt in range(1, attempts_amount + 1):
                 try:
                     return func(*args, **kwargs)
 
                 except exception_to_check as exception:
                     LogException(exception)
-                    logger.warning(f"Attempt: {attempt}")
 
                     if attempt < attempts_amount:
+                        logger.warning(f"Attempt: {attempt}. Retrying.")
                         time.sleep(sleep_time)
 
-            logger.error("All attempts failed!")
+            if attempts_amount != 1:
+                logger.error("All attempts failed!")
+            # else: означает, что в функции просто 1 раз отлавливается исключение
+
             return None
 
         return Wrapper

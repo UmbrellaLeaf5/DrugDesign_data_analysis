@@ -8,6 +8,7 @@ from Utils.decorators import IgnoreWarnings
 
 
 @IgnoreWarnings
+@ReTry(attempts_amount=1)
 def DownloadChEMBLCompounds(config: dict):
     """
     Скачивает информацию о соединениях из базы данных ChEMBL на основе конфигурации (`config.json`).
@@ -45,21 +46,20 @@ def DownloadChEMBLCompounds(config: dict):
         less_limit = mw_range[0]
         greater_limit = mw_range[1]
 
-        if not config["skip_downloaded"] or not IsFileInFolder(f"{compounds_config["results_folder_name"]}",
-                                                               f"range_{less_limit}_{greater_limit}_mw_mols.csv"):
+        if not config["skip_downloaded"] or not IsFileInFolder(f"range_{less_limit}_{greater_limit}_mw_mols.csv",
+                                                               f"{compounds_config["results_folder_name"]}"):
             DownloadCompoundsByMWRange(
                 less_limit,
                 greater_limit,
                 need_primary_analysis=config["need_primary_analysis"],
-                print_to_console=(config["print_to_console_verbosely"] or config["testing_flag"]),
+                print_to_console=config["print_to_console_verbosely"],
                 results_folder_name=compounds_config["results_folder_name"],
-                primary_analysis_folder_name=config["primary_analysis_folder_name"],
-                logger_label=compounds_config["logger_label"],
-                logger_color=compounds_config["logger_color"])
+                primary_analysis_folder_name=config["primary_analysis_folder_name"]
+            )
 
         else:
             logger.warning(f"Molecules with mw in range [{less_limit}, "
-                           f"{greater_limit}) is already downloaded, skip")
+                           f"{greater_limit}) is already downloaded, skip.")
 
         logger.info(f"{'-' * 77}")
 
@@ -67,22 +67,18 @@ def DownloadChEMBLCompounds(config: dict):
         CombineCSVInFolder(compounds_config["results_folder_name"],
                            compounds_config["combined_file_name"],
                            skip_downloaded_files=config["skip_downloaded"],
-                           print_to_console=(config["print_to_console_verbosely"] or config["testing_flag"]))
+                           print_to_console=config["print_to_console_verbosely"]
+                           )
 
-        UpdateLoggerFormat(compounds_config["logger_label"], compounds_config["logger_color"])
-
-    if compounds_config["delete_after_combining"]:
+    if compounds_config["delete_after_combining"] and compounds_config["need_combining"]:
         logger.info(
             f"Deleting files after combining in '{compounds_config["results_folder_name"]}'...")
 
-        try:
-            DeleteFilesInFolder(compounds_config["results_folder_name"], [
-                                f"{compounds_config["combined_file_name"]}.csv"])
-            logger.success(
-                f"Deleting files after combining in '{compounds_config["results_folder_name"]}'")
+        DeleteFilesInFolder(compounds_config["results_folder_name"], [
+            f"{compounds_config["combined_file_name"]}.csv"])
 
-        except Exception as exception:
-            LogException(exception)
+        logger.success(
+            f"Deleting files after combining in '{compounds_config["results_folder_name"]}'!")
 
     logger.success(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
     logger.info(f"{'-' * 77}")
