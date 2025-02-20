@@ -26,8 +26,6 @@ def DownloadChEMBLCompounds(config: dict):
 
     CreateFolder(compounds_config["results_folder_name"])
 
-    logger.info(f"{'-' * 77}")
-
     if config["testing_flag"]:
         compounds_config["mw_ranges"] = [[0, 50], [50, 75]]
 
@@ -42,20 +40,22 @@ def DownloadChEMBLCompounds(config: dict):
                 less_limit,
                 greater_limit,
                 results_folder_name=compounds_config["results_folder_name"],
+                print_to_console=config["print_to_console_verbosely"]
             )
 
         else:
-            logger.warning(f"Molecules with mw in range [{less_limit}, "
-                           f"{greater_limit}) is already downloaded, skip.")
+            if config["print_to_console_verbosely"]:
+                logger.info(f"Molecules with mw in range [{less_limit}, "
+                            f"{greater_limit}) is already downloaded, skip.")
 
-        logger.info(f"{'-' * 77}")
+        if config["print_to_console_verbosely"]:
+            logger.info(f"{'-' * 77}")
 
     if compounds_config["need_combining"]:
         CombineCSVInFolder(compounds_config["results_folder_name"],
                            compounds_config["combined_file_name"],
-                           skip_downloaded_files=config["skip_downloaded"],
-                           print_to_console=config["print_to_console_verbosely"]
-                           )
+                           skip_downloaded=config["skip_downloaded"],
+                           print_to_console_verbosely=config["print_to_console_verbosely"])
 
     if compounds_config["delete_after_combining"] and compounds_config["need_combining"]:
         logger.info(

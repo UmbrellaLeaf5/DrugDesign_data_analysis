@@ -46,8 +46,6 @@ def ExpandedFromDictionariesTargetsDF(data: pd.DataFrame) -> pd.DataFrame:
         pd.DataFrame: "раскрытый" pd.DataFrame
     """
 
-    logger.info(f"Expanding pandas.DataFrame() from dictionaries...")
-
     def ExtractedValuesFromColumn(df: pd.DataFrame,
                                   column_name: str,
                                   key: str) -> pd.Series:
@@ -103,16 +101,11 @@ def ExpandedFromDictionariesTargetsDF(data: pd.DataFrame) -> pd.DataFrame:
     data = data.drop(["cross_references", "target_components"], axis=1)
     data = pd.concat([data, exposed_data, target_components_data], axis=1)
 
-    logger.success(
-        f"Expanding pandas.DataFrame() from dictionaries!")
-
     return data
 
 
 @ReTry(attempts_amount=1)
-def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
-                              config: dict
-                              ) -> pd.DataFrame:
+def AddedIC50andKiToTargetsDF(data: pd.DataFrame, config: dict) -> pd.DataFrame:
     """
     Добавляет столбцы 'IC50' и 'Ki' в DataFrame с данными о целевых белках (targets),
     подсчитывая количество соответствующих активностей из базы данных ChEMBL,
@@ -129,16 +122,18 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
 
     targets_config = config["ChEMBL_download_targets"]
 
-    logger.info(
-        f"Adding 'IC50' and 'Ki' columns to pandas.DataFrame()...")
+    if config["print_to_console_verbosely"]:
+        logger.info(
+            f"Adding 'IC50' and 'Ki' columns to pandas.DataFrame...")
 
     data["IC50"] = data["target_chembl_id"].apply(
         CountTargetActivitiesByIC50)
     data["Ki"] = data["target_chembl_id"].apply(
         CountTargetActivitiesByKi)
 
-    logger.success(
-        f"Adding 'IC50' and 'Ki' columns to pandas.DataFrame()!")
+    if config["print_to_console_verbosely"]:
+        logger.success(
+            f"Adding 'IC50' and 'Ki' columns to pandas.DataFrame!")
 
     if targets_config["download_activities"]:
         DownloadTargetChEMBLActivities(data, config)
@@ -168,36 +163,40 @@ def DownloadTargetsFromIdList(config: dict):
 
     targets_config = config["ChEMBL_download_targets"]
 
-    logger.info(
-        f"Downloading targets...")
-    targets_with_ids: QuerySet = QuerySetTargetsFromIdList(
-        targets_config["id_list"])
+    if config["print_to_console_verbosely"]:
+        logger.info("Downloading targets...")
+
+    targets_with_ids: QuerySet = QuerySetTargetsFromIdList(targets_config["id_list"])
 
     if targets_config["id_list"] == []:
         targets_with_ids = QuerySetAllTargets()
 
     logger.info(f"Amount: {len(targets_with_ids)}")  # type: ignore
-    logger.success(f"Downloading targets!")
 
-    logger.info(
-        "Collecting targets to pandas.DataFrame()...")
+    if config["print_to_console_verbosely"]:
+        logger.success("Downloading targets!")
+
+        logger.info("Collecting targets to pandas.DataFrame..")
 
     data_frame = AddedIC50andKiToTargetsDF(
-        ExpandedFromDictionariesTargetsDF(pd.DataFrame(targets_with_ids)),  # type: ignore
-        config=config
-    )
+        ExpandedFromDictionariesTargetsDF(
+            pd.DataFrame(targets_with_ids)  # type: ignore
+        ),
+        config)
 
     UpdateLoggerFormat(targets_config["logger_label"],
                        targets_config["logger_color"])
 
-    logger.success(
-        "Collecting targets to pandas.DataFrame()!")
+    if config["print_to_console_verbosely"]:
+        logger.success("Collecting targets to pandas.DataFrame!")
 
-    logger.info(
-        f"Collecting targets to .csv file in '{targets_config["results_folder_name"]}'...")
+        logger.info(
+            f"Collecting targets to .csv file in '{targets_config["results_folder_name"]}'...")
 
     file_name: str = f"{targets_config["results_folder_name"]}/{targets_config["results_file_name"]}.csv"
 
     data_frame.to_csv(file_name, sep=";", index=False)
-    logger.success(
-        f"Collecting targets to .csv file in '{targets_config["results_folder_name"]}'!")
+
+    if config["print_to_console_verbosely"]:
+        logger.success(
+            f"Collecting targets to .csv file in '{targets_config["results_folder_name"]}'!")

@@ -26,6 +26,8 @@ def DownloadPubChemCompoundsToxicity(config: dict):
 
     for page in range(toxicity_config["start_page"],
                       toxicity_config["end_page"] + 1):
+        logger.info(f"Downloading page_{page}...")
+
         page_folder_name = f"{res_folder_name}/page_{page}"
 
         CreateFolder(page_folder_name)
@@ -34,11 +36,13 @@ def DownloadPubChemCompoundsToxicity(config: dict):
             "?heading=Acute+Effects"\
             f"&page={page}"
 
-        data = GetResponse(compound_link, False,  toxicity_config["sleep_time"]).json()[
-            "Annotations"]
+        data = GetResponse(compound_link,
+                           False,
+                           toxicity_config["sleep_time"]).json()["Annotations"]
 
         annotation_len = len(data["Annotation"])
-        logger.info(f"Amount: {annotation_len}")
+        if config["print_to_console_verbosely"]:
+            logger.info(f"Amount: {annotation_len}")
 
         quarters: dict[int, int] = {annotation_len - 1: 100,
                                     int(0.75 * annotation_len): 75,
@@ -47,7 +51,8 @@ def DownloadPubChemCompoundsToxicity(config: dict):
 
         total_pages = int(data["TotalPages"])
         if page > total_pages:
-            LogException(IndexError(f"Invalid page index! Should be: 1 < i < {total_pages}"))
+            LogException(IndexError(
+                f"Invalid page index: '{page}'! Should be: 1 < 'page' < {total_pages}"))
             continue
 
         for i, compound_data in enumerate(data["Annotation"]):
@@ -56,20 +61,24 @@ def DownloadPubChemCompoundsToxicity(config: dict):
             DownloadCompoundToxicity(compound_data,
                                      page_folder_name,
                                      sleep_time=toxicity_config["sleep_time"],
-                                     skip_downloaded_files=config["skip_downloaded"],
+                                     skip_downloaded=config["skip_downloaded"],
                                      print_to_console_verbosely=config["print_to_console_verbosely"],
                                      limit=toxicity_config["limit"])
 
             end_time = time.time()
 
-            if config["testing_flag"]:
-                logger.info(f"Counter: {i}, time: {(end_time - start_time):.3f}.")
+            if config["testing_flag"] and config["print_to_console_verbosely"]:
+                logger.info(f"Curr compound: {i}, time: {(end_time - start_time):.3f} sec.")
 
             if i in quarters.keys() and toxicity_config["need_combining"]:
+                logger.info("Combining files in page folder...")
+
                 CombineCSVInFolder(page_folder_name,
                                    f"{res_file_name}_{quarters[i]}_page_{page}",
-                                   print_to_console=config["print_to_console_verbosely"],
-                                   skip_downloaded_files=config["skip_downloaded"])
+                                   print_to_console_verbosely=config["print_to_console_verbosely"],
+                                   skip_downloaded=config["skip_downloaded"])
+
+                logger.success("Combining files in page folder!")
 
                 # перемещаем, чтобы не конкатенировать его с остальными
                 if config["print_to_console_verbosely"]:
@@ -108,8 +117,8 @@ def DownloadPubChemCompoundsToxicity(config: dict):
     if toxicity_config["need_combining"]:
         CombineCSVInFolder(res_folder_name,
                            toxicity_config["combined_file_name"],
-                           print_to_console=config["print_to_console_verbosely"],
-                           skip_downloaded_files=config["skip_downloaded"])
+                           print_to_console_verbosely=config["print_to_console_verbosely"],
+                           skip_downloaded=config["skip_downloaded"])
 
     if toxicity_config["delete_after_combining"] and toxicity_config["need_combining"]:
         if config["print_to_console_verbosely"]:

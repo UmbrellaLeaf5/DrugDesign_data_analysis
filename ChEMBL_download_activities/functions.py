@@ -161,8 +161,7 @@ def CleanedTargetActivitiesDF(data: pd.DataFrame,
     if print_to_console:
         logger.success("Reindexing columns in logical order!")
 
-        logger.success("End cleaning activities DataFrame from "
-                       f"{target_id}!")
+        logger.success(f"End cleaning activities DataFrame from {target_id}!")
 
         logger.info(f"{'-' * 77}")
 

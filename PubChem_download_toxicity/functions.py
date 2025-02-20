@@ -32,9 +32,7 @@ def GetResponse(request_url: str,
     return response
 
 
-def GetDataFrameFromUrl(request_url: str,
-                        sleep_time: float
-                        ) -> pd.DataFrame:
+def GetDataFrameFromUrl(request_url: str, sleep_time: float) -> pd.DataFrame:
     """
     Скачивает данные из CSV-файла по URL и преобразует их в pandas DataFrame.
 
@@ -110,7 +108,7 @@ def GetLinkFromSid(sid: int,
 def DownloadCompoundToxicity(compound_data: dict,
                              page_folder_name: str,
                              sleep_time: float,
-                             skip_downloaded_files: bool,
+                             skip_downloaded: bool,
                              print_to_console_verbosely: bool,
                              limit: int):
     """
@@ -120,23 +118,20 @@ def DownloadCompoundToxicity(compound_data: dict,
         compound_data (dict): словарь с информацией о соединении из JSON PubChem.
         page_folder_name (str): путь к директории, в которой будет сохранен файл.
         sleep_time (float): время ожидания между запросами в секундах.
-        skip_downloaded_files (bool): если True, то уже скачанные файлы пропускаются.
+        skip_downloaded (bool): если True, то уже скачанные файлы пропускаются.
         print_to_console_verbosely (bool): если True, то в консоль выводится подробная информация о процессе скачивания.
         limit (int): максимальное количество объектов в запросе на скачивание.
     """
 
-    cid: int | None
-
     try:
-        cid = int(compound_data["LinkedRecords"]["CID"][0])
+        compound_data["LinkedRecords"]["CID"][0]
 
     except KeyError:
-        if print_to_console_verbosely:
-            logger.warning(
-                f"No 'cid' for 'sid': {compound_data["LinkedRecords"]["SID"][0]}, skip.")
-            logger.info(f"{"-" * 77}")
+        logger.warning(
+            f"No 'cid' for 'sid': {compound_data["LinkedRecords"]["SID"][0]}, skip.")
 
-        cid = None
+        if print_to_console_verbosely:
+            logger.info(f"{"-" * 77}")
 
         return
         # не сохраняем те соединения, у которых нет cid,
@@ -161,27 +156,27 @@ def DownloadCompoundToxicity(compound_data: dict,
 
     sid = int(table_info["query"])
 
-    if primary_sid != sid and print_to_console_verbosely:
+    if primary_sid != sid:
         logger.warning(f"Mismatch between 'primary_sid' ({primary_sid}) "
                        f"and 'sid' ({sid}).")
 
     compound_name: str = f"compound_{sid}_toxicity"
-    compound_filename = f"{page_folder_name}/{compound_name}"
+    compound_file_name = f"{page_folder_name}/{compound_name}"
 
-    if os.path.exists(f"{compound_filename}.csv") and skip_downloaded_files:
-        logger.info(f"Skipping existing file: {compound_name}.")
+    if os.path.exists(f"{compound_file_name}.csv") and skip_downloaded:
+        if print_to_console_verbosely:
+            logger.info(f"{compound_file_name} is already downloaded, skip.")
+
         return
 
     if print_to_console_verbosely:
         logger.info(f"Downloading {compound_name}...")
 
     acute_effects = GetDataFrameFromUrl(
-        GetLinkFromSid(
-            sid=sid,
-            collection=table_info["collection"],
-            limit=limit
-        ),
-        sleep_time=sleep_time,
+        GetLinkFromSid(sid=sid,
+                       collection=table_info["collection"],
+                       limit=limit),
+        sleep_time
     )
 
     # @ReTry()
@@ -226,17 +221,17 @@ def DownloadCompoundToxicity(compound_data: dict,
 
             else:
                 logger.warning("Could not retrieve molecular weight by "
-                               f"'{id_column}' for {unique_ids[0]}")
+                               f"'{id_column}' for {unique_ids[0]}.")
 
                 return df
 
         elif len(unique_ids) == 0:
-            logger.warning(f"No '{id_column}' found for.")
+            logger.warning(f"No '{id_column}' found for {unique_ids[0]}.")
+
             return df
 
         else:
-            if print_to_console_verbosely:
-                logger.warning(f"Non-unique 'mw' by {id_column} for.")
+            logger.warning(f"Non-unique 'mw' by {id_column} for {unique_ids[0]}.")
 
             df["mw"] = df[id_column].apply(weight_function)
 
@@ -261,7 +256,7 @@ def DownloadCompoundToxicity(compound_data: dict,
             logger.success("Adding 'mw'!")
 
     except KeyError:
-        logger.warning("No 'mw'.")
+        logger.warning(f"No 'mw' for {compound_name}.")
 
     if print_to_console_verbosely:
         logger.info("Filtering 'organism' and 'route'...")
@@ -300,7 +295,7 @@ def DownloadCompoundToxicity(compound_data: dict,
         if print_to_console_verbosely:
             logger.info(f"Saving {compound_name} to .csv...")
 
-        acute_effects.to_csv(f"{compound_filename}.csv", sep=";",
+        acute_effects.to_csv(f"{compound_file_name}.csv", sep=";",
                              index=False, mode="w")
 
         if print_to_console_verbosely:
@@ -310,7 +305,7 @@ def DownloadCompoundToxicity(compound_data: dict,
 
     else:
         if print_to_console_verbosely:
-            logger.warning(f"{compound_name} is empty, no need saving.")
+            logger.info(f"{compound_name} is empty, no need saving, skip.")
 
     if print_to_console_verbosely:
         logger.info(f"{"-" * 77}")

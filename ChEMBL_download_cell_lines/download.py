@@ -26,8 +26,6 @@ def DownloadChEMBLCellLines(config: dict):
     if cell_lines_config["download_activities"]:
         CreateFolder(activities_config["results_folder_name"])
 
-    logger.info(f"{'-' * 77}")
-
     if config["testing_flag"]:
         cell_lines_config["id_list"] = ["CHEMBL4295386", "CHEMBL3307781"]
 
@@ -41,8 +39,9 @@ def DownloadChEMBLCellLines(config: dict):
         DownloadCellLinesFromIdList(config=config)
 
     else:
-        logger.warning(
-            f"{cell_lines_config["results_file_name"]} is already downloaded, skip")
+        if config["print_to_console_verbosely"]:
+            logger.info(
+                f"{cell_lines_config["results_file_name"]} is already downloaded, skip.")
 
     logger.success(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
     logger.info(f"{'-' * 77}")

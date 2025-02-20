@@ -38,7 +38,9 @@ def QuerySetCellLinesFromIdList(cell_line_chembl_id_list: list[str]) -> QuerySet
     return new_client.cell_line.filter(cell_chembl_id__in=cell_line_chembl_id_list)  # type: ignore
 
 
-def GetRawCellLinesData(file_id: str, output_path: str):
+def GetRawCellLinesData(file_id: str,
+                        output_path: str,
+                        print_to_console: bool):
     """
     Скачивает zip-файл из Google.Drive,
     извлекает его содержимое, а затем удаляет zip-файл.
@@ -46,6 +48,7 @@ def GetRawCellLinesData(file_id: str, output_path: str):
     Args:
         file_id: ID файла в Google Drive.
         output_path: путь к каталогу, куда будут помещены извлеченные файлы.
+        print_to_console (bool): нужно ли выводить логирование в консоль.
     """
 
     os.makedirs(output_path, exist_ok=True)
@@ -53,7 +56,7 @@ def GetRawCellLinesData(file_id: str, output_path: str):
     url = f"https://drive.google.com/uc?id={file_id}&export=download"
 
     zip_file_path = f"{output_path}.zip"
-    gdown.download(url, zip_file_path, quiet=False)
+    gdown.download(url, zip_file_path, quiet=(not print_to_console))
 
     with zipfile.ZipFile(zip_file_path, "r") as zip_ref:
         zip_ref.extractall(output_path)
@@ -80,15 +83,19 @@ def AddedIC50andGI50ToCellLinesDF(data: pd.DataFrame,
 
     cell_lines_config: dict = config["ChEMBL_download_cell_lines"]
 
-    logger.info("Adding 'IC50' and 'GI50' columns to pandas.DataFrame()...")
+    if config["print_to_console_verbosely"]:
+        logger.info("Adding 'IC50' and 'GI50' columns to pandas.DataFrame...")
 
     if IsFolderEmpty(cell_lines_config["raw_csv_folder_name"]):
-        logger.info("Getting raw cell_lines from Google.Drive...")
+        if config["print_to_console_verbosely"]:
+            logger.info("Getting raw cell_lines from Google.Drive...")
 
         GetRawCellLinesData(cell_lines_config["raw_csv_g_drive_id"],
-                            cell_lines_config["raw_csv_folder_name"])
+                            cell_lines_config["raw_csv_folder_name"],
+                            config["print_to_console_verbosely"])
 
-        logger.success("Getting raw cell_lines from Google.Drive!")
+        if config["print_to_console_verbosely"]:
+            logger.success("Getting raw cell_lines from Google.Drive!")
 
     data["IC50"] = data.apply(
         lambda value: CountCellLineActivitiesByFile(
@@ -98,7 +105,8 @@ def AddedIC50andGI50ToCellLinesDF(data: pd.DataFrame,
         lambda value: CountCellLineActivitiesByFile(
             f"{cell_lines_config["raw_csv_folder_name"]}/{value["cell_chembl_id"]}_GI50_activities.csv"), axis=1)
 
-    logger.success("Adding 'IC50' and 'GI50' columns to pandas.DataFrame()!")
+    if config["print_to_console_verbosely"]:
+        logger.success("Adding 'IC50' and 'GI50' columns to pandas.DataFrame!")
 
     if cell_lines_config["download_activities"]:
         GetCellLineChEMBLActivitiesFromCSV(data, config)
@@ -127,7 +135,8 @@ def DownloadCellLinesFromIdList(config: dict):
 
     cell_lines_config: dict = config["ChEMBL_download_cell_lines"]
 
-    logger.info("Downloading cell_lines...")
+    if config["print_to_console_verbosely"]:
+        logger.info("Downloading cell_lines...")
 
     cell_lines_with_ids: QuerySet = QuerySetCellLinesFromIdList(
         cell_lines_config["id_list"])
@@ -137,24 +146,28 @@ def DownloadCellLinesFromIdList(config: dict):
 
     logger.info(f"Amount: {len(cell_lines_with_ids)}")  # type: ignore
 
-    logger.success("Downloading cell_lines!")
+    if config["print_to_console_verbosely"]:
+        logger.success("Downloading cell_lines!")
 
-    logger.info("Collecting cell_lines to pandas.DataFrame()...")
+        logger.info("Collecting cell_lines to pandas.DataFrame...")
 
-    data_frame = AddedIC50andGI50ToCellLinesDF(pd.DataFrame(cell_lines_with_ids),  # type: ignore
-                                               config=config)
+    data_frame = AddedIC50andGI50ToCellLinesDF(
+        pd.DataFrame(cell_lines_with_ids),  # type: ignore
+        config)
 
     UpdateLoggerFormat(cell_lines_config["logger_label"],
                        cell_lines_config["logger_color"])
 
-    logger.success("Collecting cell_lines to pandas.DataFrame()!")
+    if config["print_to_console_verbosely"]:
+        logger.success("Collecting cell_lines to pandas.DataFrame!")
 
-    logger.info(
-        f"Collecting cell_lines to .csv file in '{cell_lines_config["results_folder_name"]}'...")
+        logger.info(
+            f"Collecting cell_lines to .csv file in '{cell_lines_config["results_folder_name"]}'...")
 
     file_name: str = f"{cell_lines_config["results_folder_name"]}/{cell_lines_config["results_file_name"]}.csv"
 
     data_frame.to_csv(file_name, sep=";", index=False)
 
-    logger.success(
-        f"Collecting cell_lines to .csv file in '{cell_lines_config["results_folder_name"]}'!")
+    if config["print_to_console_verbosely"]:
+        logger.success(
+            f"Collecting cell_lines to .csv file in '{cell_lines_config["results_folder_name"]}'!")

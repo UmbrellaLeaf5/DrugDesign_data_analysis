@@ -63,7 +63,7 @@ def IsFolderEmpty(folder_name: str) -> bool:
         return len(os.listdir(folder_name)) == 0
 
     except FileNotFoundError:
-        return False
+        return True
 
 
 def CreateFolder(folder_name: str,
@@ -114,8 +114,8 @@ def CombineCSVInFolder(folder_name: str,
                        separator: str = ";",
                        logger_label: str = "ChEMBL__combine",
                        logger_color: str = "fg #474747",
-                       print_to_console: bool = False,
-                       skip_downloaded_files: bool = False):
+                       print_to_console_verbosely: bool = False,
+                       skip_downloaded: bool = False):
     """
     Склеивает все .csv файлы в папке в один.
 
@@ -124,8 +124,8 @@ def CombineCSVInFolder(folder_name: str,
         combined_file_name (str): имя склеенного .csv файла.
         sep (str, optional): разделитель между колонками внутри .csv файлов. Defaults to ";".
         logger_label (str, optional): текст заголовка для логирования. Defaults to "ChEMBL__combine".
-        print_to_console (bool, optional): нужно ли выводить логирование в консоль. Defaults to False.
-        skip_downloaded_files (bool, optional): Пропускать ли уже скачанные файлы. Defaults to False.
+        print_to_console_verbosely (bool, optional): нужно ли выводить подробное логирование в консоль. Defaults to False.
+        skip_downloaded (bool, optional): пропускать ли уже скачанные файлы. Defaults to False.
     """
 
     old_logger_config: dict = {}
@@ -135,11 +135,13 @@ def CombineCSVInFolder(folder_name: str,
     UpdateLoggerFormat(logger_label, logger_color)
 
     logger.info("Start combining all downloads...")
-    logger.info(f"{'-' * 77}")
+    if print_to_console_verbosely:
+        logger.info(f"{'-' * 77}")
 
-    if IsFileInFolder(folder_name, f"{combined_file_name}.csv") and skip_downloaded_files:
-        logger.warning(
-            f"File '{combined_file_name}' is in folder, no need to combine.")
+    if IsFileInFolder(folder_name, f"{combined_file_name}.csv") and skip_downloaded:
+        if print_to_console_verbosely:
+            logger.info(
+                f"File '{combined_file_name}' is in folder, no need to combine.")
 
         UpdateLoggerFormat(old_logger_config["logger_label"],
                            old_logger_config["color"])
@@ -151,32 +153,36 @@ def CombineCSVInFolder(folder_name: str,
         if file_name.endswith('.csv') and file_name != f"{combined_file_name}.csv":
             full_file_name: str = os.path.join(folder_name, file_name)
 
-            if print_to_console:
-                logger.info(f"Collecting '{file_name}' to pandas.DataFrame()...")
+            if print_to_console_verbosely:
+                logger.info(f"Collecting '{file_name}' to pandas.DataFrame...")
 
             df = pd.read_csv(full_file_name, sep=separator, low_memory=False)
 
-            if print_to_console:
-                logger.success(f"Collecting '{file_name}' to pandas.DataFrame()!")
+            if print_to_console_verbosely:
+                logger.success(f"Collecting '{file_name}' to pandas.DataFrame!")
 
                 logger.info(f"Concatenating '{file_name}' to combined_data_frame...")
 
             combined_df = pd.concat([combined_df, df], ignore_index=True)
 
-            if print_to_console:
+            if print_to_console_verbosely:
                 logger.success(
                     f"Concatenating '{file_name}' to combined_data_frame!")
 
                 logger.info(f"{'-' * 77}")
 
-    logger.info(f"Collecting to combined .csv file in '{folder_name}'...")
+    if print_to_console_verbosely:
+        logger.info(f"Collecting to combined .csv file in '{folder_name}'...")
 
     combined_df.to_csv(
         f"{folder_name}/{combined_file_name}.csv", sep=separator, index=False)
 
-    logger.success(f"Collecting to combined .csv file in '{folder_name}'!")
+    if print_to_console_verbosely:
+        logger.success(f"Collecting to combined .csv file in '{folder_name}'!")
 
-    logger.info(f"{'-' * 77}")
+    if print_to_console_verbosely:
+        logger.info(f"{'-' * 77}")
+
     logger.success(f"End combining all downloads!")
 
     UpdateLoggerFormat(old_logger_config["logger_label"],

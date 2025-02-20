@@ -26,8 +26,6 @@ def DownloadChEMBLTargets(config: dict):
     if targets_config["download_activities"]:
         CreateFolder(activities_config["results_folder_name"])
 
-    logger.info(f"{'-' * 77}")
-
     if config["testing_flag"]:
         targets_config["id_list"] = ["CHEMBL1951", "CHEMBL2034"]
 
@@ -37,11 +35,12 @@ def DownloadChEMBLTargets(config: dict):
             # в случае пустого списка в DownloadTargetsFromIdList скачаются все
             targets_config["id_list"] = []
 
-        DownloadTargetsFromIdList(config=config)
+        DownloadTargetsFromIdList(config)
 
     else:
-        logger.warning(
-            f"{targets_config["results_file_name"]} is already downloaded, skip")
+        if config["print_to_console_verbosely"]:
+            logger.info(
+                f"{targets_config["results_file_name"]} is already downloaded, skip")
 
     logger.success(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
     logger.info(f"{'-' * 77}")

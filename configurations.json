@@ -1,7 +1,7 @@
 {
-  "print_to_console_verbosely": true,
+  "print_to_console_verbosely": false,
   "testing_flag": true,
-  "skip_downloaded": true,
+  "skip_downloaded": false,
   "ChEMBL_download_activities": {
     "logger_label": "ChEMBL__IC50&Ki",
     "logger_color": "fg #61B78C",
