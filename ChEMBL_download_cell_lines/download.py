@@ -1,20 +1,22 @@
 from ChEMBL_download_cell_lines.functions import *
 
 from Utils.decorators import IgnoreWarnings
-from Utils.file_and_logger_funcs import CreateFolder, IsFileInFolder
+from Utils.files_funcs import CreateFolder, IsFileInFolder
+
+from Configurations.config import Config
 
 
 @IgnoreWarnings
-def DownloadChEMBLCellLines(config: dict):
+def DownloadChEMBLCellLines(config: Config):
     """
     Скачивает информацию о клеточных линиях из базы данных ChEMBL на основе конфигурации (`config.json`).
 
     Args:
-        config (dict): словарь, содержащий параметры конфигурации для процесса скачивания.
+        config (Config): словарь, содержащий параметры конфигурации для процесса скачивания.
     """
 
-    cell_lines_config: dict = config["ChEMBL_download_cell_lines"]
-    activities_config: dict = config["ChEMBL_download_activities"]
+    cell_lines_config: Config = config["ChEMBL_download_cell_lines"]
+    activities_config: Config = config["ChEMBL_download_activities"]
 
     UpdateLoggerFormat(cell_lines_config["logger_label"],
                        cell_lines_config["logger_color"])
@@ -36,10 +38,10 @@ def DownloadChEMBLCellLines(config: dict):
             # в случае пустого списка в DownloadCellLinesFromIdList скачаются все
             cell_lines_config["id_list"] = []
 
-        DownloadCellLinesFromIdList(config=config)
+        DownloadCellLinesFromIdList(config)
 
     else:
-        if config["print_to_console_verbosely"]:
+        if config["verbose_print"]:
             logger.info(
                 f"{cell_lines_config["results_file_name"]} is already downloaded, skip.")
 

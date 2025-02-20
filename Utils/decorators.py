@@ -3,7 +3,7 @@ import time
 from typing import Callable
 import warnings
 
-from Utils.file_and_logger_funcs import logger, LogException
+from Utils.logger_funcs import logger, LogException
 
 
 def IgnoreWarnings(func: Callable) -> Callable:

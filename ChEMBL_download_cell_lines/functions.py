@@ -8,7 +8,10 @@ from ChEMBL_download_activities.download import GetCellLineChEMBLActivitiesFromC
 from ChEMBL_download_activities.functions import CountCellLineActivitiesByFile
 
 from Utils.decorators import ReTry
-from Utils.file_and_logger_funcs import IsFolderEmpty, logger, os, pd, UpdateLoggerFormat
+from Utils.logger_funcs import logger, UpdateLoggerFormat
+from Utils.files_funcs import IsFolderEmpty, os, pd
+
+from Configurations.config import Config
 
 
 @ReTry()
@@ -66,7 +69,7 @@ def GetRawCellLinesData(file_id: str,
 
 @ReTry(attempts_amount=1)
 def AddedIC50andGI50ToCellLinesDF(data: pd.DataFrame,
-                                  config: dict
+                                  config: Config
                                   ) -> pd.DataFrame:
     """
     Добавляет столбцы `IC50` и `GI50` в DataFrame с данными о клеточных линиях, подсчитывая
@@ -74,27 +77,27 @@ def AddedIC50andGI50ToCellLinesDF(data: pd.DataFrame,
 
     Args:
         data (pd.DataFrame): DataFrame с данными о клеточных линиях.
-        config (dict): словарь, содержащий параметры конфигурации для процесса скачивания.
+        config (Config): словарь, содержащий параметры конфигурации для процесса скачивания.
 
     Returns:
         pd.DataFrame: DataFrame с добавленными столбцами `IC50` и `GI50`,
                       содержащими количество соответствующих активностей.
     """
 
-    cell_lines_config: dict = config["ChEMBL_download_cell_lines"]
+    cell_lines_config: Config = config["ChEMBL_download_cell_lines"]
 
-    if config["print_to_console_verbosely"]:
+    if config["verbose_print"]:
         logger.info("Adding 'IC50' and 'GI50' columns to pandas.DataFrame...")
 
     if IsFolderEmpty(cell_lines_config["raw_csv_folder_name"]):
-        if config["print_to_console_verbosely"]:
+        if config["verbose_print"]:
             logger.info("Getting raw cell_lines from Google.Drive...")
 
         GetRawCellLinesData(cell_lines_config["raw_csv_g_drive_id"],
                             cell_lines_config["raw_csv_folder_name"],
-                            config["print_to_console_verbosely"])
+                            config["verbose_print"])
 
-        if config["print_to_console_verbosely"]:
+        if config["verbose_print"]:
             logger.success("Getting raw cell_lines from Google.Drive!")
 
     data["IC50"] = data.apply(
@@ -105,7 +108,7 @@ def AddedIC50andGI50ToCellLinesDF(data: pd.DataFrame,
         lambda value: CountCellLineActivitiesByFile(
             f"{cell_lines_config["raw_csv_folder_name"]}/{value["cell_chembl_id"]}_GI50_activities.csv"), axis=1)
 
-    if config["print_to_console_verbosely"]:
+    if config["verbose_print"]:
         logger.success("Adding 'IC50' and 'GI50' columns to pandas.DataFrame!")
 
     if cell_lines_config["download_activities"]:
@@ -123,19 +126,19 @@ def AddedIC50andGI50ToCellLinesDF(data: pd.DataFrame,
     return data
 
 
-def DownloadCellLinesFromIdList(config: dict):
+def DownloadCellLinesFromIdList(config: Config):
     """
     Скачивает данные о клеточных линиях из ChEMBL по списку идентификаторов,
     добавляет информацию об активностях IC50 и GI50, проводит первичный анализ
     и сохраняет результаты в CSV-файл.
 
     Args:
-        config (dict): словарь, содержащий параметры конфигурации для процесса скачивания.
+        config (Config): словарь, содержащий параметры конфигурации для процесса скачивания.
     """
 
-    cell_lines_config: dict = config["ChEMBL_download_cell_lines"]
+    cell_lines_config: Config = config["ChEMBL_download_cell_lines"]
 
-    if config["print_to_console_verbosely"]:
+    if config["verbose_print"]:
         logger.info("Downloading cell_lines...")
 
     cell_lines_with_ids: QuerySet = QuerySetCellLinesFromIdList(
@@ -146,7 +149,7 @@ def DownloadCellLinesFromIdList(config: dict):
 
     logger.info(f"Amount: {len(cell_lines_with_ids)}")  # type: ignore
 
-    if config["print_to_console_verbosely"]:
+    if config["verbose_print"]:
         logger.success("Downloading cell_lines!")
 
         logger.info("Collecting cell_lines to pandas.DataFrame...")
@@ -158,7 +161,7 @@ def DownloadCellLinesFromIdList(config: dict):
     UpdateLoggerFormat(cell_lines_config["logger_label"],
                        cell_lines_config["logger_color"])
 
-    if config["print_to_console_verbosely"]:
+    if config["verbose_print"]:
         logger.success("Collecting cell_lines to pandas.DataFrame!")
 
         logger.info(
@@ -168,6 +171,6 @@ def DownloadCellLinesFromIdList(config: dict):
 
     data_frame.to_csv(file_name, sep=";", index=False)
 
-    if config["print_to_console_verbosely"]:
+    if config["verbose_print"]:
         logger.success(
             f"Collecting cell_lines to .csv file in '{cell_lines_config["results_folder_name"]}'!")

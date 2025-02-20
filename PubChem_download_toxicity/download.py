@@ -1,19 +1,23 @@
 from PubChem_download_toxicity.functions import *
 
-from Utils.file_and_logger_funcs import *
+from Utils.logger_funcs import logger, UpdateLoggerFormat
+from Utils.files_funcs import CombineCSVInFolder, CreateFolder, DeleteFilesInFolder, MoveFileToFolder
+
+from Configurations.config import Config
 
 
 @ReTry(attempts_amount=1)
-def DownloadPubChemCompoundsToxicity(config: dict):
+def DownloadPubChemCompoundsToxicity(config: Config):
     """
     Скачивает информацию о токсичности соединений из базы данных PubChem 
     на основе конфигурации (`config.json`).
 
     Args:
-        config (dict): словарь, содержащий параметры конфигурации для процесса скачивания.
+        config (Config): словарь, содержащий параметры конфигурации для процесса скачивания.
     """
 
-    toxicity_config = config["PubChem_download_toxicity"]
+    toxicity_config: Config = config["PubChem_download_toxicity"]
+
     res_folder_name: str = toxicity_config["results_folder_name"]
     res_file_name: str = toxicity_config["results_file_name"]
 
@@ -41,7 +45,7 @@ def DownloadPubChemCompoundsToxicity(config: dict):
                            toxicity_config["sleep_time"]).json()["Annotations"]
 
         annotation_len = len(data["Annotation"])
-        if config["print_to_console_verbosely"]:
+        if config["verbose_print"]:
             logger.info(f"Amount: {annotation_len}")
 
         quarters: dict[int, int] = {annotation_len - 1: 100,
@@ -60,28 +64,26 @@ def DownloadPubChemCompoundsToxicity(config: dict):
 
             DownloadCompoundToxicity(compound_data,
                                      page_folder_name,
-                                     sleep_time=toxicity_config["sleep_time"],
-                                     skip_downloaded=config["skip_downloaded"],
-                                     print_to_console_verbosely=config["print_to_console_verbosely"],
-                                     limit=toxicity_config["limit"])
+                                     config)
 
             end_time = time.time()
 
-            if config["testing_flag"] and config["print_to_console_verbosely"]:
+            if config["testing_flag"] and config["verbose_print"]:
                 logger.info(f"Curr compound: {i}, time: {(end_time - start_time):.3f} sec.")
 
             if i in quarters.keys() and toxicity_config["need_combining"]:
-                logger.info("Combining files in page folder...")
+                quarter = quarters[i]
+
+                logger.info(f"Quarter: {quarter}%, combining files in page_{page} folder...")
 
                 CombineCSVInFolder(page_folder_name,
                                    f"{res_file_name}_{quarters[i]}_page_{page}",
-                                   print_to_console_verbosely=config["print_to_console_verbosely"],
-                                   skip_downloaded=config["skip_downloaded"])
+                                   config)
 
-                logger.success("Combining files in page folder!")
+                logger.success(f"Quarter: {quarter}%, combining files in page_{page} folder!")
 
                 # перемещаем, чтобы не конкатенировать его с остальными
-                if config["print_to_console_verbosely"]:
+                if config["verbose_print"]:
                     logger.info(f"Moving {res_file_name}_"
                                 f"{quarters[i]}_page_{page}.csv to "
                                 f"{res_folder_name}...")
@@ -91,37 +93,35 @@ def DownloadPubChemCompoundsToxicity(config: dict):
                                  page_folder_name,
                                  res_folder_name)
 
-                if config["print_to_console_verbosely"]:
+                if config["verbose_print"]:
                     logger.success(f"Moving {res_file_name}"
                                    f"_{quarters[i]}_page_{page}.csv to "
                                    f"{res_folder_name}!")
 
                 # и удаляем предыдущий
-                quarter = quarters[i]
                 prev_quarter = quarter - 25
 
                 if prev_quarter != 0:
                     old_quarter_file_name: str =\
                         f"{res_file_name}_{prev_quarter}_page_{page}"
 
-                    if config["print_to_console_verbosely"]:
+                    if config["verbose_print"]:
                         logger.info("Deleting old quarter file...")
 
                     os.remove(os.path.join(
                         res_folder_name,
                         f"{old_quarter_file_name}.csv"))
 
-                    if config["print_to_console_verbosely"]:
+                    if config["verbose_print"]:
                         logger.success("Deleting old quarter file!")
 
     if toxicity_config["need_combining"]:
         CombineCSVInFolder(res_folder_name,
                            toxicity_config["combined_file_name"],
-                           print_to_console_verbosely=config["print_to_console_verbosely"],
-                           skip_downloaded=config["skip_downloaded"])
+                           config)
 
     if toxicity_config["delete_after_combining"] and toxicity_config["need_combining"]:
-        if config["print_to_console_verbosely"]:
+        if config["verbose_print"]:
             logger.info("Deleting files after combining in "
                         f"'{res_folder_name}'...")
 
@@ -129,7 +129,7 @@ def DownloadPubChemCompoundsToxicity(config: dict):
                             [f"{toxicity_config["combined_file_name"]}.csv"],
                             delete_folders=True)
 
-        if config["print_to_console_verbosely"]:
+        if config["verbose_print"]:
             logger.success("Deleting files after combining in "
                            f"'{res_folder_name}'!")
 

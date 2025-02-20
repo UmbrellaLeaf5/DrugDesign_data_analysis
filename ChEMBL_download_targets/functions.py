@@ -5,7 +5,10 @@ from ChEMBL_download_activities.download import DownloadTargetChEMBLActivities
 from ChEMBL_download_activities.functions import CountTargetActivitiesByIC50, CountTargetActivitiesByKi
 
 from Utils.decorators import ReTry
-from Utils.file_and_logger_funcs import logger, pd, UpdateLoggerFormat
+from Utils.logger_funcs import logger, UpdateLoggerFormat
+from Utils.files_funcs import pd
+
+from Configurations.config import Config
 
 
 @ReTry()
@@ -105,7 +108,9 @@ def ExpandedFromDictionariesTargetsDF(data: pd.DataFrame) -> pd.DataFrame:
 
 
 @ReTry(attempts_amount=1)
-def AddedIC50andKiToTargetsDF(data: pd.DataFrame, config: dict) -> pd.DataFrame:
+def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
+                              config: Config
+                              ) -> pd.DataFrame:
     """
     Добавляет столбцы 'IC50' и 'Ki' в DataFrame с данными о целевых белках (targets),
     подсчитывая количество соответствующих активностей из базы данных ChEMBL,
@@ -113,16 +118,16 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame, config: dict) -> pd.DataFrame:
 
     Args:
         data (pd.DataFrame): DataFrame с данными о целевых белках.
-        config (dict): словарь, содержащий параметры конфигурации для процесса скачивания.
+        config (Config): словарь, содержащий параметры конфигурации для процесса скачивания.
 
     Returns:
         pd.DataFrame: DataFrame с добавленными столбцами 'IC50' и 'Ki', содержащими количество
                       соответствующих активностей.
     """
 
-    targets_config = config["ChEMBL_download_targets"]
+    targets_config: Config = config["ChEMBL_download_targets"]
 
-    if config["print_to_console_verbosely"]:
+    if config["verbose_print"]:
         logger.info(
             f"Adding 'IC50' and 'Ki' columns to pandas.DataFrame...")
 
@@ -131,7 +136,7 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame, config: dict) -> pd.DataFrame:
     data["Ki"] = data["target_chembl_id"].apply(
         CountTargetActivitiesByKi)
 
-    if config["print_to_console_verbosely"]:
+    if config["verbose_print"]:
         logger.success(
             f"Adding 'IC50' and 'Ki' columns to pandas.DataFrame!")
 
@@ -151,19 +156,19 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame, config: dict) -> pd.DataFrame:
 
 
 @ReTry(attempts_amount=1)
-def DownloadTargetsFromIdList(config: dict):
+def DownloadTargetsFromIdList(config: Config):
     """
     Скачивает данные о целевых белках (targets) из ChEMBL по списку идентификаторов,
     добавляет информацию об активностях IC50 и Ki, проводит первичный анализ
     и сохраняет результаты в CSV-файл.
 
     Args:
-        config (dict): словарь, содержащий параметры конфигурации для процесса скачивания.
+        config (Config): словарь, содержащий параметры конфигурации для процесса скачивания.
     """
 
-    targets_config = config["ChEMBL_download_targets"]
+    targets_config: Config = config["ChEMBL_download_targets"]
 
-    if config["print_to_console_verbosely"]:
+    if config["verbose_print"]:
         logger.info("Downloading targets...")
 
     targets_with_ids: QuerySet = QuerySetTargetsFromIdList(targets_config["id_list"])
@@ -173,7 +178,7 @@ def DownloadTargetsFromIdList(config: dict):
 
     logger.info(f"Amount: {len(targets_with_ids)}")  # type: ignore
 
-    if config["print_to_console_verbosely"]:
+    if config["verbose_print"]:
         logger.success("Downloading targets!")
 
         logger.info("Collecting targets to pandas.DataFrame..")
@@ -187,7 +192,7 @@ def DownloadTargetsFromIdList(config: dict):
     UpdateLoggerFormat(targets_config["logger_label"],
                        targets_config["logger_color"])
 
-    if config["print_to_console_verbosely"]:
+    if config["verbose_print"]:
         logger.success("Collecting targets to pandas.DataFrame!")
 
         logger.info(
@@ -197,6 +202,6 @@ def DownloadTargetsFromIdList(config: dict):
 
     data_frame.to_csv(file_name, sep=";", index=False)
 
-    if config["print_to_console_verbosely"]:
+    if config["verbose_print"]:
         logger.success(
             f"Collecting targets to .csv file in '{targets_config["results_folder_name"]}'!")

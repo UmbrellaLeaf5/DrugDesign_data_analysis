@@ -4,7 +4,10 @@ import requests
 import urllib.parse
 
 from Utils.decorators import ReTry, time, Callable
-from Utils.file_and_logger_funcs import json, LogException, logger, os, pd
+from Utils.logger_funcs import json, LogException, logger
+from Utils.files_funcs import os, pd
+
+from Configurations.config import Config
 
 
 @ReTry()
@@ -107,21 +110,20 @@ def GetLinkFromSid(sid: int,
 @ReTry(attempts_amount=1)
 def DownloadCompoundToxicity(compound_data: dict,
                              page_folder_name: str,
-                             sleep_time: float,
-                             skip_downloaded: bool,
-                             print_to_console_verbosely: bool,
-                             limit: int):
+                             config: Config):
     """
     Скачивает данные о токсичности соединения по информации из JSON PubChem и сохраняет их в CSV-файл.
 
     Args:
         compound_data (dict): словарь с информацией о соединении из JSON PubChem.
         page_folder_name (str): путь к директории, в которой будет сохранен файл.
-        sleep_time (float): время ожидания между запросами в секундах.
-        skip_downloaded (bool): если True, то уже скачанные файлы пропускаются.
-        print_to_console_verbosely (bool): если True, то в консоль выводится подробная информация о процессе скачивания.
-        limit (int): максимальное количество объектов в запросе на скачивание.
+        config (Config): словарь, содержащий параметры конфигурации для процесса скачивания.
     """
+
+    toxicity_config: Config = config["PubChem_download_toxicity"]
+    filtering_config: Config = toxicity_config["filtering"]
+
+    verbose_print: bool = config["verbose_print"]
 
     try:
         compound_data["LinkedRecords"]["CID"][0]
@@ -130,7 +132,7 @@ def DownloadCompoundToxicity(compound_data: dict,
         logger.warning(
             f"No 'cid' for 'sid': {compound_data["LinkedRecords"]["SID"][0]}, skip.")
 
-        if print_to_console_verbosely:
+        if verbose_print:
             logger.info(f"{"-" * 77}")
 
         return
@@ -163,20 +165,20 @@ def DownloadCompoundToxicity(compound_data: dict,
     compound_name: str = f"compound_{sid}_toxicity"
     compound_file_name = f"{page_folder_name}/{compound_name}"
 
-    if os.path.exists(f"{compound_file_name}.csv") and skip_downloaded:
-        if print_to_console_verbosely:
-            logger.info(f"{compound_file_name} is already downloaded, skip.")
+    if os.path.exists(f"{compound_file_name}.csv") and config["skip_downloaded"]:
+        if verbose_print:
+            logger.info(f"{compound_name} is already downloaded, skip.")
 
         return
 
-    if print_to_console_verbosely:
+    if verbose_print:
         logger.info(f"Downloading {compound_name}...")
 
     acute_effects = GetDataFrameFromUrl(
         GetLinkFromSid(sid=sid,
                        collection=table_info["collection"],
-                       limit=limit),
-        sleep_time
+                       limit=toxicity_config["limit"]),
+        toxicity_config["sleep_time"]
     )
 
     # @ReTry()
@@ -216,19 +218,15 @@ def DownloadCompoundToxicity(compound_data: dict,
             if mw is not None:
                 df["mw"] = mw
 
-                if print_to_console_verbosely:
+                if verbose_print:
                     logger.info(f"Found 'mw' by '{id_column}'.")
 
             else:
                 logger.warning("Could not retrieve molecular weight by "
                                f"'{id_column}' for {unique_ids[0]}.")
 
-                return df
-
         elif len(unique_ids) == 0:
             logger.warning(f"No '{id_column}' found for {unique_ids[0]}.")
-
-            return df
 
         else:
             logger.warning(f"Non-unique 'mw' by {id_column} for {unique_ids[0]}.")
@@ -240,7 +238,7 @@ def DownloadCompoundToxicity(compound_data: dict,
 
         return df
 
-    if print_to_console_verbosely:
+    if verbose_print:
         logger.info("Adding 'mw'...")
 
     acute_effects = CalcMolecularWeight(
@@ -252,60 +250,61 @@ def DownloadCompoundToxicity(compound_data: dict,
     try:
         acute_effects["mw"] = pd.to_numeric(acute_effects["mw"], errors="coerce")
 
-        if print_to_console_verbosely:
+        if verbose_print:
             logger.success("Adding 'mw'!")
 
     except KeyError:
         logger.warning(f"No 'mw' for {compound_name}.")
 
-    if print_to_console_verbosely:
+    if verbose_print:
         logger.info("Filtering 'organism' and 'route'...")
 
-    acute_effects = acute_effects[acute_effects["organism"].isin(["rat", "mouse"])]
+    acute_effects = acute_effects[acute_effects["organism"].isin(
+        filtering_config["organism"])]
     acute_effects = acute_effects[acute_effects["route"].isin(
-        ["oral", "intraperitoneal", "intravenous", "subcutaneous"])]
+        filtering_config["route"])]
 
-    if print_to_console_verbosely:
+    if verbose_print:
         logger.success("Filtering 'organism' and 'route'!")
 
         logger.info("Filtering 'dose'...")
 
     acute_effects = acute_effects[acute_effects["dose"].astype(
-        str).str.lower().str.endswith("mg/kg")]
+        str).str.lower().str.endswith(filtering_config["dose"])]
 
     acute_effects["dose"] = acute_effects["dose"].astype(
         str).str.extract(r"(\d+(?:\.\d+)?)", expand=False)
 
     acute_effects["dose"] = pd.to_numeric(acute_effects["dose"], errors="coerce")
 
-    if print_to_console_verbosely:
+    if verbose_print:
         logger.success("Filtering 'dose'!")
 
     if "mw" in acute_effects.columns:
-        if print_to_console_verbosely:
+        if verbose_print:
             logger.info("Adding 'pLD50'...")
 
         acute_effects["pLD50"] = -np.log10(
             (acute_effects["dose"] / acute_effects["mw"]) / 1000000)
 
-        if print_to_console_verbosely:
+        if verbose_print:
             logger.success("Adding 'pLD50'!")
 
     if not acute_effects.empty:
-        if print_to_console_verbosely:
+        if verbose_print:
             logger.info(f"Saving {compound_name} to .csv...")
 
         acute_effects.to_csv(f"{compound_file_name}.csv", sep=";",
                              index=False, mode="w")
 
-        if print_to_console_verbosely:
+        if verbose_print:
             logger.success(f"Saving {compound_name} to .csv!")
 
             logger.success(f"Downloading {compound_name}!")
 
     else:
-        if print_to_console_verbosely:
+        if verbose_print:
             logger.info(f"{compound_name} is empty, no need saving, skip.")
 
-    if print_to_console_verbosely:
+    if verbose_print:
         logger.info(f"{"-" * 77}")

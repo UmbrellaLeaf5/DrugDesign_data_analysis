@@ -1,26 +1,32 @@
 from ChEMBL_download_compounds.functions import *
 
 from Utils.decorators import IgnoreWarnings
-from Utils.file_and_logger_funcs import *
+from Utils.logger_funcs import logger, UpdateLoggerFormat
+from Utils.files_funcs import CombineCSVInFolder, CreateFolder, DeleteFilesInFolder, IsFileInFolder
+
+from Configurations.config import Config
 
 
 @IgnoreWarnings
 @ReTry(attempts_amount=1)
-def DownloadChEMBLCompounds(config: dict):
+def DownloadChEMBLCompounds(config: Config):
     """
-    Скачивает информацию о соединениях из базы данных ChEMBL на основе конфигурации (`config.json`).
+    Скачивает информацию о соединениях из базы данных ChEMBL
+    на основе конфигурации (`config.json`).
 
     Args:
-        config (dict): словарь, содержащий параметры конфигурации для процесса скачивания.
+        config (Config): словарь, содержащий параметры конфигурации для процесса скачивания.
     """
 
-    compounds_config = config["ChEMBL_download_compounds"]
+    compounds_config: Config = config["ChEMBL_download_compounds"]
 
-    if compounds_config["delete_after_combining"] and not compounds_config["need_combining"]:
+    if compounds_config["delete_after_combining"] and\
+            not compounds_config["need_combining"]:
         raise ValueError(
             "DownloadChEMBLCompounds: delete_after_combining=True but need_combine=False")
 
-    UpdateLoggerFormat(compounds_config["logger_label"], compounds_config["logger_color"])
+    UpdateLoggerFormat(compounds_config["logger_label"],
+                       compounds_config["logger_color"])
 
     logger.info(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
 
@@ -40,22 +46,21 @@ def DownloadChEMBLCompounds(config: dict):
                 less_limit,
                 greater_limit,
                 results_folder_name=compounds_config["results_folder_name"],
-                print_to_console=config["print_to_console_verbosely"]
+                print_to_console=config["verbose_print"]
             )
 
         else:
-            if config["print_to_console_verbosely"]:
+            if config["verbose_print"]:
                 logger.info(f"Molecules with mw in range [{less_limit}, "
                             f"{greater_limit}) is already downloaded, skip.")
 
-        if config["print_to_console_verbosely"]:
+        if config["verbose_print"]:
             logger.info(f"{'-' * 77}")
 
     if compounds_config["need_combining"]:
         CombineCSVInFolder(compounds_config["results_folder_name"],
                            compounds_config["combined_file_name"],
-                           skip_downloaded=config["skip_downloaded"],
-                           print_to_console_verbosely=config["print_to_console_verbosely"])
+                           config)
 
     if compounds_config["delete_after_combining"] and compounds_config["need_combining"]:
         logger.info(

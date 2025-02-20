@@ -2,7 +2,8 @@ from chembl_webresource_client.new_client import new_client
 from chembl_webresource_client.query_set import QuerySet
 
 from Utils.decorators import ReTry
-from Utils.file_and_logger_funcs import logger, pd, TextIOWrapper
+from Utils.logger_funcs import logger, TextIOWrapper
+from Utils.files_funcs import pd
 
 
 @ReTry()
