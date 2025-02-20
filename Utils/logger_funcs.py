@@ -19,7 +19,8 @@ def UpdateLoggerFormat(logger_label: str,
         logger_label (str): текст заголовка для логирования.
         logger_color (str): цвет заголовка для логирования.
         out (TextIO | TextIOWrapper, optional): способ вывода. Defaults to sys.stdout.
-        temp_logger_file (str, optional): временный файл записи конфигурации логов. Defaults to "logger.json".
+        temp_logger_file (str, optional): временный файл записи конфигурации логов. 
+                                          Defaults to "logger.json".
     """
 
     def AlignedFormat(record):

@@ -80,7 +80,8 @@ def GetLinkFromSid(sid: int,
             query (dict[str, str]): словарь с параметрами запроса.
 
         Returns:
-            str: строка запроса в формате "query={JSON-encoded query}". Пустая строка, если словарь пуст.
+            str: строка запроса в формате "query={JSON-encoded query}". 
+                 Пустая строка, если словарь пуст.
         """
 
         if not query:
@@ -112,7 +113,8 @@ def DownloadCompoundToxicity(compound_data: dict,
                              page_folder_name: str,
                              config: Config):
     """
-    Скачивает данные о токсичности соединения по информации из JSON PubChem и сохраняет их в CSV-файл.
+    Скачивает данные о токсичности соединения по информации из JSON PubChem
+    и сохраняет их в CSV-файл.
 
     Args:
         compound_data (dict): словарь с информацией о соединении из JSON PubChem.
@@ -181,39 +183,40 @@ def DownloadCompoundToxicity(compound_data: dict,
         toxicity_config["sleep_time"]
     )
 
-    # @ReTry()
-    # def GetMolecularWeightByCid(cid):
-    #     if pd.isna(cid) or not cid:
-    #         return None
-
-    #     return pcp.Compound.from_cid(str(cid)).molecular_weight
-
-    # @ReTry()
-    # def GetMolecularWeightBySid(sid):
-    #     if pd.isna(sid) or not sid:
-    #         return None
-
-    #     cids = pcp.Substance.from_sid(str(sid)).cids
-    #     if len(cids):
-    #         return GetMolecularWeightByCid(cids[0])
-
-    #     else:
-    #         return None
-
     @ReTry()
-    def GetMolecularWeightByCidPugRest(cid):
+    def GetMolecularWeightByCid(cid) -> str:
+        """
+        Получает молекулярный вес соединения из PubChem REST API, используя его CID.
+
+        Args:
+            cid (int или str): PubChem Compound Identifier (CID) соединения.
+
+        Returns:
+            str: молекулярный вес соединения в виде строки.
+        """
+
         return GetResponse("https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/"
                            f"{cid}/property/MolecularWeight/txt",
                            True, None).text.strip()
 
     def CalcMolecularWeight(df: pd.DataFrame,
                             id_column: str,
-                            weight_function: Callable,
                             ) -> pd.DataFrame:
+        """
+        Вычисляет и добавляет столбец 'mw' (молекулярный вес) в для pd.DataFrame.
+
+        Args:
+            df (pd.DataFrame): исходный pd.DataFrame.
+            id_column (str): название столбца, содержащего ID соединений.
+
+        Returns:
+            pd.DataFrame: модифицированный DataFrame с добавленным столбцом 'mw'.
+        """
+
         unique_ids = df[id_column].dropna().unique()
 
         if len(unique_ids) == 1:
-            mw = weight_function(unique_ids[0])
+            mw = GetMolecularWeightByCid(unique_ids[0])
 
             if mw is not None:
                 df["mw"] = mw
@@ -231,7 +234,7 @@ def DownloadCompoundToxicity(compound_data: dict,
         else:
             logger.warning(f"Non-unique 'mw' by {id_column} for {unique_ids[0]}.")
 
-            df["mw"] = df[id_column].apply(weight_function)
+            df["mw"] = df[id_column].apply(GetMolecularWeightByCid)
 
             if df["mw"].isnull().any():
                 logger.warning(f"Some 'mw' could not be retrieved by {id_column}.")
@@ -241,11 +244,7 @@ def DownloadCompoundToxicity(compound_data: dict,
     if verbose_print:
         logger.info("Adding 'mw'...")
 
-    acute_effects = CalcMolecularWeight(
-        acute_effects,
-        "cid",
-        GetMolecularWeightByCidPugRest,
-    )
+    acute_effects = CalcMolecularWeight(acute_effects, "cid")
 
     try:
         acute_effects["mw"] = pd.to_numeric(acute_effects["mw"], errors="coerce")

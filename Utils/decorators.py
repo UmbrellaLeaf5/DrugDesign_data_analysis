@@ -35,9 +35,13 @@ def ReTry(attempts_amount: int = 5,
     """
     Декоратор для повторения попыток выполнения функции.
 
+    В том случае, если `attempts_amount == 1`, можно сказать, просто оборачивает
+    декорируемую функцию в `try-except`. 
+
     Args:
         attempts_amount (int, optional): кол-во попыток. Defaults to 5.
-        exception_to_check (type[Exception], optional): улавливаемое исключение. Defaults to Exception.
+        exception_to_check (type[Exception], optional): тип улавливаемого исключения. 
+                                                        Defaults to Exception.
         sleep_time (int, optional): время ожидания между попытками. Defaults to 1.
 
     Returns:

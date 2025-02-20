@@ -7,7 +7,8 @@ from Utils.files_funcs import CreateFolder, IsFileInFolder
 @IgnoreWarnings
 def DownloadChEMBLTargets(config: Config):
     """
-    Скачивает информацию о мишенях из базы данных ChEMBL на основе конфигурации (`config.json`).
+    Скачивает информацию о мишенях из базы данных ChEMBL 
+    на основе конфигурации (`config.json`).
 
     Args:
         config (Config): словарь, содержащий параметры конфигурации для процесса скачивания.
@@ -29,8 +30,9 @@ def DownloadChEMBLTargets(config: Config):
     if config["testing_flag"]:
         targets_config["id_list"] = ["CHEMBL1951", "CHEMBL2034"]
 
-    if not config["skip_downloaded"] or not IsFileInFolder(targets_config["results_file_name"],
-                                                           targets_config["results_folder_name"]):
+    if not config["skip_downloaded"] or not IsFileInFolder(
+            targets_config["results_file_name"],
+            targets_config["results_folder_name"]):
         if targets_config["download_all"]:
             # в случае пустого списка в DownloadTargetsFromIdList скачаются все
             targets_config["id_list"] = []

@@ -2,7 +2,8 @@ from chembl_webresource_client.new_client import new_client
 from chembl_webresource_client.query_set import QuerySet
 
 from ChEMBL_download_activities.download import DownloadTargetChEMBLActivities
-from ChEMBL_download_activities.functions import CountTargetActivitiesByIC50, CountTargetActivitiesByKi
+from ChEMBL_download_activities.functions import CountTargetActivitiesByIC50, \
+    CountTargetActivitiesByKi
 
 from Utils.decorators import ReTry
 from Utils.logger_funcs import logger, UpdateLoggerFormat
@@ -40,7 +41,8 @@ def QuerySetTargetsFromIdList(target_chembl_id_list: list[str]) -> QuerySet:
 
 def ExpandedFromDictionariesTargetsDF(data: pd.DataFrame) -> pd.DataFrame:
     """
-    Избавляет pd.DataFrame от словарей и списков словарей в столбцах, разбивая их на подстолбцы.
+    Избавляет pd.DataFrame от словарей и списков словарей в столбцах, 
+    разбивая их на подстолбцы.
 
     Args:
         data (pd.DataFrame): исходный pd.DataFrame
@@ -53,8 +55,8 @@ def ExpandedFromDictionariesTargetsDF(data: pd.DataFrame) -> pd.DataFrame:
                                   column_name: str,
                                   key: str) -> pd.Series:
         """
-        Извлекает значения из указанного столбца DataFrame, который содержит списки словарей,
-        на основе заданного ключа.
+        Извлекает значения из указанного столбца DataFrame, который содержит 
+        списки словарей, на основе заданного ключа.
 
         Args:
             df (pd.DataFrame): DataFrame, из которого нужно извлечь значения.
@@ -68,9 +70,12 @@ def ExpandedFromDictionariesTargetsDF(data: pd.DataFrame) -> pd.DataFrame:
 
     exposed_data = pd.DataFrame({
         #! cross_references
-        "xref_id":              ExtractedValuesFromColumn(data, "cross_references", "xref_id"),
-        "xref_name":            ExtractedValuesFromColumn(data, "cross_references", "xref_name"),
-        "xref_src":             ExtractedValuesFromColumn(data, "cross_references", "xref_src"),
+        "xref_id":              ExtractedValuesFromColumn(data, "cross_references",
+                                                          "xref_id"),
+        "xref_name":            ExtractedValuesFromColumn(data, "cross_references",
+                                                          "xref_name"),
+        "xref_src":             ExtractedValuesFromColumn(data, "cross_references",
+                                                          "xref_src"),
     })
 
     # избавлюсь от списков, так как в них находятся одиночные словари
@@ -88,12 +93,17 @@ def ExpandedFromDictionariesTargetsDF(data: pd.DataFrame) -> pd.DataFrame:
 
     exposed_target_components_data = pd.DataFrame({
         #! target_component_synonyms
-        "component_synonym":                      ExtractedValuesFromColumn(target_components_data, "target_component_synonyms", "component_synonym"),
-        "syn_type":                               ExtractedValuesFromColumn(target_components_data, "target_component_synonyms", "syn_type"),
+        "component_synonym":                      ExtractedValuesFromColumn(
+            target_components_data, "target_component_synonyms", "component_synonym"),
+        "syn_type":                               ExtractedValuesFromColumn(
+            target_components_data, "target_component_synonyms", "syn_type"),
         #! target_component_xrefs
-        "xref_id_target_component_xrefs":         ExtractedValuesFromColumn(target_components_data, "target_component_xrefs", "xref_id"),
-        "xref_name_target_component_xrefs":       ExtractedValuesFromColumn(target_components_data, "target_component_xrefs", "xref_name"),
-        "xref_src_db_target_component_xrefs":     ExtractedValuesFromColumn(target_components_data, "target_component_xrefs", "xref_src_db"),
+        "xref_id_target_component_xrefs":         ExtractedValuesFromColumn(
+            target_components_data, "target_component_xrefs", "xref_id"),
+        "xref_name_target_component_xrefs":       ExtractedValuesFromColumn(
+            target_components_data, "target_component_xrefs", "xref_name"),
+        "xref_src_db_target_component_xrefs":     ExtractedValuesFromColumn(
+            target_components_data, "target_component_xrefs", "xref_src_db"),
     })
 
     target_components_data = target_components_data.drop(
@@ -121,8 +131,8 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
         config (Config): словарь, содержащий параметры конфигурации для процесса скачивания.
 
     Returns:
-        pd.DataFrame: DataFrame с добавленными столбцами 'IC50' и 'Ki', содержащими количество
-                      соответствующих активностей.
+        pd.DataFrame: DataFrame с добавленными столбцами 'IC50' и 'Ki',
+                      содержащими количество соответствующих активностей.
     """
 
     targets_config: Config = config["ChEMBL_download_targets"]
@@ -196,7 +206,8 @@ def DownloadTargetsFromIdList(config: Config):
         logger.success("Collecting targets to pandas.DataFrame!")
 
         logger.info(
-            f"Collecting targets to .csv file in '{targets_config["results_folder_name"]}'...")
+            f"Collecting targets to .csv file in "
+            f"'{targets_config["results_folder_name"]}'...")
 
     file_name: str = f"{targets_config["results_folder_name"]}/{targets_config["results_file_name"]}.csv"
 
@@ -204,4 +215,5 @@ def DownloadTargetsFromIdList(config: Config):
 
     if config["verbose_print"]:
         logger.success(
-            f"Collecting targets to .csv file in '{targets_config["results_folder_name"]}'!")
+            f"Collecting targets to .csv file in "
+            f"'{targets_config["results_folder_name"]}'!")

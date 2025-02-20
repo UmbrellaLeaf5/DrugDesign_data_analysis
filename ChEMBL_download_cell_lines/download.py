@@ -9,7 +9,8 @@ from Configurations.config import Config
 @IgnoreWarnings
 def DownloadChEMBLCellLines(config: Config):
     """
-    Скачивает информацию о клеточных линиях из базы данных ChEMBL на основе конфигурации (`config.json`).
+    Скачивает информацию о клеточных линиях из базы данных ChEMBL 
+    на основе конфигурации (`config.json`).
 
     Args:
         config (Config): словарь, содержащий параметры конфигурации для процесса скачивания.

@@ -2,7 +2,8 @@ from ChEMBL_download_compounds.functions import *
 
 from Utils.decorators import IgnoreWarnings
 from Utils.logger_funcs import logger, UpdateLoggerFormat
-from Utils.files_funcs import CombineCSVInFolder, CreateFolder, DeleteFilesInFolder, IsFileInFolder
+from Utils.files_funcs import CombineCSVInFolder, CreateFolder, DeleteFilesInFolder, \
+    IsFileInFolder
 
 from Configurations.config import Config
 
@@ -64,13 +65,15 @@ def DownloadChEMBLCompounds(config: Config):
 
     if compounds_config["delete_after_combining"] and compounds_config["need_combining"]:
         logger.info(
-            f"Deleting files after combining in '{compounds_config["results_folder_name"]}'...")
+            f"Deleting files after combining in "
+            f"'{compounds_config["results_folder_name"]}'...")
 
         DeleteFilesInFolder(compounds_config["results_folder_name"], [
             f"{compounds_config["combined_file_name"]}.csv"])
 
         logger.success(
-            f"Deleting files after combining in '{compounds_config["results_folder_name"]}'!")
+            f"Deleting files after combining in "
+            f"'{compounds_config["results_folder_name"]}'!")
 
     logger.success(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
     logger.info(f"{'-' * 77}")

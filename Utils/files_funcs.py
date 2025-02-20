@@ -18,7 +18,9 @@ def DeleteFilesInFolder(folder_name: str,
 
     Args:
       folder_name (str): путь к папке.
-      except_files (list[str], optional): список имен файлов, которые нужно исключить из удаления. Defaults to [].
+      except_files (list[str], optional): список имен файлов, 
+                                          которые нужно исключить из удаления. 
+                                          Defaults to [].
       delete_folders (bool, optional): удалять ли вложенные папки. Defaults to False.
     """
 

@@ -151,10 +151,11 @@ def CleanedTargetActivitiesDF(data: pd.DataFrame,
         logger.info("Reindexing columns in logical order...")
 
     data = data.reindex(columns=["molecule_chembl_id", "parent_molecule_chembl_id",
-                                 "canonical_smiles", "document_chembl_id", "standard_relation",
-                                 "standard_value", "standard_units", "assay_chembl_id",
-                                 "assay_description", "assay_type", "assay_variant_accession",
-                                 "assay_variant_mutation", "action_type", "activity_comment",
+                                 "canonical_smiles", "document_chembl_id",
+                                 "standard_relation", "standard_value", "standard_units",
+                                 "assay_chembl_id", "assay_description", "assay_type",
+                                 "assay_variant_accession", "assay_variant_mutation",
+                                 "action_type", "activity_comment",
                                  "data_validity_comment", "data_validity_description",
                                  "bao_endpoint", "bao_format", "bao_label"])
 
@@ -236,11 +237,11 @@ def CleanedCellLineActivitiesDF(data: pd.DataFrame,
         logger.info("Reindexing columns in logical order...")
 
     data = data.reindex(columns=["molecule_chembl_id",
-                                 "canonical_smiles", "document_chembl_id", "standard_relation",
-                                 "standard_value", "standard_units", "assay_chembl_id",
-                                 "assay_description", "assay_type", "assay_variant_accession",
-                                 "assay_variant_mutation", "action_type",
-                                 "data_validity_description",
+                                 "canonical_smiles", "document_chembl_id",
+                                 "standard_relation", "standard_value", "standard_units",
+                                 "assay_chembl_id", "assay_description", "assay_type",
+                                 "assay_variant_accession", "assay_variant_mutation",
+                                 "action_type", "data_validity_description",
                                  "bao_format", "bao_label"])
 
     if print_to_console:

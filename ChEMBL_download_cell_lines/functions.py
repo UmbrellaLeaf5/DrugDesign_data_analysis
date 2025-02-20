@@ -73,7 +73,8 @@ def AddedIC50andGI50ToCellLinesDF(data: pd.DataFrame,
                                   ) -> pd.DataFrame:
     """
     Добавляет столбцы `IC50` и `GI50` в DataFrame с данными о клеточных линиях, подсчитывая
-    количество соответствующих активностей из CSV-файлов, а также опционально скачивает новые активности.
+    количество соответствующих активностей из CSV-файлов, 
+    а также опционально скачивает новые активности.
 
     Args:
         data (pd.DataFrame): DataFrame с данными о клеточных линиях.
@@ -102,11 +103,13 @@ def AddedIC50andGI50ToCellLinesDF(data: pd.DataFrame,
 
     data["IC50"] = data.apply(
         lambda value: CountCellLineActivitiesByFile(
-            f"{cell_lines_config["raw_csv_folder_name"]}/{value["cell_chembl_id"]}_IC50_activities.csv"), axis=1)
+            f"{cell_lines_config["raw_csv_folder_name"]}/"
+            f"{value["cell_chembl_id"]}_IC50_activities.csv"), axis=1)
 
     data["GI50"] = data.apply(
         lambda value: CountCellLineActivitiesByFile(
-            f"{cell_lines_config["raw_csv_folder_name"]}/{value["cell_chembl_id"]}_GI50_activities.csv"), axis=1)
+            f"{cell_lines_config["raw_csv_folder_name"]}/"
+            f"{value["cell_chembl_id"]}_GI50_activities.csv"), axis=1)
 
     if config["verbose_print"]:
         logger.success("Adding 'IC50' and 'GI50' columns to pandas.DataFrame!")
@@ -165,12 +168,15 @@ def DownloadCellLinesFromIdList(config: Config):
         logger.success("Collecting cell_lines to pandas.DataFrame!")
 
         logger.info(
-            f"Collecting cell_lines to .csv file in '{cell_lines_config["results_folder_name"]}'...")
+            f"Collecting cell_lines to .csv file in "
+            f"'{cell_lines_config["results_folder_name"]}'...")
 
-    file_name: str = f"{cell_lines_config["results_folder_name"]}/{cell_lines_config["results_file_name"]}.csv"
+    file_name: str = f"{cell_lines_config["results_folder_name"]}/"\
+        f"{cell_lines_config["results_file_name"]}.csv"
 
     data_frame.to_csv(file_name, sep=";", index=False)
 
     if config["verbose_print"]:
         logger.success(
-            f"Collecting cell_lines to .csv file in '{cell_lines_config["results_folder_name"]}'!")
+            f"Collecting cell_lines to .csv file in "
+            f"'{cell_lines_config["results_folder_name"]}'!")

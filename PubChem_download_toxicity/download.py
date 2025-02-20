@@ -1,7 +1,8 @@
 from PubChem_download_toxicity.functions import *
 
 from Utils.logger_funcs import logger, UpdateLoggerFormat
-from Utils.files_funcs import CombineCSVInFolder, CreateFolder, DeleteFilesInFolder, MoveFileToFolder
+from Utils.files_funcs import CombineCSVInFolder, CreateFolder, DeleteFilesInFolder, \
+    MoveFileToFolder
 
 from Configurations.config import Config
 
@@ -36,7 +37,8 @@ def DownloadPubChemCompoundsToxicity(config: Config):
 
         CreateFolder(page_folder_name)
 
-        compound_link = "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/annotations/heading/JSON"\
+        compound_link =\
+            "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/annotations/heading/JSON"\
             "?heading=Acute+Effects"\
             f"&page={page}"
 
