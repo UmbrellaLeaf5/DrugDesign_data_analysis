@@ -6,5 +6,5 @@ IPython
 loguru
 numpy
 pandas
-pubchempy
+pubchempy # я в ней разочарован
 requests
