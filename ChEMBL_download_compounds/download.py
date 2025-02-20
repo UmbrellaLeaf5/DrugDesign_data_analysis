@@ -2,8 +2,8 @@ from ChEMBL_download_compounds.functions import *
 
 from Utils.decorators import IgnoreWarnings
 from Utils.logger_funcs import logger, UpdateLoggerFormat
-from Utils.files_funcs import CombineCSVInFolder, CreateFolder, DeleteFilesInFolder, \
-    IsFileInFolder
+from Utils.files_funcs import CombineCSVInFolder, DeleteFilesInFolder, \
+    IsFileInFolder, os
 
 from Configurations.config import Config
 
@@ -31,7 +31,7 @@ def DownloadChEMBLCompounds(config: Config):
 
     logger.info(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
 
-    CreateFolder(compounds_config["results_folder_name"])
+    os.makedirs(compounds_config["results_folder_name"], exist_ok=True)
 
     if config["testing_flag"]:
         compounds_config["mw_ranges"] = [[0, 50], [50, 75]]

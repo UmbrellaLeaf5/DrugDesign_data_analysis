@@ -1,7 +1,7 @@
 from ChEMBL_download_cell_lines.functions import *
 
 from Utils.decorators import IgnoreWarnings
-from Utils.files_funcs import CreateFolder, IsFileInFolder
+from Utils.files_funcs import IsFileInFolder
 
 from Configurations.config import Config
 
@@ -24,10 +24,10 @@ def DownloadChEMBLCellLines(config: Config):
 
     logger.info(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
 
-    CreateFolder(cell_lines_config["results_folder_name"])
+    os.makedirs(cell_lines_config["results_folder_name"], exist_ok=True)
 
     if cell_lines_config["download_activities"]:
-        CreateFolder(activities_config["results_folder_name"])
+        os.makedirs(activities_config["results_folder_name"], exist_ok=True)
 
     if config["testing_flag"]:
         cell_lines_config["id_list"] = ["CHEMBL4295386", "CHEMBL3307781"]

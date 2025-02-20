@@ -1,7 +1,7 @@
 from ChEMBL_download_targets.functions import *
 
 from Utils.decorators import IgnoreWarnings
-from Utils.files_funcs import CreateFolder, IsFileInFolder
+from Utils.files_funcs import IsFileInFolder, os
 
 
 @IgnoreWarnings
@@ -22,10 +22,10 @@ def DownloadChEMBLTargets(config: Config):
 
     logger.info(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
 
-    CreateFolder(targets_config["results_folder_name"])
+    os.makedirs(targets_config["results_folder_name"], exist_ok=True)
 
     if targets_config["download_activities"]:
-        CreateFolder(activities_config["results_folder_name"])
+        os.makedirs(activities_config["results_folder_name"], exist_ok=True)
 
     if config["testing_flag"]:
         targets_config["id_list"] = ["CHEMBL1951", "CHEMBL2034"]

@@ -3,7 +3,7 @@ from ChEMBL_download_compounds.functions import SaveMolfilesToSDFByIdList
 
 from Utils.decorators import IgnoreWarnings, ReTry
 from Utils.logger_funcs import logger, UpdateLoggerFormat
-from Utils.files_funcs import CreateFolder, json, IsFileInFolder
+from Utils.files_funcs import json, IsFileInFolder, os
 
 from Configurations.config import Config, LoggerConfig
 
@@ -123,7 +123,7 @@ def DownloadTargetChEMBLActivities(targets_data: pd.DataFrame,
                 logger.info(
                     f"Start download molfiles connected with {target_id} to .sdf...")
 
-            CreateFolder(compounds_config["molfiles_folder_name"])
+            os.makedirs(compounds_config["molfiles_folder_name"], exist_ok=True)
 
             if config["verbose_print"]:
                 logger.info("Saving connected with IC50 molfiles...")
@@ -284,7 +284,7 @@ def GetCellLineChEMBLActivitiesFromCSV(cell_lines_data: pd.DataFrame,
                 logger.info(
                     f"Start download molfiles connected with {cell_id} to .sdf...")
 
-            CreateFolder(compounds_config["molfiles_folder_name"])
+            os.makedirs(compounds_config["molfiles_folder_name"], exist_ok=True)
 
             if config["verbose_print"]:
                 logger.info("Saving connected with IC50 molfiles...")

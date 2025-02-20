@@ -67,18 +67,8 @@ def IsFolderEmpty(folder_name: str) -> bool:
         return True
 
 
-def CreateFolder(folder_name: str):
-    """
-    Создает папку.
-
-    Args:
-        folder_name (str): путь к папке.
-    """
-
-    os.makedirs(folder_name, exist_ok=True)
-
-
-def MoveFileToFolder(file_name: str, curr_folder_name: str,
+def MoveFileToFolder(file_name: str,
+                     curr_folder_name: str,
                      folder_name: str):
     """
     Перемещает файл в указанную папку.

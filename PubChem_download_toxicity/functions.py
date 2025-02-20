@@ -125,8 +125,6 @@ def DownloadCompoundToxicity(compound_data: dict,
     toxicity_config: Config = config["PubChem_download_toxicity"]
     filtering_config: Config = toxicity_config["filtering"]
 
-    verbose_print: bool = config["verbose_print"]
-
     try:
         compound_data["LinkedRecords"]["CID"][0]
 
@@ -134,7 +132,7 @@ def DownloadCompoundToxicity(compound_data: dict,
         logger.warning(
             f"No 'cid' for 'sid': {compound_data["LinkedRecords"]["SID"][0]}, skip.")
 
-        if verbose_print:
+        if config["verbose_print"]:
             logger.info(f"{"-" * 77}")
 
         return
@@ -168,12 +166,12 @@ def DownloadCompoundToxicity(compound_data: dict,
     compound_file_name = f"{page_folder_name}/{compound_name}"
 
     if os.path.exists(f"{compound_file_name}.csv") and config["skip_downloaded"]:
-        if verbose_print:
+        if config["verbose_print"]:
             logger.info(f"{compound_name} is already downloaded, skip.")
 
         return
 
-    if verbose_print:
+    if config["verbose_print"]:
         logger.info(f"Downloading {compound_name}...")
 
     acute_effects = GetDataFrameFromUrl(
@@ -221,7 +219,7 @@ def DownloadCompoundToxicity(compound_data: dict,
             if mw is not None:
                 df["mw"] = mw
 
-                if verbose_print:
+                if config["verbose_print"]:
                     logger.info(f"Found 'mw' by '{id_column}'.")
 
             else:
@@ -241,7 +239,7 @@ def DownloadCompoundToxicity(compound_data: dict,
 
         return df
 
-    if verbose_print:
+    if config["verbose_print"]:
         logger.info("Adding 'mw'...")
 
     acute_effects = CalcMolecularWeight(acute_effects, "cid")
@@ -249,13 +247,13 @@ def DownloadCompoundToxicity(compound_data: dict,
     try:
         acute_effects["mw"] = pd.to_numeric(acute_effects["mw"], errors="coerce")
 
-        if verbose_print:
+        if config["verbose_print"]:
             logger.success("Adding 'mw'!")
 
     except KeyError:
         logger.warning(f"No 'mw' for {compound_name}.")
 
-    if verbose_print:
+    if config["verbose_print"]:
         logger.info("Filtering 'organism' and 'route'...")
 
     acute_effects = acute_effects[acute_effects["organism"].isin(
@@ -263,7 +261,7 @@ def DownloadCompoundToxicity(compound_data: dict,
     acute_effects = acute_effects[acute_effects["route"].isin(
         filtering_config["route"])]
 
-    if verbose_print:
+    if config["verbose_print"]:
         logger.success("Filtering 'organism' and 'route'!")
 
         logger.info("Filtering 'dose'...")
@@ -276,34 +274,34 @@ def DownloadCompoundToxicity(compound_data: dict,
 
     acute_effects["dose"] = pd.to_numeric(acute_effects["dose"], errors="coerce")
 
-    if verbose_print:
+    if config["verbose_print"]:
         logger.success("Filtering 'dose'!")
 
     if "mw" in acute_effects.columns:
-        if verbose_print:
+        if config["verbose_print"]:
             logger.info("Adding 'pLD50'...")
 
         acute_effects["pLD50"] = -np.log10(
             (acute_effects["dose"] / acute_effects["mw"]) / 1000000)
 
-        if verbose_print:
+        if config["verbose_print"]:
             logger.success("Adding 'pLD50'!")
 
     if not acute_effects.empty:
-        if verbose_print:
+        if config["verbose_print"]:
             logger.info(f"Saving {compound_name} to .csv...")
 
         acute_effects.to_csv(f"{compound_file_name}.csv", sep=";",
                              index=False, mode="w")
 
-        if verbose_print:
+        if config["verbose_print"]:
             logger.success(f"Saving {compound_name} to .csv!")
 
             logger.success(f"Downloading {compound_name}!")
 
     else:
-        if verbose_print:
+        if config["verbose_print"]:
             logger.info(f"{compound_name} is empty, no need saving, skip.")
 
-    if verbose_print:
+    if config["verbose_print"]:
         logger.info(f"{"-" * 77}")
