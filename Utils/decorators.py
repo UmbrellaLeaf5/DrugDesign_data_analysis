@@ -3,7 +3,9 @@ import time
 from typing import Callable
 import warnings
 
-from Utils.logger_funcs import logger, LogException
+from Utils.verbose_logger import v_logger
+
+from Configurations.config import Config, GetConfig
 
 
 def IgnoreWarnings(func: Callable) -> Callable:
@@ -28,9 +30,16 @@ def IgnoreWarnings(func: Callable) -> Callable:
     return Wrapper
 
 
-def ReTry(attempts_amount: int = 5,
+retry_config: Config = {"attempts_amount": 3,
+                        "sleep_time": 1}
+config = GetConfig()
+if config is not None:
+    retry_config = config["Utils"]["ReTry"]
+
+
+def ReTry(attempts_amount: int = retry_config["attempts_amount"],
           exception_to_check: type[Exception] = Exception,
-          sleep_time: float = 1
+          sleep_time: float = retry_config["sleep_time"]
           ) -> Callable:
     """
     Декоратор для повторения попыток выполнения функции.
@@ -39,10 +48,10 @@ def ReTry(attempts_amount: int = 5,
     декорируемую функцию в `try-except`. 
 
     Args:
-        attempts_amount (int, optional): кол-во попыток. Defaults to 5.
+        attempts_amount (int, optional): кол-во попыток.
         exception_to_check (type[Exception], optional): тип улавливаемого исключения. 
                                                         Defaults to Exception.
-        sleep_time (int, optional): время ожидания между попытками. Defaults to 1.
+        sleep_time (int, optional): время ожидания между попытками.
 
     Returns:
         Callable: декорируемая функция.
@@ -56,14 +65,14 @@ def ReTry(attempts_amount: int = 5,
                     return func(*args, **kwargs)
 
                 except exception_to_check as exception:
-                    LogException(exception)
+                    v_logger.LogException(exception)
 
                     if attempt < attempts_amount:
-                        logger.warning(f"Attempt: {attempt}. Retrying.")
+                        v_logger.warning(f"Attempt: {attempt}. Retrying.")
                         time.sleep(sleep_time)
 
             if attempts_amount != 1:
-                logger.error("All attempts failed!")
+                v_logger.error("All attempts failed!")
             # else: означает, что в функции просто 1 раз отлавливается исключение
 
             return None

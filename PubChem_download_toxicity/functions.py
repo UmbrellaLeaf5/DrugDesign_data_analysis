@@ -1,11 +1,12 @@
 from io import StringIO
+import json
 import numpy as np
 import requests
 import urllib.parse
 
 from Utils.decorators import ReTry, time, Callable
-from Utils.logger_funcs import json, LogException, logger
 from Utils.files_funcs import os, pd
+from Utils.verbose_logger import v_logger, LogMode
 
 from Configurations.config import Config
 
@@ -129,11 +130,9 @@ def DownloadCompoundToxicity(compound_data: dict,
         compound_data["LinkedRecords"]["CID"][0]
 
     except KeyError:
-        logger.warning(
+        v_logger.warning(
             f"No 'cid' for 'sid': {compound_data["LinkedRecords"]["SID"][0]}, skip.")
-
-        if config["verbose_print"]:
-            logger.info(f"{"-" * 77}")
+        v_logger.info(f"{"-" * 77}", LogMode.VERBOSELY)
 
         return
         # не сохраняем те соединения, у которых нет cid,
@@ -154,25 +153,25 @@ def DownloadCompoundToxicity(compound_data: dict,
         table_info[key] = value
 
     if table_info["query_type"] != "sid":
-        LogException(ValueError(f"Unknown query type at page {page_folder_name}"))
+        v_logger.LogException(ValueError("Unknown query type at page "
+                                         f"{page_folder_name}"))
 
     sid = int(table_info["query"])
 
     if primary_sid != sid:
-        logger.warning(f"Mismatch between 'primary_sid' ({primary_sid}) "
-                       f"and 'sid' ({sid}).")
+        v_logger.warning(f"Mismatch between 'primary_sid' ({primary_sid}) "
+                         f"and 'sid' ({sid}).")
 
     compound_name: str = f"compound_{sid}_toxicity"
     compound_file_name = f"{page_folder_name}/{compound_name}"
 
     if os.path.exists(f"{compound_file_name}.csv") and config["skip_downloaded"]:
-        if config["verbose_print"]:
-            logger.info(f"{compound_name} is already downloaded, skip.")
+        v_logger.info(f"{compound_name} is already downloaded, skip.",
+                      LogMode.VERBOSELY)
 
         return
 
-    if config["verbose_print"]:
-        logger.info(f"Downloading {compound_name}...")
+    v_logger.info(f"Downloading {compound_name}...", LogMode.VERBOSELY)
 
     acute_effects = GetDataFrameFromUrl(
         GetLinkFromSid(sid=sid,
@@ -219,52 +218,46 @@ def DownloadCompoundToxicity(compound_data: dict,
             if mw is not None:
                 df["mw"] = mw
 
-                if config["verbose_print"]:
-                    logger.info(f"Found 'mw' by '{id_column}'.")
+                v_logger.info(f"Found 'mw' by '{id_column}'.", LogMode.VERBOSELY)
 
             else:
-                logger.warning("Could not retrieve molecular weight by "
-                               f"'{id_column}' for {unique_ids[0]}.")
+                v_logger.warning("Could not retrieve molecular weight by "
+                                 f"'{id_column}' for {unique_ids[0]}.")
 
         elif len(unique_ids) == 0:
-            logger.warning(f"No '{id_column}' found for {unique_ids[0]}.")
+            v_logger.warning(f"No '{id_column}' found for {unique_ids[0]}.")
 
         else:
-            logger.warning(f"Non-unique 'mw' by {id_column} for {unique_ids[0]}.")
+            v_logger.warning(f"Non-unique 'mw' by {id_column} for {unique_ids[0]}.")
 
             df["mw"] = df[id_column].apply(GetMolecularWeightByCid)
 
             if df["mw"].isnull().any():
-                logger.warning(f"Some 'mw' could not be retrieved by {id_column}.")
+                v_logger.warning(f"Some 'mw' could not be retrieved by {id_column}.")
 
         return df
 
-    if config["verbose_print"]:
-        logger.info("Adding 'mw'...")
+    v_logger.info("Adding 'mw'...", LogMode.VERBOSELY)
 
     acute_effects = CalcMolecularWeight(acute_effects, "cid")
 
     try:
         acute_effects["mw"] = pd.to_numeric(acute_effects["mw"], errors="coerce")
 
-        if config["verbose_print"]:
-            logger.success("Adding 'mw'!")
+        v_logger.success("Adding 'mw'!", LogMode.VERBOSELY)
 
     except KeyError:
-        logger.warning(f"No 'mw' for {compound_name}.")
+        v_logger.warning(f"No 'mw' for {compound_name}.")
 
-    if config["verbose_print"]:
-        logger.info("Filtering 'organism' and 'route'...")
+    v_logger.info("Filtering 'organism' and 'route'...", LogMode.VERBOSELY)
 
     acute_effects = acute_effects[acute_effects["organism"].isin(
         filtering_config["organism"])]
     acute_effects = acute_effects[acute_effects["route"].isin(
         filtering_config["route"])]
 
-    if config["verbose_print"]:
-        logger.success("Filtering 'organism' and 'route'!")
-
-        logger.info("Filtering 'dose'...")
+    v_logger.success("Filtering 'organism' and 'route'!", LogMode.VERBOSELY)
+    v_logger.info("Filtering 'dose'...", LogMode.VERBOSELY)
 
     acute_effects = acute_effects[acute_effects["dose"].astype(
         str).str.lower().str.endswith(filtering_config["dose"])]
@@ -274,34 +267,27 @@ def DownloadCompoundToxicity(compound_data: dict,
 
     acute_effects["dose"] = pd.to_numeric(acute_effects["dose"], errors="coerce")
 
-    if config["verbose_print"]:
-        logger.success("Filtering 'dose'!")
+    v_logger.success("Filtering 'dose'!", LogMode.VERBOSELY)
 
     if "mw" in acute_effects.columns:
-        if config["verbose_print"]:
-            logger.info("Adding 'pLD50'...")
+        v_logger.info("Adding 'pLD50'...", LogMode.VERBOSELY)
 
         acute_effects["pLD50"] = -np.log10(
             (acute_effects["dose"] / acute_effects["mw"]) / 1000000)
 
-        if config["verbose_print"]:
-            logger.success("Adding 'pLD50'!")
+        v_logger.success("Adding 'pLD50'!", LogMode.VERBOSELY)
 
     if not acute_effects.empty:
-        if config["verbose_print"]:
-            logger.info(f"Saving {compound_name} to .csv...")
+        v_logger.info(f"Saving {compound_name} to .csv...", LogMode.VERBOSELY)
 
         acute_effects.to_csv(f"{compound_file_name}.csv", sep=";",
                              index=False, mode="w")
 
-        if config["verbose_print"]:
-            logger.success(f"Saving {compound_name} to .csv!")
-
-            logger.success(f"Downloading {compound_name}!")
+        v_logger.success(f"Saving {compound_name} to .csv!", LogMode.VERBOSELY)
+        v_logger.success(f"Downloading {compound_name}!", LogMode.VERBOSELY)
 
     else:
-        if config["verbose_print"]:
-            logger.info(f"{compound_name} is empty, no need saving, skip.")
+        v_logger.info(f"{compound_name} is empty, no need saving, skip.",
+                      LogMode.VERBOSELY)
 
-    if config["verbose_print"]:
-        logger.info(f"{"-" * 77}")
+    v_logger.info(f"{"-" * 77}", LogMode.VERBOSELY)

@@ -2,6 +2,7 @@ from ChEMBL_download_cell_lines.functions import *
 
 from Utils.decorators import IgnoreWarnings
 from Utils.files_funcs import IsFileInFolder
+from Utils.verbose_logger import LogMode
 
 from Configurations.config import Config
 
@@ -19,10 +20,10 @@ def DownloadChEMBLCellLines(config: Config):
     cell_lines_config: Config = config["ChEMBL_download_cell_lines"]
     activities_config: Config = config["ChEMBL_download_activities"]
 
-    UpdateLoggerFormat(cell_lines_config["logger_label"],
-                       cell_lines_config["logger_color"])
+    v_logger.UpdateFormat(cell_lines_config["logger_label"],
+                          cell_lines_config["logger_color"])
 
-    logger.info(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
+    v_logger.info(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
 
     os.makedirs(cell_lines_config["results_folder_name"], exist_ok=True)
 
@@ -42,9 +43,9 @@ def DownloadChEMBLCellLines(config: Config):
         DownloadCellLinesFromIdList(config)
 
     else:
-        if config["verbose_print"]:
-            logger.info(
-                f"{cell_lines_config["results_file_name"]} is already downloaded, skip.")
+        v_logger.info(
+            f"{cell_lines_config["results_file_name"]} is already downloaded, skip.",
+            LogMode.VERBOSELY)
 
-    logger.success(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
-    logger.info(f"{'-' * 77}")
+    v_logger.success(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
+    v_logger.info(f"{'-' * 77}")

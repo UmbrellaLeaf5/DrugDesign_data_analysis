@@ -2,10 +2,9 @@ import json
 import os
 import shutil
 
-from loguru import logger
 import pandas as pd
 
-from Utils.logger_funcs import UpdateLoggerFormat
+from Utils.verbose_logger import v_logger, LogMode
 
 from Configurations.config import Config
 
@@ -104,25 +103,19 @@ def CombineCSVInFolder(folder_name: str,
 
     combine_config: Config = config["Utils"]["CombineCSVInFolder"]
 
-    old_logger_config: dict = {}
-    with open("logger.json", "r", encoding="utf-8") as f:
-        old_logger_config = json.load(f)
+    restore_index: int = v_logger.UpdateFormat(combine_config["logger_label"],
+                                               combine_config["logger_color"]) - 1
 
-    UpdateLoggerFormat(combine_config["logger_label"], combine_config["logger_color"])
-
-    logger.info("Start combining downloads...")
-
-    if config["verbose_print"]:
-        logger.info(f"{'-' * 77}")
+    v_logger.info("Start combining downloads...")
+    v_logger.info(f"{'-' * 77}", LogMode.VERBOSELY)
 
     if IsFileInFolder(folder_name, f"{combined_file_name}.csv") and\
             config["skip_downloaded"]:
-        if config["verbose_print"]:
-            logger.info(
-                f"File '{combined_file_name}' is in folder, no need to combine.")
+        v_logger.info(
+            f"File '{combined_file_name}' is in folder, no need to combine.",
+            LogMode.VERBOSELY)
 
-        UpdateLoggerFormat(old_logger_config["logger_label"],
-                           old_logger_config["color"])
+        v_logger.RestoreFormat(restore_index)
         return
 
     combined_df = pd.DataFrame()
@@ -131,38 +124,34 @@ def CombineCSVInFolder(folder_name: str,
         if file_name.endswith('.csv') and file_name != f"{combined_file_name}.csv":
             full_file_name: str = os.path.join(folder_name, file_name)
 
-            if config["verbose_print"]:
-                logger.info(f"Collecting '{file_name}' to pandas.DataFrame...")
+            v_logger.info(f"Collecting '{file_name}' to pandas.DataFrame...",
+                          LogMode.VERBOSELY)
 
             df = pd.read_csv(full_file_name, sep=config["csv_separator"], low_memory=False)
 
-            if config["verbose_print"]:
-                logger.success(f"Collecting '{file_name}' to pandas.DataFrame!")
-
-                logger.info(f"Concatenating '{file_name}' to combined_data_frame...")
+            v_logger.success(f"Collecting '{file_name}' to pandas.DataFrame!",
+                             LogMode.VERBOSELY)
+            v_logger.info(
+                f"Concatenating '{file_name}' to combined_data_frame...",
+                LogMode.VERBOSELY)
 
             combined_df = pd.concat([combined_df, df], ignore_index=True)
 
-            if config["verbose_print"]:
-                logger.success(
-                    f"Concatenating '{file_name}' to combined_data_frame!")
+            v_logger.success(
+                f"Concatenating '{file_name}' to combined_data_frame!",
+                LogMode.VERBOSELY)
+            v_logger.info(f"{'-' * 77}", LogMode.VERBOSELY)
 
-                logger.info(f"{'-' * 77}")
-
-    if config["verbose_print"]:
-        logger.info(f"Collecting to combined .csv file in '{folder_name}'...")
+    v_logger.info(f"Collecting to combined .csv file in '{folder_name}'...",
+                  LogMode.VERBOSELY)
 
     combined_df.to_csv(
         f"{folder_name}/{combined_file_name}.csv",
         sep=config["csv_separator"], index=False)
 
-    if config["verbose_print"]:
-        logger.success(f"Collecting to combined .csv file in '{folder_name}'!")
+    v_logger.success(f"Collecting to combined .csv file in '{folder_name}'!",
+                     LogMode.VERBOSELY)
+    v_logger.info(f"{'-' * 77}", LogMode.VERBOSELY)
+    v_logger.success(f"End combining downloads!")
 
-    if config["verbose_print"]:
-        logger.info(f"{'-' * 77}")
-
-    logger.success(f"End combining downloads!")
-
-    UpdateLoggerFormat(old_logger_config["logger_label"],
-                       old_logger_config["color"])
+    v_logger.RestoreFormat(restore_index)

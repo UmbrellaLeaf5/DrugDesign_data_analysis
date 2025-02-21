@@ -8,8 +8,8 @@ from ChEMBL_download_activities.download import GetCellLineChEMBLActivitiesFromC
 from ChEMBL_download_activities.functions import CountCellLineActivitiesByFile
 
 from Utils.decorators import ReTry
-from Utils.logger_funcs import logger, UpdateLoggerFormat
 from Utils.files_funcs import IsFolderEmpty, os, pd
+from Utils.verbose_logger import v_logger, LogMode
 
 from Configurations.config import Config
 
@@ -87,19 +87,19 @@ def AddedIC50andGI50ToCellLinesDF(data: pd.DataFrame,
 
     cell_lines_config: Config = config["ChEMBL_download_cell_lines"]
 
-    if config["verbose_print"]:
-        logger.info("Adding 'IC50' and 'GI50' columns to pandas.DataFrame...")
+    v_logger.info("Adding 'IC50' and 'GI50' columns to pandas.DataFrame...",
+                  LogMode.VERBOSELY)
 
     if IsFolderEmpty(cell_lines_config["raw_csv_folder_name"]):
-        if config["verbose_print"]:
-            logger.info("Getting raw cell_lines from Google.Drive...")
+        v_logger.info("Getting raw cell_lines from Google.Drive...",
+                      LogMode.VERBOSELY)
 
         GetRawCellLinesData(cell_lines_config["raw_csv_g_drive_id"],
                             cell_lines_config["raw_csv_folder_name"],
-                            config["verbose_print"])
+                            config["Utils"]["VerboseLogger"]["verbose_print"])
 
-        if config["verbose_print"]:
-            logger.success("Getting raw cell_lines from Google.Drive!")
+        v_logger.success("Getting raw cell_lines from Google.Drive!",
+                         LogMode.VERBOSELY)
 
     data["IC50"] = data.apply(
         lambda value: CountCellLineActivitiesByFile(
@@ -111,8 +111,8 @@ def AddedIC50andGI50ToCellLinesDF(data: pd.DataFrame,
             f"{cell_lines_config["raw_csv_folder_name"]}/"
             f"{value["cell_chembl_id"]}_GI50_activities.csv"), axis=1)
 
-    if config["verbose_print"]:
-        logger.success("Adding 'IC50' and 'GI50' columns to pandas.DataFrame!")
+    v_logger.success("Adding 'IC50' and 'GI50' columns to pandas.DataFrame!",
+                     LogMode.VERBOSELY)
 
     if cell_lines_config["download_activities"]:
         GetCellLineChEMBLActivitiesFromCSV(data, config)
@@ -141,8 +141,7 @@ def DownloadCellLinesFromIdList(config: Config):
 
     cell_lines_config: Config = config["ChEMBL_download_cell_lines"]
 
-    if config["verbose_print"]:
-        logger.info("Downloading cell_lines...")
+    v_logger.info("Downloading cell_lines...", LogMode.VERBOSELY)
 
     cell_lines_with_ids: QuerySet = QuerySetCellLinesFromIdList(
         cell_lines_config["id_list"])
@@ -150,33 +149,31 @@ def DownloadCellLinesFromIdList(config: Config):
     if cell_lines_config["id_list"] == []:
         cell_lines_with_ids = QuerySetAllCellLines()
 
-    logger.info(f"Amount: {len(cell_lines_with_ids)}")  # type: ignore
-
-    if config["verbose_print"]:
-        logger.success("Downloading cell_lines!")
-
-        logger.info("Collecting cell_lines to pandas.DataFrame...")
+    v_logger.info(f"Amount: {len(cell_lines_with_ids)}")  # type: ignore
+    v_logger.success("Downloading cell_lines!", LogMode.VERBOSELY)
+    v_logger.info("Collecting cell_lines to pandas.DataFrame...",
+                  LogMode.VERBOSELY)
 
     data_frame = AddedIC50andGI50ToCellLinesDF(
         pd.DataFrame(cell_lines_with_ids),  # type: ignore
         config)
 
-    UpdateLoggerFormat(cell_lines_config["logger_label"],
-                       cell_lines_config["logger_color"])
+    v_logger.UpdateFormat(cell_lines_config["logger_label"],
+                          cell_lines_config["logger_color"])
 
-    if config["verbose_print"]:
-        logger.success("Collecting cell_lines to pandas.DataFrame!")
-
-        logger.info(
-            f"Collecting cell_lines to .csv file in "
-            f"'{cell_lines_config["results_folder_name"]}'...")
+    v_logger.success("Collecting cell_lines to pandas.DataFrame!",
+                     LogMode.VERBOSELY)
+    v_logger.info(
+        f"Collecting cell_lines to .csv file in "
+        f"'{cell_lines_config["results_folder_name"]}'...",
+        LogMode.VERBOSELY)
 
     file_name: str = f"{cell_lines_config["results_folder_name"]}/"\
         f"{cell_lines_config["results_file_name"]}.csv"
 
     data_frame.to_csv(file_name, sep=";", index=False)
 
-    if config["verbose_print"]:
-        logger.success(
-            f"Collecting cell_lines to .csv file in "
-            f"'{cell_lines_config["results_folder_name"]}'!")
+    v_logger.success(
+        f"Collecting cell_lines to .csv file in "
+        f"'{cell_lines_config["results_folder_name"]}'!",
+        LogMode.VERBOSELY)

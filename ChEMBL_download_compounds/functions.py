@@ -2,8 +2,8 @@ from chembl_webresource_client.new_client import new_client
 from chembl_webresource_client.query_set import QuerySet
 
 from Utils.decorators import ReTry
-from Utils.logger_funcs import logger, TextIOWrapper
 from Utils.files_funcs import pd
+from Utils.verbose_logger import v_logger, TextIOWrapper, LogMode
 
 
 @ReTry()
@@ -189,8 +189,7 @@ def ExpandedFromDictionariesCompoundsDF(data: pd.DataFrame) -> pd.DataFrame:
 @ReTry(attempts_amount=1)
 def DownloadCompoundsByMWRange(less_limit: int,
                                greater_limit: int,
-                               results_folder_name: str,
-                               print_to_console: bool):
+                               results_folder_name: str):
     """
     Возвращает молекулы в диапазоне молекулярной массы [less_limit; greater_limit) 
     из базы ChEMBL, сохраняя их в .csv файл.
@@ -199,46 +198,44 @@ def DownloadCompoundsByMWRange(less_limit: int,
         less_limit (int): нижняя граница.
         greater_limit (int): верхняя граница.
         results_folder_name (str): имя папки для закачки.
-        print_to_console (bool): нужно ли выводить логирование в консоль.
     """
 
-    if print_to_console:
-        logger.info(
-            f"Downloading molecules with mw in range [{less_limit}, {greater_limit})...")
+    v_logger.info(
+        f"Downloading molecules with mw in range [{less_limit}, {greater_limit})...",
+        LogMode.VERBOSELY)
 
     mols_in_mw_range: QuerySet = QuerySetCompoundsByMWRange(
         less_limit, greater_limit)
 
-    if print_to_console:
-        logger.info(f"Amount: {len(mols_in_mw_range)}")  # type: ignore
+    v_logger.info(f"Amount: {len(mols_in_mw_range)}", LogMode.VERBOSELY)  # type: ignore
+    v_logger.success(
+        f"Downloading molecules with mw in range [{less_limit}, {greater_limit})!",
+        LogMode.VERBOSELY)
 
-        logger.success(
-            f"Downloading molecules with mw in range [{less_limit}, {greater_limit})!")
-
-        logger.info("Collecting molecules to pandas.DataFrame...")
+    v_logger.info("Collecting molecules to pandas.DataFrame...",
+                  LogMode.VERBOSELY)
 
     data_frame = ExpandedFromDictionariesCompoundsDF(pd.DataFrame(
         mols_in_mw_range))  # type: ignore
 
-    if print_to_console:
-        logger.success("Collecting molecules to pandas.DataFrame!")
-
-        logger.info(
-            f"Collecting molecules to .csv file in '{results_folder_name}'...")
+    v_logger.success("Collecting molecules to pandas.DataFrame!",
+                     LogMode.VERBOSELY)
+    v_logger.info(
+        f"Collecting molecules to .csv file in '{results_folder_name}'...",
+        LogMode.VERBOSELY)
 
     file_name: str = f"{results_folder_name}/range_"\
         f"{less_limit}_{greater_limit}_mw_mols.csv"
 
     data_frame.to_csv(file_name, sep=";", index=False)
 
-    if print_to_console:
-        logger.success(
-            f"Collecting molecules to .csv file in '{results_folder_name}'!")
+    v_logger.success(
+        f"Collecting molecules to .csv file in '{results_folder_name}'!",
+        LogMode.VERBOSELY)
 
 
 def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str],
                               file_name: str,
-                              print_to_console: bool,
                               extra_data: pd.DataFrame = pd.DataFrame()):
     """
     Сохраняет molfiles из списка id в .sdf файл.
@@ -246,13 +243,12 @@ def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str],
     Args:
         molecule_chembl_id_list (list[str]): список id.
         file_name (str): имя файла (без .sdf).
-        print_to_console (bool): нужно ли выводить логирование в консоль.
         extra_data (pd.DataFrame): дополнительная информация. Defaults to pd.DataFrame().
     """
 
     if not molecule_chembl_id_list:
-        if print_to_console:
-            logger.warning("Molecules list is empty, nothing to save to .sdf!")
+        v_logger.warning("Molecules list is empty, nothing to save to .sdf!",
+                         LogMode.VERBOSELY)
         return
 
     @ReTry()
@@ -282,7 +278,6 @@ def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str],
 
     def SaveMolfilesToSDF(data: pd.DataFrame,
                           file_name: str,
-                          print_to_console: bool,
                           extra_data: pd.DataFrame = pd.DataFrame()):
         """
         Сохраняет molfiles из pd.DataFrame в .sdf файл.
@@ -290,12 +285,13 @@ def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str],
         Args:
             data (pd.DataFrame): DataFrame с molfile и molecule_chembl_id.
             file_name (str): имя файла (без ".sdf").
-            print_to_console (bool): нужно ли выводить логирование в консоль.
             extra_data (pd.DataFrame, optional): дополнительная информация. 
                                                  Defaults to pd.DataFrame().
         """
 
-        def WriteColumnAndValueToSDF(file: TextIOWrapper, value, column: str = ""):
+        def WriteColumnAndValueToSDF(file: TextIOWrapper,
+                                     value,
+                                     column: str = ""):
             """
             Записывает столбец и значение в .sdf файл.
 
@@ -360,19 +356,18 @@ def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str],
 
                 f.write("$$$$\n")
 
-                if print_to_console:
-                    logger.info(
-                        f"Writing {molecule_chembl_id} data to .sdf file...")
+                v_logger.info(
+                    f"Writing {molecule_chembl_id} data to .sdf file...",
+                    LogMode.VERBOSELY)
 
-    if print_to_console:
-        logger.info("Collecting molfiles to pandas.DataFrame...")
+    v_logger.info("Collecting molfiles to pandas.DataFrame...",
+                  LogMode.VERBOSELY)
 
     data = DataFrameMolfilesFromIdList(molecule_chembl_id_list)
 
-    if print_to_console:
-        logger.success("Collecting molfiles to pandas.DataFrame!")
+    v_logger.success("Collecting molfiles to pandas.DataFrame!",
+                     LogMode.VERBOSELY)
 
     SaveMolfilesToSDF(data=data,
                       file_name=file_name,
-                      print_to_console=print_to_console,
                       extra_data=extra_data)

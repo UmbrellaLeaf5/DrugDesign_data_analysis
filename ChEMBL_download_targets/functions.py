@@ -6,8 +6,8 @@ from ChEMBL_download_activities.functions import CountTargetActivitiesByIC50, \
     CountTargetActivitiesByKi
 
 from Utils.decorators import ReTry
-from Utils.logger_funcs import logger, UpdateLoggerFormat
 from Utils.files_funcs import pd
+from Utils.verbose_logger import v_logger, LogMode
 
 from Configurations.config import Config
 
@@ -137,18 +137,18 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
 
     targets_config: Config = config["ChEMBL_download_targets"]
 
-    if config["verbose_print"]:
-        logger.info(
-            f"Adding 'IC50' and 'Ki' columns to pandas.DataFrame...")
+    v_logger.info(
+        f"Adding 'IC50' and 'Ki' columns to pandas.DataFrame...",
+        LogMode.VERBOSELY)
 
     data["IC50"] = data["target_chembl_id"].apply(
         CountTargetActivitiesByIC50)
     data["Ki"] = data["target_chembl_id"].apply(
         CountTargetActivitiesByKi)
 
-    if config["verbose_print"]:
-        logger.success(
-            f"Adding 'IC50' and 'Ki' columns to pandas.DataFrame!")
+    v_logger.success(
+        f"Adding 'IC50' and 'Ki' columns to pandas.DataFrame!",
+        LogMode.VERBOSELY)
 
     if targets_config["download_activities"]:
         DownloadTargetChEMBLActivities(data, config)
@@ -178,20 +178,16 @@ def DownloadTargetsFromIdList(config: Config):
 
     targets_config: Config = config["ChEMBL_download_targets"]
 
-    if config["verbose_print"]:
-        logger.info("Downloading targets...")
+    v_logger.info("Downloading targets...", LogMode.VERBOSELY)
 
     targets_with_ids: QuerySet = QuerySetTargetsFromIdList(targets_config["id_list"])
 
     if targets_config["id_list"] == []:
         targets_with_ids = QuerySetAllTargets()
 
-    logger.info(f"Amount: {len(targets_with_ids)}")  # type: ignore
-
-    if config["verbose_print"]:
-        logger.success("Downloading targets!")
-
-        logger.info("Collecting targets to pandas.DataFrame..")
+    v_logger.info(f"Amount: {len(targets_with_ids)}")  # type: ignore
+    v_logger.success("Downloading targets!", LogMode.VERBOSELY)
+    v_logger.info("Collecting targets to pandas.DataFrame..", LogMode.VERBOSELY)
 
     data_frame = AddedIC50andKiToTargetsDF(
         ExpandedFromDictionariesTargetsDF(
@@ -199,21 +195,19 @@ def DownloadTargetsFromIdList(config: Config):
         ),
         config)
 
-    UpdateLoggerFormat(targets_config["logger_label"],
-                       targets_config["logger_color"])
+    v_logger.UpdateFormat(targets_config["logger_label"],
+                          targets_config["logger_color"])
 
-    if config["verbose_print"]:
-        logger.success("Collecting targets to pandas.DataFrame!")
-
-        logger.info(
-            f"Collecting targets to .csv file in "
-            f"'{targets_config["results_folder_name"]}'...")
+    v_logger.success("Collecting targets to pandas.DataFrame!", LogMode.VERBOSELY)
+    v_logger.info(
+        f"Collecting targets to .csv file in "
+        f"'{targets_config["results_folder_name"]}'...", LogMode.VERBOSELY)
 
     file_name: str = f"{targets_config["results_folder_name"]}/{targets_config["results_file_name"]}.csv"
 
     data_frame.to_csv(file_name, sep=";", index=False)
 
-    if config["verbose_print"]:
-        logger.success(
-            f"Collecting targets to .csv file in "
-            f"'{targets_config["results_folder_name"]}'!")
+    v_logger.success(
+        f"Collecting targets to .csv file in "
+        f"'{targets_config["results_folder_name"]}'!",
+        LogMode.VERBOSELY)

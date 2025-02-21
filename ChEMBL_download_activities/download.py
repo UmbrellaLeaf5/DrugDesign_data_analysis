@@ -2,8 +2,8 @@ from ChEMBL_download_activities.functions import *
 from ChEMBL_download_compounds.functions import SaveMolfilesToSDFByIdList
 
 from Utils.decorators import IgnoreWarnings, ReTry
-from Utils.logger_funcs import logger, UpdateLoggerFormat
 from Utils.files_funcs import json, IsFileInFolder, os
+from Utils.verbose_logger import v_logger, LogMode
 
 from Configurations.config import Config, LoggerConfig
 
@@ -24,13 +24,11 @@ def DownloadTargetChEMBLActivities(targets_data: pd.DataFrame,
     activities_config: Config = config["ChEMBL_download_activities"]
     compounds_config: Config = config["ChEMBL_download_compounds"]
 
-    UpdateLoggerFormat(activities_config["logger_label"],
-                       activities_config["logger_color"])
+    v_logger.UpdateFormat(activities_config["logger_label"],
+                          activities_config["logger_color"])
 
-    logger.info(f"Start download activities connected with targets...")
-
-    if config["verbose_print"]:
-        logger.info(f"{'-' * 77}")
+    v_logger.info(f"Start download activities connected with targets...")
+    v_logger.info(f"{'-' * 77}", LogMode.VERBOSELY)
 
     for target_id in targets_data['target_chembl_id']:
         file_name_ic50: str = f"{target_id}_IC50_activities"
@@ -41,47 +39,44 @@ def DownloadTargetChEMBLActivities(targets_data: pd.DataFrame,
                               activities_config["results_folder_name"]) \
            and IsFileInFolder(f"{file_name_ki}.csv",
                               activities_config["results_folder_name"]):
-            if config["verbose_print"]:
-                logger.info("Activities connected with target "
-                            f"{target_id} is already downloaded, skip.")
 
-                logger.info(f"{'-' * 77}")
+            v_logger.info("Activities connected with target "
+                          f"{target_id} is already downloaded, skip.",
+                          LogMode.VERBOSELY)
+            v_logger.info(f"{'-' * 77}", LogMode.VERBOSELY)
 
             continue
 
-        if config["verbose_print"]:
-            logger.info(f"Downloading activities connected with {target_id}...")
+        v_logger.info(f"Downloading activities connected with {target_id}...",
+                      LogMode.VERBOSELY)
 
         activities_ic50: QuerySet = QuerySetActivitiesByIC50(target_id)
         activities_ki: QuerySet = QuerySetActivitiesByKi(target_id)
 
-        if config["verbose_print"]:
-            logger.info("Amount: IC50: "
-                        f"{len(activities_ic50)};"  # type: ignore
-                        " Ki: "
-                        f"{len(activities_ki)}.")  # type: ignore
-
-            logger.success(f"Downloading activities connected with {target_id}!")
-
-            logger.info("Collecting activities to pandas.DataFrame...")
+        v_logger.info("Amount: IC50: "
+                      f"{len(activities_ic50)};"  # type: ignore
+                      " Ki: "
+                      f"{len(activities_ki)}.", LogMode.VERBOSELY)  # type: ignore
+        v_logger.success(f"Downloading activities connected with {target_id}!",
+                         LogMode.VERBOSELY)
+        v_logger.info("Collecting activities to pandas.DataFrame...",
+                      LogMode.VERBOSELY)
 
         data_frame_ic50 = CleanedTargetActivitiesDF(
             pd.DataFrame(activities_ic50),  # type: ignore
             target_id=target_id,
-            activities_type="IC50",
-            print_to_console=config["verbose_print"])
+            activities_type="IC50")
 
         data_frame_ki = CleanedTargetActivitiesDF(
             pd.DataFrame(activities_ki),  # type: ignore
             target_id=target_id,
-            activities_type="Ki",
-            print_to_console=config["verbose_print"])
+            activities_type="Ki")
 
-        if config["verbose_print"]:
-            logger.success("Collecting activities to pandas.DataFrame!")
-
-            logger.info(
-                "Recording new values 'IC50', 'Ki' in targets DataFrame...")
+        v_logger.success("Collecting activities to pandas.DataFrame!",
+                         LogMode.VERBOSELY)
+        v_logger.info(
+            "Recording new values 'IC50', 'Ki' in targets DataFrame...",
+            LogMode.VERBOSELY)
 
         targets_data.loc[targets_data["target_chembl_id"] == target_id, "IC50_new"] =\
             len(data_frame_ic50)
@@ -89,18 +84,17 @@ def DownloadTargetChEMBLActivities(targets_data: pd.DataFrame,
         targets_data.loc[targets_data["target_chembl_id"] == target_id, "Ki_new"] =\
             len(data_frame_ki)
 
-        if config["verbose_print"]:
-            logger.info("Amount: IC50: "
-                        f"{len(data_frame_ic50)};"
-                        " Ki: "
-                        f"{len(data_frame_ki)}.")
-
-            logger.success(
-                "Recording new values 'IC50', 'Ki' in targets DataFrame!")
-
-            logger.info(
-                "Collecting activities to .csv file in "
-                f"'{activities_config["results_folder_name"]}'...")
+        v_logger.info("Amount: IC50: "
+                      f"{len(data_frame_ic50)};"
+                      " Ki: "
+                      f"{len(data_frame_ki)}.", LogMode.VERBOSELY)
+        v_logger.success(
+            "Recording new values 'IC50', 'Ki' in targets DataFrame!",
+            LogMode.VERBOSELY)
+        v_logger.info(
+            "Collecting activities to .csv file in "
+            f"'{activities_config["results_folder_name"]}'...",
+            LogMode.VERBOSELY)
 
         full_file_name_ic50: str = f"{activities_config["results_folder_name"]}/"\
             f"{file_name_ic50}.csv"
@@ -110,54 +104,50 @@ def DownloadTargetChEMBLActivities(targets_data: pd.DataFrame,
         data_frame_ic50.to_csv(full_file_name_ic50, sep=";", index=False)
         data_frame_ki.to_csv(full_file_name_ki, sep=";", index=False)
 
-        if config["verbose_print"]:
-            logger.success(
-                "Collecting activities to .csv file in "
-                f"'{activities_config["results_folder_name"]}'!")
+        v_logger.success(
+            "Collecting activities to .csv file in "
+            f"'{activities_config["results_folder_name"]}'!",
+            LogMode.VERBOSELY)
 
         if activities_config["download_compounds_sdf"]:
-            if config["verbose_print"]:
-                UpdateLoggerFormat(compounds_config["logger_label"],
-                                   compounds_config["logger_color"])
+            v_logger.UpdateFormat(compounds_config["logger_label"],
+                                  compounds_config["logger_color"])
 
-                logger.info(
-                    f"Start download molfiles connected with {target_id} to .sdf...")
+            v_logger.info(
+                f"Start download molfiles connected with {target_id} to .sdf...",
+                LogMode.VERBOSELY)
 
             os.makedirs(compounds_config["molfiles_folder_name"], exist_ok=True)
 
-            if config["verbose_print"]:
-                logger.info("Saving connected with IC50 molfiles...")
+            v_logger.info("Saving connected with IC50 molfiles...",
+                          LogMode.VERBOSELY)
 
             SaveMolfilesToSDFByIdList(
                 data_frame_ic50['molecule_chembl_id'].tolist(),
                 f"{compounds_config["molfiles_folder_name"]}/{file_name_ic50}_molfiles",
-                extra_data=data_frame_ic50,
-                print_to_console=config["verbose_print"])
+                extra_data=data_frame_ic50)
 
-            if config["verbose_print"]:
-                logger.success("Saving connected with IC50 molfiles!")
-
-                logger.info("Saving connected with Ki molfiles...")
+            v_logger.success("Saving connected with IC50 molfiles!",
+                             LogMode.VERBOSELY)
+            v_logger.info("Saving connected with Ki molfiles...",
+                          LogMode.VERBOSELY)
 
             SaveMolfilesToSDFByIdList(
                 data_frame_ki['molecule_chembl_id'].tolist(),
                 f"{compounds_config["molfiles_folder_name"]}/{file_name_ki}_molfiles",
-                extra_data=data_frame_ki,
-                print_to_console=config["verbose_print"])
+                extra_data=data_frame_ki)
 
-            if config["verbose_print"]:
-                logger.success("Saving connected with Ki molfiles!")
+            v_logger.success("Saving connected with Ki molfiles!", LogMode.VERBOSELY)
+            v_logger.success(
+                f"End download molfiles connected with {target_id} to .sdf!",
+                LogMode.VERBOSELY)
 
-                logger.success(
-                    f"End download molfiles connected with {target_id} to .sdf!")
+            v_logger.UpdateFormat(activities_config["logger_label"],
+                                  activities_config["logger_color"])
 
-            UpdateLoggerFormat(activities_config["logger_label"],
-                               activities_config["logger_color"])
+        v_logger.info(f"{'-' * 77}", LogMode.VERBOSELY)
 
-        if config["verbose_print"]:
-            logger.info(f"{'-' * 77}")
-
-    logger.success("End download activities connected with targets!")
+    v_logger.success("End download activities connected with targets!")
 
 
 @IgnoreWarnings
@@ -178,17 +168,11 @@ def GetCellLineChEMBLActivitiesFromCSV(cell_lines_data: pd.DataFrame,
     cell_lines_config: Config = config["ChEMBL_download_cell_lines"]
     compounds_config: Config = config["ChEMBL_download_compounds"]
 
-    old_logger_config: LoggerConfig = {}
-    with open("logger.json", "r", encoding="utf-8") as f:
-        old_logger_config = json.load(f)
+    restore_index: int = v_logger.UpdateFormat(activities_config["logger_label"],
+                                               activities_config["logger_color"]) - 1
 
-    UpdateLoggerFormat(activities_config["logger_label"],
-                       activities_config["logger_color"])
-
-    logger.info("Start getting activities connected with cell_lines...")
-
-    if config["verbose_print"]:
-        logger.info(f"{'-' * 77}")
+    v_logger.info("Start getting activities connected with cell_lines...")
+    v_logger.info(f"{'-' * 77}", LogMode.VERBOSELY)
 
     for cell_id in cell_lines_data['cell_chembl_id']:
         file_name_ic50: str = f"{cell_id}_IC50_activities"
@@ -199,16 +183,14 @@ def GetCellLineChEMBLActivitiesFromCSV(cell_lines_data: pd.DataFrame,
                               activities_config["results_folder_name"]) \
            and IsFileInFolder(f"{file_name_gi50}.csv",
                               activities_config["results_folder_name"]):
-            if config["verbose_print"]:
-                logger.info("Activities connected with target "
-                            f"{cell_id} is already gotten, skip")
 
-                logger.info(f"{'-' * 77}")
+            v_logger.info("Activities connected with target "
+                          f"{cell_id} is already gotten, skip", LogMode.VERBOSELY)
+            v_logger.info(f"{'-' * 77}", LogMode.VERBOSELY)
 
             continue
 
-        if config["verbose_print"]:
-            logger.info(f"Getting activities connected with {cell_id}...")
+        v_logger.info(f"Getting activities connected with {cell_id}...", LogMode.VERBOSELY)
 
         data_frame_ic50 = pd.read_csv(
             f"{cell_lines_config["raw_csv_folder_name"]}/{file_name_ic50}.csv",
@@ -218,32 +200,27 @@ def GetCellLineChEMBLActivitiesFromCSV(cell_lines_data: pd.DataFrame,
             f"{cell_lines_config["raw_csv_folder_name"]}/{file_name_gi50}.csv",
             sep=";", low_memory=False)
 
-        if config["verbose_print"]:
-            logger.info("Amount: "
-                        f"IC50: {len(data_frame_ic50)}; "
-                        f"GI50: {len(data_frame_gi50)}.")
+        v_logger.info("Amount: "
+                      f"IC50: {len(data_frame_ic50)}; "
+                      f"GI50: {len(data_frame_gi50)}.", LogMode.VERBOSELY)
 
-            logger.success(f"Getting activities connected with {cell_id}!")
-
-            logger.info(
-                "Cleaning activities...")
+        v_logger.success(f"Getting activities connected with {cell_id}!",
+                         LogMode.VERBOSELY)
+        v_logger.info("Cleaning activities...", LogMode.VERBOSELY)
 
         data_frame_ic50 = CleanedCellLineActivitiesDF(data_frame_ic50,
                                                       cell_id=cell_id,
-                                                      activities_type="IC50",
-                                                      print_to_console=config["verbose_print"])
+                                                      activities_type="IC50")
 
         data_frame_gi50 = CleanedCellLineActivitiesDF(data_frame_gi50,
                                                       cell_id=cell_id,
-                                                      activities_type="GI50",
-                                                      print_to_console=config["verbose_print"])
+                                                      activities_type="GI50")
 
-        if config["verbose_print"]:
-            logger.success(
-                "Collecting activities to pandas.DataFrame!")
-
-            logger.info(
-                "Recording new values 'IC50', 'GI50' in targets DataFrame...")
+        v_logger.success(
+            "Collecting activities to pandas.DataFrame!", LogMode.VERBOSELY)
+        v_logger.info(
+            "Recording new values 'IC50', 'GI50' in targets DataFrame...",
+            LogMode.VERBOSELY)
 
         cell_lines_data.loc[cell_lines_data["cell_chembl_id"]
                             == cell_id, "IC50_new"] = len(data_frame_ic50)
@@ -251,17 +228,15 @@ def GetCellLineChEMBLActivitiesFromCSV(cell_lines_data: pd.DataFrame,
         cell_lines_data.loc[cell_lines_data["cell_chembl_id"]
                             == cell_id, "GI50_new"] = len(data_frame_gi50)
 
-        if config["verbose_print"]:
-            logger.info("Amount: "
-                        f"IC50: {len(data_frame_ic50)}; "
-                        f"GI50: {len(data_frame_gi50)}.")
-
-            logger.success(
-                "Recording new values 'IC50', 'GI50' in targets DataFrame!")
-
-            logger.info(
-                f"Collecting activities to .csv file in '"
-                f"{activities_config["results_folder_name"]}'...")
+        v_logger.info("Amount: "
+                      f"IC50: {len(data_frame_ic50)}; "
+                      f"GI50: {len(data_frame_gi50)}.", LogMode.VERBOSELY)
+        v_logger.success(
+            "Recording new values 'IC50', 'GI50' in targets DataFrame!",
+            LogMode.VERBOSELY)
+        v_logger.info(
+            f"Collecting activities to .csv file in '"
+            f"{activities_config["results_folder_name"]}'...", LogMode.VERBOSELY)
 
         full_file_name_ic50: str = f"{activities_config["results_folder_name"]}/"\
             f"{file_name_ic50}.csv"
@@ -271,55 +246,49 @@ def GetCellLineChEMBLActivitiesFromCSV(cell_lines_data: pd.DataFrame,
         data_frame_ic50.to_csv(full_file_name_ic50, sep=";", index=False)
         data_frame_gi50.to_csv(full_file_name_gi50, sep=";", index=False)
 
-        if config["verbose_print"]:
-            logger.success(
-                f"Collecting activities to .csv file in "
-                f"'{activities_config["results_folder_name"]}'!")
+        v_logger.success(
+            f"Collecting activities to .csv file in "
+            f"'{activities_config["results_folder_name"]}'!", LogMode.VERBOSELY)
 
         if activities_config["download_compounds_sdf"]:
-            if config["verbose_print"]:
-                UpdateLoggerFormat(compounds_config["logger_label"],
-                                   compounds_config["logger_color"])
+            v_logger.UpdateFormat(compounds_config["logger_label"],
+                                  compounds_config["logger_color"])
 
-                logger.info(
-                    f"Start download molfiles connected with {cell_id} to .sdf...")
+            v_logger.info(
+                f"Start download molfiles connected with {cell_id} to .sdf...",
+                LogMode.VERBOSELY)
 
             os.makedirs(compounds_config["molfiles_folder_name"], exist_ok=True)
 
-            if config["verbose_print"]:
-                logger.info("Saving connected with IC50 molfiles...")
+            v_logger.info("Saving connected with IC50 molfiles...",
+                          LogMode.VERBOSELY)
 
             SaveMolfilesToSDFByIdList(
                 data_frame_ic50['molecule_chembl_id'].tolist(),
                 f"{compounds_config["molfiles_folder_name"]}/{file_name_ic50}_molfiles",
-                extra_data=data_frame_ic50,
-                print_to_console=config["verbose_print"])
+                extra_data=data_frame_ic50)
 
-            if config["verbose_print"]:
-                logger.success("Saving connected with IC50 molfiles!")
-
-                logger.info("Saving connected with GI50 molfiles...")
+            v_logger.success("Saving connected with IC50 molfiles!",
+                             LogMode.VERBOSELY)
+            v_logger.info("Saving connected with GI50 molfiles...",
+                          LogMode.VERBOSELY)
 
             SaveMolfilesToSDFByIdList(
                 data_frame_gi50['molecule_chembl_id'].tolist(),
                 f"{compounds_config["molfiles_folder_name"]}/{file_name_gi50}_molfiles",
-                extra_data=data_frame_gi50,
-                print_to_console=config["verbose_print"])
+                extra_data=data_frame_gi50)
 
-            if config["verbose_print"]:
-                logger.success(
-                    "Saving connected with GI50 molfiles!")
+            v_logger.success(
+                "Saving connected with GI50 molfiles!", LogMode.VERBOSELY)
+            v_logger.success(
+                f"End download molfiles connected with {cell_id} to .sdf!",
+                LogMode.VERBOSELY)
 
-                logger.success(
-                    f"End download molfiles connected with {cell_id} to .sdf!")
+        v_logger.UpdateFormat(activities_config["logger_label"],
+                              activities_config["logger_color"])
 
-        UpdateLoggerFormat(activities_config["logger_label"],
-                           activities_config["logger_color"])
+        v_logger.info(f"{'-' * 77}", LogMode.VERBOSELY)
 
-        if config["verbose_print"]:
-            logger.info(f"{'-' * 77}")
+    v_logger.success("End getting activities connected with cell_lines!")
 
-    logger.success("End getting activities connected with cell_lines!")
-
-    UpdateLoggerFormat(old_logger_config["logger_label"],
-                       old_logger_config["color"])
+    v_logger.RestoreFormat(restore_index)

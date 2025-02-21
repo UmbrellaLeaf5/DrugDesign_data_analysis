@@ -1,7 +1,6 @@
 {
-  "verbose_print": true,
   "testing_flag": true,
-  "skip_downloaded": false,
+  "skip_downloaded": true,
   "csv_separator": ";",
   "keyboard_end_message": "\n    End of downloading for DrugDesign by keyboard...\n",
   "ChEMBL_download_activities": {
@@ -127,8 +126,18 @@
   },
   "Utils": {
     "CombineCSVInFolder": {
-      "logger_label": "ChEMBL__combine",
+      "logger_label": "Utils___combine",
       "logger_color": "fg #474747"
+    },
+    "VerboseLogger": {
+      "verbose_print": true,
+      "message_ljust": 78,
+      "exceptions_file": "exceptions.log",
+      "output_to_exceptions_file": false
+    },
+    "ReTry": {
+      "attempts_amount": 5,
+      "sleep_time": 1
     }
   }
 }

@@ -1,9 +1,9 @@
 from chembl_webresource_client.new_client import new_client
 from chembl_webresource_client.query_set import QuerySet
 
-from Utils.decorators import ReTry
-from Utils.logger_funcs import logger
 from Utils.dataframe_funcs import MedianDedupedDF, pd
+from Utils.decorators import ReTry
+from Utils.verbose_logger import LogMode, v_logger
 
 
 @ReTry()
@@ -86,7 +86,6 @@ def CountCellLineActivitiesByFile(file_name: str) -> int:
 def CleanedTargetActivitiesDF(data: pd.DataFrame,
                               target_id: str,
                               activities_type: str,
-                              print_to_console: bool
                               ) -> pd.DataFrame:
     """
     Производит чистку выборки activities конкретной цели по IC50 и Ki.
@@ -95,17 +94,14 @@ def CleanedTargetActivitiesDF(data: pd.DataFrame,
         data (pd.DataFrame): выборка activities.
         target_id (str): идентификатор цели.
         activities_type (str): IC50 или Ki.
-        print_to_console (bool): нужно ли выводить логирование в консоль.
 
     Returns:
         pd.DataFrame: очищенная выборка
     """
 
-    if print_to_console:
-        logger.info(f"Start cleaning {activities_type} activities DataFrame from "
-                    f"{target_id}...")
-
-        logger.info(f"Deleting useless columns...")
+    v_logger.info(f"Start cleaning {activities_type} activities DataFrame from "
+                  f"{target_id}...", LogMode.VERBOSELY)
+    v_logger.info(f"Deleting useless columns...", LogMode.VERBOSELY)
 
     data = data.drop(["activity_id", "activity_properties",
                       "document_journal", "document_year",
@@ -118,10 +114,8 @@ def CleanedTargetActivitiesDF(data: pd.DataFrame,
                       "type", "units", "uo_units", "upper_value",
                       "value", "ligand_efficiency", "relation"], axis=1)
 
-    if print_to_console:
-        logger.success("Deleting useless columns!")
-
-        logger.info("Deleting inappropriate elements...")
+    v_logger.success("Deleting useless columns!", LogMode.VERBOSELY)
+    v_logger.info("Deleting inappropriate elements...", LogMode.VERBOSELY)
 
     data = data[data["standard_relation"] == "="]
     data = data[data["standard_units"] == "nM"]
@@ -138,17 +132,13 @@ def CleanedTargetActivitiesDF(data: pd.DataFrame,
 
     data = data.drop(["target_organism", "standard_type"], axis=1)
 
-    if print_to_console:
-        logger.success("Deleting inappropriate elements!")
-
-        logger.info("Calculating median for 'standard value'...")
+    v_logger.success("Deleting inappropriate elements!", LogMode.VERBOSELY)
+    v_logger.info("Calculating median for 'standard value'...", LogMode.VERBOSELY)
 
     data = MedianDedupedDF(data, "molecule_chembl_id", "standard_value")
 
-    if print_to_console:
-        logger.success("Calculating median for 'standard value'!")
-
-        logger.info("Reindexing columns in logical order...")
+    v_logger.success("Calculating median for 'standard value'!", LogMode.VERBOSELY)
+    v_logger.info("Reindexing columns in logical order...", LogMode.VERBOSELY)
 
     data = data.reindex(columns=["molecule_chembl_id", "parent_molecule_chembl_id",
                                  "canonical_smiles", "document_chembl_id",
@@ -159,12 +149,10 @@ def CleanedTargetActivitiesDF(data: pd.DataFrame,
                                  "data_validity_comment", "data_validity_description",
                                  "bao_endpoint", "bao_format", "bao_label"])
 
-    if print_to_console:
-        logger.success("Reindexing columns in logical order!")
-
-        logger.success(f"End cleaning activities DataFrame from {target_id}!")
-
-        logger.info(f"{'-' * 77}")
+    v_logger.success("Reindexing columns in logical order!", LogMode.VERBOSELY)
+    v_logger.success(f"End cleaning activities DataFrame from {target_id}!",
+                     LogMode.VERBOSELY)
+    v_logger.info(f"{'-' * 77}", LogMode.VERBOSELY)
 
     return data
 
@@ -173,7 +161,6 @@ def CleanedTargetActivitiesDF(data: pd.DataFrame,
 def CleanedCellLineActivitiesDF(data: pd.DataFrame,
                                 cell_id: str,
                                 activities_type: str,
-                                print_to_console: bool
                                 ) -> pd.DataFrame:
     """
     Производит чистку выборки activities конкретной клеточной линии по IC50 и GI50.
@@ -182,17 +169,14 @@ def CleanedCellLineActivitiesDF(data: pd.DataFrame,
         data (pd.DataFrame): выборка activities.
         cell_id (str): идентификатор клеточной линии.
         activities_type (str): IC50 или GI50.
-        print_to_console (bool): нужно ли выводить логирование в консоль.
 
     Returns:
         pd.DataFrame: очищенная выборка
     """
 
-    if print_to_console:
-        logger.info(f"Start cleaning {activities_type} activities DataFrame from "
-                    f"{cell_id}...")
-
-        logger.info("Deleting useless columns...")
+    v_logger.info(f"Start cleaning {activities_type} activities DataFrame from "
+                  f"{cell_id}...", LogMode.VERBOSELY)
+    v_logger.info("Deleting useless columns...", LogMode.VERBOSELY)
 
     data = data[["Molecule ChEMBL ID", "Smiles", "Document ChEMBL ID",
                  "Standard Type", "Standard Relation", "Standard Value",
@@ -204,10 +188,8 @@ def CleanedCellLineActivitiesDF(data: pd.DataFrame,
     data.columns = [column_name.lower().replace(" ", "_")
                     for column_name in data.columns]
 
-    if print_to_console:
-        logger.success("Deleting useless columns!")
-
-        logger.info("Deleting inappropriate elements...")
+    v_logger.success("Deleting useless columns!", LogMode.VERBOSELY)
+    v_logger.info("Deleting inappropriate elements...", LogMode.VERBOSELY)
 
     data = data[data["standard_relation"] == "'='"]
     data["standard_relation"] = data["standard_relation"].str.replace(
@@ -224,17 +206,13 @@ def CleanedCellLineActivitiesDF(data: pd.DataFrame,
 
     data = data.rename(columns={'smiles': "canonical_smiles"})
 
-    if print_to_console:
-        logger.success("Deleting inappropriate elements!")
-
-        logger.info("Calculating median for 'standard value'...")
+    v_logger.success("Deleting inappropriate elements!", LogMode.VERBOSELY)
+    v_logger.info("Calculating median for 'standard value'...", LogMode.VERBOSELY)
 
     data = MedianDedupedDF(data, "molecule_chembl_id", "standard_value")
 
-    if print_to_console:
-        logger.success("Calculating median for 'standard value'!")
-
-        logger.info("Reindexing columns in logical order...")
+    v_logger.success("Calculating median for 'standard value'!", LogMode.VERBOSELY)
+    v_logger.info("Reindexing columns in logical order...", LogMode.VERBOSELY)
 
     data = data.reindex(columns=["molecule_chembl_id",
                                  "canonical_smiles", "document_chembl_id",
@@ -244,11 +222,9 @@ def CleanedCellLineActivitiesDF(data: pd.DataFrame,
                                  "action_type", "data_validity_description",
                                  "bao_format", "bao_label"])
 
-    if print_to_console:
-        logger.success("Reindexing columns in logical order!")
-
-        logger.success(f"End cleaning activities DataFrame from {cell_id}!")
-
-        logger.info(f"{'-' * 77}")
+    v_logger.success("Reindexing columns in logical order!", LogMode.VERBOSELY)
+    v_logger.success(f"End cleaning activities DataFrame from {cell_id}!",
+                     LogMode.VERBOSELY)
+    v_logger.info(f"{'-' * 77}", LogMode.VERBOSELY)
 
     return data

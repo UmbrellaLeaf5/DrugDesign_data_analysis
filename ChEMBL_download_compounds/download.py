@@ -1,9 +1,9 @@
 from ChEMBL_download_compounds.functions import *
 
 from Utils.decorators import IgnoreWarnings
-from Utils.logger_funcs import logger, UpdateLoggerFormat
 from Utils.files_funcs import CombineCSVInFolder, DeleteFilesInFolder, \
     IsFileInFolder, os
+from Utils.verbose_logger import v_logger, LogMode
 
 from Configurations.config import Config
 
@@ -26,10 +26,10 @@ def DownloadChEMBLCompounds(config: Config):
         raise ValueError(
             "DownloadChEMBLCompounds: delete_after_combining=True but need_combine=False")
 
-    UpdateLoggerFormat(compounds_config["logger_label"],
-                       compounds_config["logger_color"])
+    v_logger.UpdateFormat(compounds_config["logger_label"],
+                          compounds_config["logger_color"])
 
-    logger.info(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
+    v_logger.info(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
 
     os.makedirs(compounds_config["results_folder_name"], exist_ok=True)
 
@@ -46,17 +46,15 @@ def DownloadChEMBLCompounds(config: Config):
             DownloadCompoundsByMWRange(
                 less_limit,
                 greater_limit,
-                results_folder_name=compounds_config["results_folder_name"],
-                print_to_console=config["verbose_print"]
+                results_folder_name=compounds_config["results_folder_name"]
             )
 
         else:
-            if config["verbose_print"]:
-                logger.info(f"Molecules with mw in range [{less_limit}, "
-                            f"{greater_limit}) is already downloaded, skip.")
+            v_logger.info(f"Molecules with mw in range [{less_limit}, "
+                          f"{greater_limit}) is already downloaded, skip.",
+                          LogMode.VERBOSELY)
 
-        if config["verbose_print"]:
-            logger.info(f"{'-' * 77}")
+        v_logger.info(f"{'-' * 77}", LogMode.VERBOSELY)
 
     if compounds_config["need_combining"]:
         CombineCSVInFolder(compounds_config["results_folder_name"],
@@ -64,16 +62,16 @@ def DownloadChEMBLCompounds(config: Config):
                            config)
 
     if compounds_config["delete_after_combining"] and compounds_config["need_combining"]:
-        logger.info(
+        v_logger.info(
             f"Deleting files after combining in "
             f"'{compounds_config["results_folder_name"]}'...")
 
         DeleteFilesInFolder(compounds_config["results_folder_name"], [
             f"{compounds_config["combined_file_name"]}.csv"])
 
-        logger.success(
+        v_logger.success(
             f"Deleting files after combining in "
             f"'{compounds_config["results_folder_name"]}'!")
 
-    logger.success(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
-    logger.info(f"{'-' * 77}")
+    v_logger.success(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
+    v_logger.info(f"{'-' * 77}")

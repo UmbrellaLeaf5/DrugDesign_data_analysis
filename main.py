@@ -14,12 +14,12 @@ from ChEMBL_download_cell_lines.download import DownloadChEMBLCellLines
 
 from PubChem_download_toxicity.download import DownloadPubChemCompoundsToxicity
 
-from Configurations.config import GetConfig, main_config_file_name
+from Configurations.config import GetConfig
 
 
 # MEANS: словарь, содержащий параметры конфигурации, используемые во многих функциях.
 # (параметры конфигурации во многом определяют процесс скачивания)
-config = GetConfig(main_config_file_name)
+config = GetConfig()
 
 if __name__ == "__main__" and config is not None:
     try:
