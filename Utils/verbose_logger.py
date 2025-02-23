@@ -8,8 +8,8 @@ from typing import Any, Callable, TextIO
 
 from Configurations.config import Config, GetConfig
 
-from loguru import logger
-Logger = Any
+import loguru
+Logger = loguru._logger.Logger  # type: ignore
 
 
 class LogMode(Enum):
@@ -29,7 +29,7 @@ class VerboseLogger:
     формата сообщений и записи исключений в файл.
     """
 
-    __logger: Logger
+    __logger: Logger  # type: ignore
     __log_mode: LogMode
 
     __message_ljust: int
@@ -43,11 +43,11 @@ class VerboseLogger:
     __standard_output: TextIOWrapper | TextIO | Any
 
     def __init__(self,
-                 logger: Logger,
+                 logger: Logger,  # type: ignore
                  log_mode: LogMode,
                  message_ljust: int,
                  exceptions_file: str,
-                 standard_output: TextIO | TextIOWrapper = sys.stdout,):
+                 standard_output: TextIO | TextIOWrapper = sys.stdout):
         """
         Конструктор класса VerboseLogger.
 
@@ -87,7 +87,7 @@ class VerboseLogger:
         if config["output_to_exceptions_file"]:
             standard_output = config["exceptions_file"]
 
-        return cls(logger,
+        return cls(loguru.logger,
                    log_mode,
                    config["message_ljust"],
                    config["exceptions_file"],
@@ -115,7 +115,7 @@ class VerboseLogger:
         self.__labels.append(logger_label)
         self.__colors.append(logger_color)
 
-        self.__ConfigureOutput(self.__standard_output)
+        self.__Configure()
 
         return len(self.__labels) - 1
 
@@ -141,7 +141,7 @@ class VerboseLogger:
                 f"[0, {len(self.__labels) - 1}].")
 
         if index == len(self.__labels) - 1:
-            self.__logger.warning("Current format already set.")
+            self.__logger.warning("Current format is already set.")
             return
 
         self.__format = lambda record: "[{time:DD.MM.YYYY HH:mm:ss}] " +\
@@ -152,7 +152,7 @@ class VerboseLogger:
         self.__labels = self.__labels[:index+1]
         self.__colors = self.__colors[:index+1]
 
-        self.__ConfigureOutput(self.__standard_output)
+        self.__Configure()
 
     def LogException(self,
                      exception: Exception):
@@ -175,7 +175,7 @@ class VerboseLogger:
         os.makedirs(os.path.dirname(self.__exceptions_file), exist_ok=True)
 
         try:
-            self.__ConfigureOutput(self.__exceptions_file)
+            self.__Configure(self.__exceptions_file)
 
             self.__logger.error(
                 f"{re.sub(r'"(.*?)\",\s+line\s+(\d+)', r'\1:\2', traceback.format_exc())}")
@@ -185,7 +185,7 @@ class VerboseLogger:
                                 f"failed to write exception to file: {exception}.")
 
         finally:
-            self.__ConfigureOutput(self.__standard_output)
+            self.__Configure()
 
     def Log(self,
             level: str,
@@ -211,14 +211,18 @@ class VerboseLogger:
                 log_mode == LogMode.RETICENTLY:
             self.__logger.log(level, message)
 
-    def __ConfigureOutput(self,
-                          output: TextIO | Any):
+    def __Configure(self,
+                    output: TextIO | Any | None = None):
         """
-        Настраивает вывод логгера в указанный поток.
+        Настраивает вывод логгера.
 
         Args:
-            output (TextIO | Any): поток вывода.
+            output (TextIO | Any | None, optional): поток вывода. 
+                                                    Defaults to None: в таком случае 
+                                                    устанавливает на стандартный.
         """
+        if output is None:
+            output = self.__standard_output
 
         self.__logger.remove()
         self.__logger.add(sink=output,
@@ -260,10 +264,10 @@ class VerboseLogger:
             Any: атрибут или функция-обертка для логирования.
         """
 
-        if name in [string.lower() for string in logger._core.levels.keys()]:  # type: ignore
+        if name in [string.lower() for string in loguru.logger._core.levels.keys()]:  # type: ignore
             return self.__LogMethod(name)
 
-        else:  # другие методы logger из loguru
+        else:  # другие методы loguru.logger
             return getattr(self.__logger, name)
 
 

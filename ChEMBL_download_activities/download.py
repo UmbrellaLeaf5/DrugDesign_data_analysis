@@ -1,11 +1,11 @@
 from ChEMBL_download_activities.functions import *
-from ChEMBL_download_compounds.functions import SaveMolfilesToSDFByIdList
+from ChEMBL_download_compounds.functions import SaveChEMBLMolfilesToSDFByIdList
 
 from Utils.decorators import IgnoreWarnings, ReTry
-from Utils.files_funcs import json, IsFileInFolder, os
+from Utils.files_funcs import IsFileInFolder, os
 from Utils.verbose_logger import v_logger, LogMode
 
-from Configurations.config import Config, LoggerConfig
+from Configurations.config import Config
 
 
 @IgnoreWarnings
@@ -122,7 +122,7 @@ def DownloadTargetChEMBLActivities(targets_data: pd.DataFrame,
             v_logger.info("Saving connected with IC50 molfiles...",
                           LogMode.VERBOSELY)
 
-            SaveMolfilesToSDFByIdList(
+            SaveChEMBLMolfilesToSDFByIdList(
                 data_frame_ic50['molecule_chembl_id'].tolist(),
                 f"{compounds_config["molfiles_folder_name"]}/{file_name_ic50}_molfiles",
                 extra_data=data_frame_ic50)
@@ -132,7 +132,7 @@ def DownloadTargetChEMBLActivities(targets_data: pd.DataFrame,
             v_logger.info("Saving connected with Ki molfiles...",
                           LogMode.VERBOSELY)
 
-            SaveMolfilesToSDFByIdList(
+            SaveChEMBLMolfilesToSDFByIdList(
                 data_frame_ki['molecule_chembl_id'].tolist(),
                 f"{compounds_config["molfiles_folder_name"]}/{file_name_ki}_molfiles",
                 extra_data=data_frame_ki)
@@ -263,7 +263,7 @@ def GetCellLineChEMBLActivitiesFromCSV(cell_lines_data: pd.DataFrame,
             v_logger.info("Saving connected with IC50 molfiles...",
                           LogMode.VERBOSELY)
 
-            SaveMolfilesToSDFByIdList(
+            SaveChEMBLMolfilesToSDFByIdList(
                 data_frame_ic50['molecule_chembl_id'].tolist(),
                 f"{compounds_config["molfiles_folder_name"]}/{file_name_ic50}_molfiles",
                 extra_data=data_frame_ic50)
@@ -273,7 +273,7 @@ def GetCellLineChEMBLActivitiesFromCSV(cell_lines_data: pd.DataFrame,
             v_logger.info("Saving connected with GI50 molfiles...",
                           LogMode.VERBOSELY)
 
-            SaveMolfilesToSDFByIdList(
+            SaveChEMBLMolfilesToSDFByIdList(
                 data_frame_gi50['molecule_chembl_id'].tolist(),
                 f"{compounds_config["molfiles_folder_name"]}/{file_name_gi50}_molfiles",
                 extra_data=data_frame_gi50)

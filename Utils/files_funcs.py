@@ -1,10 +1,10 @@
-import json
+from io import TextIOWrapper
 import os
 import shutil
 
 import pandas as pd
 
-from Utils.verbose_logger import v_logger, LogMode
+from Utils.verbose_logger import Any, v_logger, LogMode
 
 from Configurations.config import Config
 
@@ -155,3 +155,94 @@ def CombineCSVInFolder(folder_name: str,
     v_logger.success(f"End combining downloads!")
 
     v_logger.RestoreFormat(restore_index)
+
+
+def SaveMolfilesToSDF(data: pd.DataFrame,
+                      file_name: str,
+                      molecule_id_column_name: str,
+                      extra_data: pd.DataFrame = pd.DataFrame(),
+                      indexing_lists: bool = False):
+    """
+    Сохраняет molfiles из pd.DataFrame в .sdf файл.
+
+    Args:
+        data (pd.DataFrame): DataFrame с колонками molfile и [id_column_name].
+        file_name (str): имя файла (без ".sdf").
+        id_column_name (str): имя колонки, содержащей id соединения
+        extra_data (pd.DataFrame, optional): дополнительная информация. 
+                                             Defaults to pd.DataFrame().
+        indexing_lists (bool, optional): нужно ли индексировать списки, 
+                                         если они есть в колонках. Defaults to False.
+    """
+
+    def WriteColumnAndValueToSDF(file: TextIOWrapper,
+                                 value: Any,
+                                 column: str = ""):
+        """
+        Записывает столбец и значение в .sdf файл.
+
+        Args:
+            file (TextIOWrapper): открытый файл для записи.
+            value (Any): значение, которое нужно записать.
+            column (str, optional): имя столбца. Defaults to "". 
+        """
+
+        if not column:
+            return
+
+        if isinstance(value, list) or isinstance(value, pd.Series):
+            file.write(f"> <{column}>\n")
+
+            i: int = 0
+            for elem in value:
+                # если value - это список словарей
+                if isinstance(elem, dict):
+                    WriteColumnAndValueToSDF(file, elem)
+
+                else:
+                    elem = str(elem)
+
+                    if elem != "nan" and elem != "None" and elem != "":
+                        if indexing_lists:
+                            file.write(f"{i}: {elem}\n")
+                        else:
+                            file.write(f"{elem}\n")
+                i += 1
+
+        elif isinstance(value, dict):
+            file.write(f"> <{column}>\n")
+
+            for key, elem in value.items():
+                elem = str(elem)
+
+                if elem != "nan" and elem != "None" and elem != "":
+                    file.write(f"{key}: {elem}\n")
+
+        else:
+            value = str(value)
+
+            if value != "nan" and value != "None" and value != "":
+                file.write(f"> <{column}>\n")
+
+                file.write(f"{value}\n")
+
+        file.write("\n")
+
+    with open(f"{file_name}.sdf", "w", encoding="utf-8") as f:
+        for value in data.values:
+            molecule_id, molfile = value
+
+            f.write(f"{molecule_id}{molfile}\n\n")
+
+            if not extra_data.empty:
+                df = extra_data.set_index(f"{molecule_id_column_name}")
+
+                for column in df.columns:
+                    WriteColumnAndValueToSDF(
+                        f, df.loc[molecule_id, column], column)
+
+            f.write("$$$$\n")
+
+            v_logger.info(
+                f"Writing {molecule_id} data to .sdf file...",
+                LogMode.VERBOSELY)

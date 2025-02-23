@@ -102,10 +102,12 @@
     "logger_label": "PubChem_toxcomp",
     "logger_color": "fg #D68C6D",
     "results_folder_name": "results/pubchem/toxicity",
+    "molfiles_folder_name": "results/pubchem/toxicity/molfiles",
     "results_file_name": "toxicity_data_from_PubChem",
     "combined_file_name": "combined_toxicity_data_from_PubChem",
     "need_combining": true,
     "delete_after_combining": true,
+    "download_compounds_sdf": true,
     "filtering": {
       "organism": [
         "rat",

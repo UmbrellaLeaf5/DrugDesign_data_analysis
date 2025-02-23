@@ -2,8 +2,8 @@ from chembl_webresource_client.new_client import new_client
 from chembl_webresource_client.query_set import QuerySet
 
 from Utils.decorators import ReTry
-from Utils.files_funcs import pd
-from Utils.verbose_logger import v_logger, TextIOWrapper, LogMode
+from Utils.files_funcs import pd, SaveMolfilesToSDF
+from Utils.verbose_logger import v_logger, LogMode
 
 
 @ReTry()
@@ -234,9 +234,9 @@ def DownloadCompoundsByMWRange(less_limit: int,
         LogMode.VERBOSELY)
 
 
-def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str],
-                              file_name: str,
-                              extra_data: pd.DataFrame = pd.DataFrame()):
+def SaveChEMBLMolfilesToSDFByIdList(molecule_chembl_id_list: list[str],
+                                    file_name: str,
+                                    extra_data: pd.DataFrame = pd.DataFrame()):
     """
     Сохраняет molfiles из списка id в .sdf файл.
 
@@ -274,91 +274,10 @@ def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str],
 
         data = data.drop(["molecule_structures"], axis=1)
 
+        # data.to_csv("temp.csv")
+        # raise KeyboardInterrupt
+
         return data
-
-    def SaveMolfilesToSDF(data: pd.DataFrame,
-                          file_name: str,
-                          extra_data: pd.DataFrame = pd.DataFrame()):
-        """
-        Сохраняет molfiles из pd.DataFrame в .sdf файл.
-
-        Args:
-            data (pd.DataFrame): DataFrame с molfile и molecule_chembl_id.
-            file_name (str): имя файла (без ".sdf").
-            extra_data (pd.DataFrame, optional): дополнительная информация. 
-                                                 Defaults to pd.DataFrame().
-        """
-
-        def WriteColumnAndValueToSDF(file: TextIOWrapper,
-                                     value,
-                                     column: str = ""):
-            """
-            Записывает столбец и значение в .sdf файл.
-
-            Args:
-                file (TextIOWrapper): открытый файл для записи.
-                value: значение, которое нужно записать.
-                column (str, optional): имя столбца. Defaults to "". 
-            """
-
-            if isinstance(value, list):
-                if column:
-                    file.write(f"> <{column}>\n")
-
-                for elem in value:
-                    # если value - это список словарей
-                    if isinstance(elem, dict):
-                        WriteColumnAndValueToSDF(file, elem)
-
-                    else:
-                        elem = str(elem)
-
-                        if elem != "nan" and elem != "None":
-                            file.write(f"{elem}\n")
-
-                if column:
-                    file.write("\n")
-
-            elif isinstance(value, dict):
-                if column:
-                    file.write(f"> <{column}>\n")
-
-                for key, elem in value.items():
-                    elem = str(elem)
-
-                    if elem != "nan" and elem != "None":
-                        file.write(f"{key}: {elem}\n")
-
-                if column:
-                    file.write("\n")
-
-            else:
-                value = str(value)
-
-                if value != "nan" and value != "None":
-                    if column:
-                        file.write(f"> <{column}>\n")
-
-                    file.write(f"{value}\n\n")
-
-        with open(f"{file_name}.sdf", "w", encoding="utf-8") as f:
-            for value in data.values:
-                molecule_chembl_id, molfile = value
-
-                f.write(f"{molecule_chembl_id}{molfile}\n\n")
-
-                if not extra_data.empty:
-                    df = extra_data.set_index("molecule_chembl_id")
-
-                    for column in df.columns:
-                        WriteColumnAndValueToSDF(
-                            f, df.loc[molecule_chembl_id, column], column)
-
-                f.write("$$$$\n")
-
-                v_logger.info(
-                    f"Writing {molecule_chembl_id} data to .sdf file...",
-                    LogMode.VERBOSELY)
 
     v_logger.info("Collecting molfiles to pandas.DataFrame...",
                   LogMode.VERBOSELY)
@@ -370,4 +289,5 @@ def SaveMolfilesToSDFByIdList(molecule_chembl_id_list: list[str],
 
     SaveMolfilesToSDF(data=data,
                       file_name=file_name,
+                      molecule_id_column_name="molecule_chembl_id",
                       extra_data=extra_data)

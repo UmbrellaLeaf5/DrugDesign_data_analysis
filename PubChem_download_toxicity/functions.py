@@ -4,8 +4,9 @@ import numpy as np
 import requests
 import urllib.parse
 
-from Utils.decorators import ReTry, time, Callable
-from Utils.files_funcs import os, pd
+from Utils.dataframe_funcs import DedupedList
+from Utils.decorators import ReTry, time
+from Utils.files_funcs import os, pd, SaveMolfilesToSDF
 from Utils.verbose_logger import v_logger, LogMode
 
 from Configurations.config import Config
@@ -126,8 +127,10 @@ def DownloadCompoundToxicity(compound_data: dict,
     toxicity_config: Config = config["PubChem_download_toxicity"]
     filtering_config: Config = toxicity_config["filtering"]
 
+    cid: str = ""
+
     try:
-        compound_data["LinkedRecords"]["CID"][0]
+        cid = compound_data["LinkedRecords"]["CID"][0]
 
     except KeyError:
         v_logger.warning(
@@ -280,10 +283,44 @@ def DownloadCompoundToxicity(compound_data: dict,
     if not acute_effects.empty:
         v_logger.info(f"Saving {compound_name} to .csv...", LogMode.VERBOSELY)
 
+        acute_effects = acute_effects.replace('', np.nan)
+        acute_effects = acute_effects.dropna(axis=1, how='all')
+
         acute_effects.to_csv(f"{compound_file_name}.csv", sep=";",
                              index=False, mode="w")
 
         v_logger.success(f"Saving {compound_name} to .csv!", LogMode.VERBOSELY)
+
+        def SaveMolfileWithToxicityToSDF():
+            listed_df = pd.DataFrame()
+            for column_name in acute_effects.columns:
+                full_column_data = acute_effects[column_name].tolist()
+
+                listed_df[column_name] = [full_column_data]
+                # в том случае если уникальный элемент только 1
+                if len(DedupedList(full_column_data)) == 1:
+                    listed_df.loc[0, column_name] = full_column_data[0]
+
+            molfile: str = GetResponse(
+                f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/CID/{cid}/record/SDF?record_type=2d",
+                True,
+                None).text
+
+            molfile = molfile[molfile.find("\n"):].replace("$$$$", "").rstrip()
+
+            SaveMolfilesToSDF(data=pd.DataFrame({"cid": [cid],
+                                                 "molfile": [molfile]}),
+                              file_name=(f"{toxicity_config["molfiles_folder_name"]}/"
+                                         f"{compound_name}"),
+                              molecule_id_column_name="cid",
+                              extra_data=listed_df,
+                              indexing_lists=True)
+
+        if toxicity_config["download_compounds_sdf"]:
+            os.makedirs(toxicity_config["molfiles_folder_name"], exist_ok=True)
+
+            SaveMolfileWithToxicityToSDF()
+
         v_logger.success(f"Downloading {compound_name}!", LogMode.VERBOSELY)
 
     else:
