@@ -109,17 +109,27 @@
     "delete_after_combining": true,
     "download_compounds_sdf": true,
     "filtering": {
-      "organism": [
-        "rat",
-        "mouse"
-      ],
-      "route": [
-        "oral",
-        "intraperitoneal",
-        "intravenous",
-        "subcutaneous"
-      ],
-      "dose": "mg/kg"
+      "kg": {
+        "organism": [
+          "rat",
+          "mouse"
+        ],
+        "route": [
+          "oral",
+          "intraperitoneal",
+          "intravenous",
+          "subcutaneous"
+        ]
+      },
+      "m3": {
+        "organism": [
+          "rat",
+          "mouse"
+        ],
+        "route": [
+          "inhalation"
+        ]
+      }
     },
     "sleep_time": 0.211,
     "start_page": 1,

@@ -9,7 +9,7 @@ from Utils.decorators import ReTry
 from Utils.files_funcs import pd
 from Utils.verbose_logger import v_logger, LogMode
 
-from Configurations.config import Config
+from Configurations.config import config, Config
 
 
 @ReTry()
@@ -118,8 +118,7 @@ def ExpandedFromDictionariesTargetsDF(data: pd.DataFrame) -> pd.DataFrame:
 
 
 @ReTry(attempts_amount=1)
-def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
-                              config: Config
+def AddedIC50andKiToTargetsDF(data: pd.DataFrame
                               ) -> pd.DataFrame:
     """
     Добавляет столбцы 'IC50' и 'Ki' в DataFrame с данными о целевых белках (targets),
@@ -128,7 +127,6 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
 
     Args:
         data (pd.DataFrame): DataFrame с данными о целевых белках.
-        config (Config): словарь, содержащий параметры конфигурации для процесса скачивания.
 
     Returns:
         pd.DataFrame: DataFrame с добавленными столбцами 'IC50' и 'Ki',
@@ -151,7 +149,7 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
         LogMode.VERBOSELY)
 
     if targets_config["download_activities"]:
-        DownloadTargetChEMBLActivities(data, config)
+        DownloadTargetChEMBLActivities(data)
 
         try:
             data["IC50_new"] = data["IC50_new"].astype(int)
@@ -166,14 +164,11 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame,
 
 
 @ReTry(attempts_amount=1)
-def DownloadTargetsFromIdList(config: Config):
+def DownloadTargetsFromIdList():
     """
     Скачивает данные о целевых белках (targets) из ChEMBL по списку идентификаторов,
     добавляет информацию об активностях IC50 и Ki, проводит первичный анализ
     и сохраняет результаты в CSV-файл.
-
-    Args:
-        config (Config): словарь, содержащий параметры конфигурации для процесса скачивания.
     """
 
     targets_config: Config = config["ChEMBL_download_targets"]
@@ -192,8 +187,7 @@ def DownloadTargetsFromIdList(config: Config):
     data_frame = AddedIC50andKiToTargetsDF(
         ExpandedFromDictionariesTargetsDF(
             pd.DataFrame(targets_with_ids)  # type: ignore
-        ),
-        config)
+        ))
 
     v_logger.UpdateFormat(targets_config["logger_label"],
                           targets_config["logger_color"])

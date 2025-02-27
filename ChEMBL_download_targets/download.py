@@ -6,13 +6,10 @@ from Utils.verbose_logger import LogMode
 
 
 @IgnoreWarnings
-def DownloadChEMBLTargets(config: Config):
+def DownloadChEMBLTargets():
     """
     Скачивает информацию о мишенях из базы данных ChEMBL 
     на основе конфигурации (`config.json`).
-
-    Args:
-        config (Config): словарь, содержащий параметры конфигурации для процесса скачивания.
     """
 
     targets_config: Config = config["ChEMBL_download_targets"]
@@ -38,7 +35,7 @@ def DownloadChEMBLTargets(config: Config):
             # в случае пустого списка в DownloadTargetsFromIdList скачаются все
             targets_config["id_list"] = []
 
-        DownloadTargetsFromIdList(config)
+        DownloadTargetsFromIdList()
 
     else:
         v_logger.info(

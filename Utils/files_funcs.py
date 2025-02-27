@@ -6,7 +6,7 @@ import pandas as pd
 
 from Utils.verbose_logger import Any, v_logger, LogMode
 
-from Configurations.config import Config
+from Configurations.config import config, Config
 
 
 def DeleteFilesInFolder(folder_name: str,
@@ -23,14 +23,15 @@ def DeleteFilesInFolder(folder_name: str,
       delete_folders (bool, optional): удалять ли вложенные папки. Defaults to False.
     """
 
-    for file_name in os.listdir(folder_name):
-        full_file_name = os.path.join(folder_name, file_name)
+    for item in os.listdir(folder_name):
+        item_path: str = os.path.join(folder_name, item)
 
-        if os.path.isfile(full_file_name) and file_name not in except_files:
-            os.remove(full_file_name)
+        if item not in except_files:
+            if os.path.isfile(item_path):
+                os.remove(item_path)
 
-        elif os.path.isdir(full_file_name) and delete_folders:
-            shutil.rmtree(full_file_name)
+            elif delete_folders and os.path.isdir(item_path):
+                shutil.rmtree(item_path)
 
 
 def IsFileInFolder(file_name: str, folder_name: str) -> bool:
@@ -90,15 +91,13 @@ def MoveFileToFolder(file_name: str,
 
 
 def CombineCSVInFolder(folder_name: str,
-                       combined_file_name: str,
-                       config: Config):
+                       combined_file_name: str):
     """
     Склеивает все .csv файлы в папке в один.
 
     Args:
         folder_name (str): имя папки с .csv файлами.
         combined_file_name (str): имя склеенного .csv файла.
-        config (Config): словарь, содержащий параметры конфигурации для процесса скачивания.
     """
 
     combine_config: Config = config["Utils"]["CombineCSVInFolder"]

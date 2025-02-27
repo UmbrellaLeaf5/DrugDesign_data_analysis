@@ -5,20 +5,18 @@ from Utils.decorators import IgnoreWarnings, ReTry
 from Utils.files_funcs import IsFileInFolder, os
 from Utils.verbose_logger import v_logger, LogMode
 
-from Configurations.config import Config
+from Configurations.config import config, Config
 
 
 @IgnoreWarnings
 @ReTry(attempts_amount=1)
-def DownloadTargetChEMBLActivities(targets_data: pd.DataFrame,
-                                   config: Config):
+def DownloadTargetChEMBLActivities(targets_data: pd.DataFrame):
     """
     Скачивает информацию об активностях, связанных с заданными мишенями,
     из базы данных ChEMBL на основе конфигурации (`config.json`).
 
     Args:
         targets_data (pd.DataFrame): DataFrame, содержащий информацию о мишенях.
-        config (Config): словарь, содержащий параметры конфигурации для процесса скачивания.
     """
 
     activities_config: Config = config["ChEMBL_download_activities"]
@@ -152,8 +150,7 @@ def DownloadTargetChEMBLActivities(targets_data: pd.DataFrame,
 
 @IgnoreWarnings
 @ReTry(attempts_amount=1)
-def GetCellLineChEMBLActivitiesFromCSV(cell_lines_data: pd.DataFrame,
-                                       config: Config):
+def GetCellLineChEMBLActivitiesFromCSV(cell_lines_data: pd.DataFrame):
     """
     "Скачивает" (получает) информацию об активностях, связанных с
     заданными клеточными линиями, из базы данных ChEMBL на основе
@@ -161,7 +158,6 @@ def GetCellLineChEMBLActivitiesFromCSV(cell_lines_data: pd.DataFrame,
 
     Args:
         targets_data (pd.DataFrame): DataFrame, содержащий информацию о клеточных линиях.
-        config (Config): словарь, содержащий параметры конфигурации для процесса скачивания.
     """
 
     activities_config: Config = config["ChEMBL_download_activities"]

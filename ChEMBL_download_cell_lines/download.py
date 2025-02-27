@@ -4,17 +4,14 @@ from Utils.decorators import IgnoreWarnings
 from Utils.files_funcs import IsFileInFolder
 from Utils.verbose_logger import LogMode
 
-from Configurations.config import Config
+from Configurations.config import config, Config
 
 
 @IgnoreWarnings
-def DownloadChEMBLCellLines(config: Config):
+def DownloadChEMBLCellLines():
     """
     Скачивает информацию о клеточных линиях из базы данных ChEMBL 
     на основе конфигурации (`config.json`).
-
-    Args:
-        config (Config): словарь, содержащий параметры конфигурации для процесса скачивания.
     """
 
     cell_lines_config: Config = config["ChEMBL_download_cell_lines"]
@@ -40,7 +37,7 @@ def DownloadChEMBLCellLines(config: Config):
             # в случае пустого списка в DownloadCellLinesFromIdList скачаются все
             cell_lines_config["id_list"] = []
 
-        DownloadCellLinesFromIdList(config)
+        DownloadCellLinesFromIdList()
 
     else:
         v_logger.info(

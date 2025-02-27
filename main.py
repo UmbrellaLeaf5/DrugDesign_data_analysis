@@ -14,20 +14,15 @@ from ChEMBL_download_cell_lines.download import DownloadChEMBLCellLines
 
 from PubChem_download_toxicity.download import DownloadPubChemCompoundsToxicity
 
-from Configurations.config import GetConfig
 
-
-# MEANS: словарь, содержащий параметры конфигурации, используемые во многих функциях.
-# (параметры конфигурации во многом определяют процесс скачивания)
-config = GetConfig()
-
-if __name__ == "__main__" and config is not None:
+if __name__ == "__main__":
     try:
-        DownloadChEMBLCellLines(config)
-        # DownloadChEMBLCompounds(config)
-        DownloadChEMBLTargets(config)
+        DownloadChEMBLCellLines()
+        # DownloadChEMBLCompounds()
+        DownloadChEMBLTargets()
 
-        DownloadPubChemCompoundsToxicity(config)
+        DownloadPubChemCompoundsToxicity()
 
     except KeyboardInterrupt:
+        from Configurations.config import config
         print(config["keyboard_end_message"])

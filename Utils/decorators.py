@@ -5,7 +5,7 @@ import warnings
 
 from Utils.verbose_logger import v_logger
 
-from Configurations.config import Config, GetConfig
+from Configurations.config import config, Config
 
 
 def IgnoreWarnings(func: Callable) -> Callable:
@@ -30,11 +30,7 @@ def IgnoreWarnings(func: Callable) -> Callable:
     return Wrapper
 
 
-retry_config: Config = {"attempts_amount": 3,
-                        "sleep_time": 1}
-config = GetConfig()
-if config is not None:
-    retry_config = config["Utils"]["ReTry"]
+retry_config: Config = config["Utils"]["ReTry"]
 
 
 def ReTry(attempts_amount: int = retry_config["attempts_amount"],

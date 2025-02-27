@@ -4,26 +4,21 @@ from Utils.files_funcs import CombineCSVInFolder, DeleteFilesInFolder, \
     MoveFileToFolder, os
 from Utils.verbose_logger import v_logger, LogMode
 
-from Configurations.config import Config
+from Configurations.config import config, Config
 
 
 @ReTry(attempts_amount=1)
-def DownloadPubChemCompoundsToxicity(config: Config):
+def DownloadPubChemCompoundsToxicity():
     """
     Скачивает информацию о токсичности соединений из базы данных PubChem 
     на основе конфигурации (`config.json`).
-
-    Args:
-        config (Config): словарь, содержащий параметры конфигурации для процесса скачивания.
     """
 
     toxicity_config: Config = config["PubChem_download_toxicity"]
 
-    res_folder_name: str = toxicity_config["results_folder_name"]
-    res_file_name: str = toxicity_config["results_file_name"]
-
     if config["testing_flag"]:
-        toxicity_config["start_page"] = toxicity_config["end_page"] = 1
+        toxicity_config["start_page"] = 1
+        toxicity_config["end_page"] = 1
 
     v_logger.UpdateFormat(toxicity_config["logger_label"],
                           toxicity_config["logger_color"])
@@ -34,7 +29,7 @@ def DownloadPubChemCompoundsToxicity(config: Config):
                       toxicity_config["end_page"] + 1):
         v_logger.info(f"Downloading page_{page}...")
 
-        page_folder_name = f"{res_folder_name}/page_{page}"
+        page_folder_name = f"{toxicity_config["results_folder_name"]}/page_{page}"
 
         os.makedirs(page_folder_name, exist_ok=True)
 
@@ -65,8 +60,7 @@ def DownloadPubChemCompoundsToxicity(config: Config):
             start_time = time.time()
 
             DownloadCompoundToxicity(compound_data,
-                                     page_folder_name,
-                                     config)
+                                     page_folder_name)
 
             end_time = time.time()
 
@@ -80,25 +74,25 @@ def DownloadPubChemCompoundsToxicity(config: Config):
                 v_logger.info(f"Quarter: {quarter}%, combining files in page_{page} folder...")
 
                 CombineCSVInFolder(page_folder_name,
-                                   f"{res_file_name}_{quarters[i]}_page_{page}",
-                                   config)
+                                   f"{toxicity_config["results_file_name"]}_{quarters[i]}"
+                                   f"_page_{page}")
 
                 v_logger.success(f"Quarter: {quarter}%, combining files in page_{page} folder!")
 
                 # перемещаем, чтобы не конкатенировать его с остальными
-                v_logger.info(f"Moving {res_file_name}_"
+                v_logger.info(f"Moving {toxicity_config["results_file_name"]}_"
                               f"{quarters[i]}_page_{page}.csv to "
-                              f"{res_folder_name}...",
+                              f"{toxicity_config["results_folder_name"]}...",
                               LogMode.VERBOSELY)
 
-                MoveFileToFolder(f"{res_file_name}_"
+                MoveFileToFolder(f"{toxicity_config["results_file_name"]}_"
                                  f"{quarters[i]}_page_{page}.csv",
                                  page_folder_name,
-                                 res_folder_name)
+                                 toxicity_config["results_folder_name"])
 
-                v_logger.success(f"Moving {res_file_name}"
+                v_logger.success(f"Moving {toxicity_config["results_file_name"]}"
                                  f"_{quarters[i]}_page_{page}.csv to "
-                                 f"{res_folder_name}!",
+                                 f"{toxicity_config["results_folder_name"]}!",
                                  LogMode.VERBOSELY)
 
                 # и удаляем предыдущий
@@ -106,34 +100,42 @@ def DownloadPubChemCompoundsToxicity(config: Config):
 
                 if prev_quarter != 0:
                     old_quarter_file_name: str =\
-                        f"{res_file_name}_{prev_quarter}_page_{page}"
+                        f"{toxicity_config["results_file_name"]}_{prev_quarter}_page_{page}"
 
                     v_logger.info("Deleting old quarter file...",
                                   LogMode.VERBOSELY)
 
                     os.remove(os.path.join(
-                        res_folder_name,
+                        toxicity_config["results_folder_name"],
                         f"{old_quarter_file_name}.csv"))
 
                     v_logger.success("Deleting old quarter file!",
                                      LogMode.VERBOSELY)
 
     if toxicity_config["need_combining"]:
-        CombineCSVInFolder(res_folder_name,
-                           toxicity_config["combined_file_name"],
-                           config)
+        CombineCSVInFolder(toxicity_config["results_folder_name"],
+                           toxicity_config["combined_file_name"])
 
     if toxicity_config["delete_after_combining"] and toxicity_config["need_combining"]:
         v_logger.info("Deleting files after combining in "
-                      f"'{res_folder_name}'...",
+                      f"'{toxicity_config["results_folder_name"]}'...",
                       LogMode.VERBOSELY)
 
-        DeleteFilesInFolder(res_folder_name,
-                            [f"{toxicity_config["combined_file_name"]}.csv"],
+        except_folders: list[str] = [f"{toxicity_config["combined_file_name"]}.csv"]
+        molfiles_folder_name: str = toxicity_config["molfiles_folder_name"]
+
+        # в том случае, если molfiles_folder_name находится внутри results_folder_name
+        # (т.е. путь к molfiles_folder_name содержит путь к results_folder_name)
+        if toxicity_config["results_folder_name"] in molfiles_folder_name:
+            except_folders.append(molfiles_folder_name.replace(
+                toxicity_config["results_folder_name"], "").split("/")[1])
+
+        DeleteFilesInFolder(toxicity_config["results_folder_name"],
+                            except_folders,
                             delete_folders=True)
 
         v_logger.success("Deleting files after combining in "
-                         f"'{res_folder_name}'!", LogMode.VERBOSELY)
+                         f"'{toxicity_config["results_folder_name"]}'!", LogMode.VERBOSELY)
 
     v_logger.success(f"{'-' * 21} PubChem downloading for DrugDesign {'-' * 20}")
     v_logger.info(f"{'-' * 77}")

@@ -6,7 +6,7 @@ import sys
 import traceback
 from typing import Any, Callable, TextIO
 
-from Configurations.config import Config, GetConfig
+from Configurations.config import config
 
 import loguru
 Logger = loguru._logger.Logger  # type: ignore
@@ -67,31 +67,23 @@ class VerboseLogger:
         self.__standard_output = standard_output
 
     @classmethod
-    def FromConfig(cls,
-                   config: Config):
+    def FromConfig(cls):
         """
         Создает экземпляр VerboseLogger на основе конфигурации.
-
-        Args:
-            config (Config): словарь конфигурации.
 
         Returns:
             VerboseLogger: экземпляр класса.
         """
 
-        log_mode: LogMode = LogMode.RETICENTLY
-        if config["verbose_print"]:
-            log_mode = LogMode.VERBOSELY
-
-        standard_output: TextIO | Any = sys.stdout
-        if config["output_to_exceptions_file"]:
-            standard_output = config["exceptions_file"]
+        v_logger_config = config["Utils"]["VerboseLogger"]
 
         return cls(loguru.logger,
-                   log_mode,
-                   config["message_ljust"],
-                   config["exceptions_file"],
-                   standard_output)
+                   LogMode.VERBOSELY if v_logger_config["verbose_print"]
+                   else LogMode.RETICENTLY,
+                   v_logger_config["message_ljust"],
+                   v_logger_config["exceptions_file"],
+                   v_logger_config["exceptions_file"] if v_logger_config["output_to_exceptions_file"]
+                   else sys.stdout)
 
     def UpdateFormat(self,
                      logger_label: str,
@@ -171,8 +163,6 @@ class VerboseLogger:
                 "VerboseLogger: logger format is not set. Call 'logger.UpdateFormat' first.")
 
         self.__logger.error(f"{exception}")
-
-        os.makedirs(os.path.dirname(self.__exceptions_file), exist_ok=True)
 
         try:
             self.__Configure(self.__exceptions_file)
@@ -272,4 +262,4 @@ class VerboseLogger:
 
 
 # MARK: v_logger
-v_logger = VerboseLogger.FromConfig(GetConfig()["Utils"]["VerboseLogger"])  # type: ignore
+v_logger = VerboseLogger.FromConfig()

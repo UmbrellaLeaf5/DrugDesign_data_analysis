@@ -5,18 +5,15 @@ from Utils.files_funcs import CombineCSVInFolder, DeleteFilesInFolder, \
     IsFileInFolder, os
 from Utils.verbose_logger import v_logger, LogMode
 
-from Configurations.config import Config
+from Configurations.config import config, Config
 
 
 @IgnoreWarnings
 @ReTry(attempts_amount=1)
-def DownloadChEMBLCompounds(config: Config):
+def DownloadChEMBLCompounds():
     """
     Скачивает информацию о соединениях из базы данных ChEMBL
     на основе конфигурации (`config.json`).
-
-    Args:
-        config (Config): словарь, содержащий параметры конфигурации для процесса скачивания.
     """
 
     compounds_config: Config = config["ChEMBL_download_compounds"]
@@ -58,8 +55,7 @@ def DownloadChEMBLCompounds(config: Config):
 
     if compounds_config["need_combining"]:
         CombineCSVInFolder(compounds_config["results_folder_name"],
-                           compounds_config["combined_file_name"],
-                           config)
+                           compounds_config["combined_file_name"])
 
     if compounds_config["delete_after_combining"] and compounds_config["need_combining"]:
         v_logger.info(

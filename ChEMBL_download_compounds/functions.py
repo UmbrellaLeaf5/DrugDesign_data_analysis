@@ -274,9 +274,6 @@ def SaveChEMBLMolfilesToSDFByIdList(molecule_chembl_id_list: list[str],
 
         data = data.drop(["molecule_structures"], axis=1)
 
-        # data.to_csv("temp.csv")
-        # raise KeyboardInterrupt
-
         return data
 
     v_logger.info("Collecting molfiles to pandas.DataFrame...",

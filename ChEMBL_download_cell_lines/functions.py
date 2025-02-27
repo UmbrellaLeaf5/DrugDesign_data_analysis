@@ -11,7 +11,7 @@ from Utils.decorators import ReTry
 from Utils.files_funcs import IsFolderEmpty, os, pd
 from Utils.verbose_logger import v_logger, LogMode
 
-from Configurations.config import Config
+from Configurations.config import config, Config
 
 
 @ReTry()
@@ -68,8 +68,7 @@ def GetRawCellLinesData(file_id: str,
 
 
 @ReTry(attempts_amount=1)
-def AddedIC50andGI50ToCellLinesDF(data: pd.DataFrame,
-                                  config: Config
+def AddedIC50andGI50ToCellLinesDF(data: pd.DataFrame
                                   ) -> pd.DataFrame:
     """
     Добавляет столбцы `IC50` и `GI50` в DataFrame с данными о клеточных линиях, подсчитывая
@@ -78,7 +77,6 @@ def AddedIC50andGI50ToCellLinesDF(data: pd.DataFrame,
 
     Args:
         data (pd.DataFrame): DataFrame с данными о клеточных линиях.
-        config (Config): словарь, содержащий параметры конфигурации для процесса скачивания.
 
     Returns:
         pd.DataFrame: DataFrame с добавленными столбцами `IC50` и `GI50`,
@@ -115,7 +113,7 @@ def AddedIC50andGI50ToCellLinesDF(data: pd.DataFrame,
                      LogMode.VERBOSELY)
 
     if cell_lines_config["download_activities"]:
-        GetCellLineChEMBLActivitiesFromCSV(data, config)
+        GetCellLineChEMBLActivitiesFromCSV(data)
 
         try:
             data["IC50_new"] = data["IC50_new"].astype(int)
@@ -129,14 +127,11 @@ def AddedIC50andGI50ToCellLinesDF(data: pd.DataFrame,
     return data
 
 
-def DownloadCellLinesFromIdList(config: Config):
+def DownloadCellLinesFromIdList():
     """
     Скачивает данные о клеточных линиях из ChEMBL по списку идентификаторов,
     добавляет информацию об активностях IC50 и GI50, проводит первичный анализ
     и сохраняет результаты в CSV-файл.
-
-    Args:
-        config (Config): словарь, содержащий параметры конфигурации для процесса скачивания.
     """
 
     cell_lines_config: Config = config["ChEMBL_download_cell_lines"]
@@ -155,8 +150,7 @@ def DownloadCellLinesFromIdList(config: Config):
                   LogMode.VERBOSELY)
 
     data_frame = AddedIC50andGI50ToCellLinesDF(
-        pd.DataFrame(cell_lines_with_ids),  # type: ignore
-        config)
+        pd.DataFrame(cell_lines_with_ids))  # type: ignore
 
     v_logger.UpdateFormat(cell_lines_config["logger_label"],
                           cell_lines_config["logger_color"])

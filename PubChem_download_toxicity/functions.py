@@ -1,6 +1,9 @@
+from icecream import ic
+
 from io import StringIO
 import json
 import numpy as np
+import re
 import requests
 import urllib.parse
 
@@ -9,7 +12,9 @@ from Utils.decorators import ReTry, time
 from Utils.files_funcs import os, pd, SaveMolfilesToSDF
 from Utils.verbose_logger import v_logger, LogMode
 
-from Configurations.config import Config
+from Configurations.config import config, Config
+
+ic.disable()
 
 
 @ReTry()
@@ -112,8 +117,7 @@ def GetLinkFromSid(sid: int,
 
 @ReTry(attempts_amount=1)
 def DownloadCompoundToxicity(compound_data: dict,
-                             page_folder_name: str,
-                             config: Config):
+                             page_folder_name: str):
     """
     Скачивает данные о токсичности соединения по информации из JSON PubChem
     и сохраняет их в CSV-файл.
@@ -121,7 +125,6 @@ def DownloadCompoundToxicity(compound_data: dict,
     Args:
         compound_data (dict): словарь с информацией о соединении из JSON PubChem.
         page_folder_name (str): путь к директории, в которой будет сохранен файл.
-        config (Config): словарь, содержащий параметры конфигурации для процесса скачивания.
     """
 
     toxicity_config: Config = config["PubChem_download_toxicity"]
@@ -135,7 +138,7 @@ def DownloadCompoundToxicity(compound_data: dict,
     except KeyError:
         v_logger.warning(
             f"No 'cid' for 'sid': {compound_data["LinkedRecords"]["SID"][0]}, skip.")
-        v_logger.info(f"{"-" * 77}", LogMode.VERBOSELY)
+        v_logger.warning(f"{"-" * 77}", LogMode.VERBOSELY)
 
         return
         # не сохраняем те соединения, у которых нет cid,
@@ -171,6 +174,7 @@ def DownloadCompoundToxicity(compound_data: dict,
     if os.path.exists(f"{compound_file_name}.csv") and config["skip_downloaded"]:
         v_logger.info(f"{compound_name} is already downloaded, skip.",
                       LogMode.VERBOSELY)
+        v_logger.warning(f"{"-" * 77}", LogMode.VERBOSELY)
 
         return
 
@@ -255,18 +259,116 @@ def DownloadCompoundToxicity(compound_data: dict,
     v_logger.info("Filtering 'organism' and 'route'...", LogMode.VERBOSELY)
 
     acute_effects = acute_effects[acute_effects["organism"].isin(
-        filtering_config["organism"])]
+        filtering_config["kg"]["organism"])]
     acute_effects = acute_effects[acute_effects["route"].isin(
-        filtering_config["route"])]
+        filtering_config["kg"]["route"])]
 
     v_logger.success("Filtering 'organism' and 'route'!", LogMode.VERBOSELY)
+
+    if acute_effects.empty:
+        v_logger.warning(f"{compound_name} is empty, no need saving, skip.",
+                         LogMode.VERBOSELY)
+        v_logger.warning(f"{"-" * 77}", LogMode.VERBOSELY)
+
+        return
+
     v_logger.info("Filtering 'dose'...", LogMode.VERBOSELY)
 
-    acute_effects = acute_effects[acute_effects["dose"].astype(
-        str).str.lower().str.endswith(filtering_config["dose"])]
+    def ExtractDoseAndTime(df: pd.DataFrame, valid_units: list[str]) -> pd.DataFrame:
+        """
+        Преобразует DataFrame с данными о дозировках, извлекая числовое значение, 
+        единицу измерения и период времени.
 
-    acute_effects["dose"] = acute_effects["dose"].astype(
-        str).str.extract(r"(\d+(?:\.\d+)?)", expand=False)
+        Args:
+            df (pd.DataFrame): таблица с колонкой "dose", содержащей информацию о дозировках.
+            valid_values (list[str]): список допустимых единиц измерения дозы.
+
+        Returns:
+            DataFrame с тремя новыми колонками: "numeric_dose", "dose_value", "time_period".
+        """
+
+        def ExtractDose(dose_str: str) -> tuple[float | None, str | None, str | None]:
+            """
+            Извлекает числовое значение, единицы измерения и период времени из строки дозы.
+
+            Args:
+                dose_str (str): информация о дозе.
+
+            Returns:
+                tuple[float | None, str | None, str | None]: 
+                числовое значение дозы, единицы измерения дозы, периода времени.
+            """
+
+            num_dose = None
+            dose_unit = None
+            time_per = None
+
+            # попытка извлечь числовое значение и единицу измерения (например, "10 mg/kg")
+            re_match = re.search(r"([0-9.]+)\s*([a-zA-Z]+(?:/[a-zA-Z]+)?)", dose_str)
+            if re_match:
+                try:
+                    num_dose = float(re_match.group(1))
+                    dose_unit = re_match.group(2)
+
+                except ValueError:
+                    pass  # оставляем None, если не удалось преобразовать в число
+
+                if dose_unit in valid_units:
+                    # попытка извлечь период времени (например, "10 mg/kg/day")
+                    time_match = re.search(
+                        r"([0-9.]+)\s*([a-zA-Z]+(?:/[a-zA-Z]+)?)(?:/([0-9]+[a-zA-Z]+(?:-[IV]+)?))?", dose_str)
+                    if time_match and time_match.group(3):
+                        time_per = time_match.group(3)
+
+                else:
+                    # если единица измерения недопустима, сбрасываем значения
+                    num_dose = None
+                    dose_unit = None
+
+            # перевод известных единиц к "mg/kg"
+            if num_dose is not None and dose_unit is not None:
+                match dose_unit:
+                    case "gm/kg":
+                        num_dose *= 1000
+
+                    case "ng/kg":
+                        num_dose *= 0.000001
+                    case "ug/kg":
+                        num_dose *= 0.001
+
+                    case "mL/kg":
+                        num_dose *= 1000
+                    case "nL/kg":
+                        num_dose *= 0.001
+                        # num_dose *= (1000 * 0.000001)
+                    case "uL/kg":
+                        pass
+                        # num_dose *= (1000 * 0.001)
+
+                dose_unit = "mg/kg"
+
+            return num_dose, dose_unit, time_per
+
+        df[["numeric_dose", "dose_units", "time_period"]] = df["dose"].apply(
+            lambda x: pd.Series(ExtractDose(x)))
+        df = df.drop(columns=["dose"]).rename(columns={"numeric_dose": "dose"})
+        df = df.dropna(subset=['dose', 'dose_units'])
+
+        return df
+
+    ic(acute_effects)
+
+    acute_effects = ExtractDoseAndTime(acute_effects, ["gm/kg",
+
+                                                       "mg/kg",
+                                                       "ug/kg",
+                                                       "ng/kg",
+
+                                                       "mL/kg",
+                                                       "uL/kg"
+                                                       "nL/kg"])
+
+    ic(acute_effects)
 
     acute_effects["dose"] = pd.to_numeric(acute_effects["dose"], errors="coerce")
 
@@ -280,51 +382,52 @@ def DownloadCompoundToxicity(compound_data: dict,
 
         v_logger.success("Adding 'pLD50'!", LogMode.VERBOSELY)
 
-    if not acute_effects.empty:
-        v_logger.info(f"Saving {compound_name} to .csv...", LogMode.VERBOSELY)
-
-        acute_effects = acute_effects.replace('', np.nan)
-        acute_effects = acute_effects.dropna(axis=1, how='all')
-
-        acute_effects.to_csv(f"{compound_file_name}.csv", sep=";",
-                             index=False, mode="w")
-
-        v_logger.success(f"Saving {compound_name} to .csv!", LogMode.VERBOSELY)
-
-        def SaveMolfileWithToxicityToSDF():
-            listed_df = pd.DataFrame()
-            for column_name in acute_effects.columns:
-                full_column_data = acute_effects[column_name].tolist()
-
-                listed_df[column_name] = [full_column_data]
-                # в том случае если уникальный элемент только 1
-                if len(DedupedList(full_column_data)) == 1:
-                    listed_df.loc[0, column_name] = full_column_data[0]
-
-            molfile: str = GetResponse(
-                f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/CID/{cid}/record/SDF?record_type=2d",
-                True,
-                None).text
-
-            molfile = molfile[molfile.find("\n"):].replace("$$$$", "").rstrip()
-
-            SaveMolfilesToSDF(data=pd.DataFrame({"cid": [cid],
-                                                 "molfile": [molfile]}),
-                              file_name=(f"{toxicity_config["molfiles_folder_name"]}/"
-                                         f"{compound_name}"),
-                              molecule_id_column_name="cid",
-                              extra_data=listed_df,
-                              indexing_lists=True)
-
-        if toxicity_config["download_compounds_sdf"]:
-            os.makedirs(toxicity_config["molfiles_folder_name"], exist_ok=True)
-
-            SaveMolfileWithToxicityToSDF()
-
-        v_logger.success(f"Downloading {compound_name}!", LogMode.VERBOSELY)
-
-    else:
+    if acute_effects.empty:
         v_logger.info(f"{compound_name} is empty, no need saving, skip.",
                       LogMode.VERBOSELY)
+        v_logger.warning(f"{"-" * 77}", LogMode.VERBOSELY)
 
+        return
+
+    v_logger.info(f"Saving {compound_name} to .csv...", LogMode.VERBOSELY)
+
+    acute_effects = acute_effects.replace('', np.nan)
+    acute_effects = acute_effects.dropna(axis=1, how='all')
+
+    acute_effects.to_csv(f"{compound_file_name}.csv", sep=";",
+                         index=False, mode="w")
+
+    v_logger.success(f"Saving {compound_name} to .csv!", LogMode.VERBOSELY)
+
+    def SaveMolfileWithToxicityToSDF():
+        listed_df = pd.DataFrame()
+        for column_name in acute_effects.columns:
+            full_column_data = acute_effects[column_name].tolist()
+
+            listed_df[column_name] = [full_column_data]
+            # в том случае если уникальный элемент только 1
+            if len(DedupedList(full_column_data)) == 1:
+                listed_df.loc[0, column_name] = full_column_data[0]
+
+        molfile: str = GetResponse(
+            f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/CID/{cid}/record/SDF?record_type=2d",
+            True,
+            None).text
+
+        molfile = molfile[molfile.find("\n"):].replace("$$$$", "").rstrip()
+
+        SaveMolfilesToSDF(data=pd.DataFrame({"cid": [cid],
+                                             "molfile": [molfile]}),
+                          file_name=(f"{toxicity_config["molfiles_folder_name"]}/"
+                                     f"{compound_name}"),
+                          molecule_id_column_name="cid",
+                          extra_data=listed_df,
+                          indexing_lists=True)
+
+    if toxicity_config["download_compounds_sdf"]:
+        os.makedirs(toxicity_config["molfiles_folder_name"], exist_ok=True)
+
+        SaveMolfileWithToxicityToSDF()
+
+    v_logger.success(f"Downloading {compound_name}!", LogMode.VERBOSELY)
     v_logger.info(f"{"-" * 77}", LogMode.VERBOSELY)
