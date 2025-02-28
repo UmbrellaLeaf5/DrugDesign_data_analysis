@@ -1,5 +1,3 @@
-from icecream import ic
-
 from io import StringIO
 import json
 import numpy as np
@@ -13,8 +11,6 @@ from Utils.files_funcs import os, pd, SaveMolfilesToSDF
 from Utils.verbose_logger import v_logger, LogMode
 
 from Configurations.config import config, Config
-
-ic.disable()
 
 
 @ReTry()
@@ -169,9 +165,12 @@ def DownloadCompoundToxicity(compound_data: dict,
                          f"and 'sid' ({sid}).")
 
     compound_name: str = f"compound_{sid}_toxicity"
-    compound_file_name = f"{page_folder_name}/{compound_name}"
+    compound_file_kg = f"{page_folder_name.format(unit_type="kg")}/{compound_name}"
+    compound_file_m3 = f"{page_folder_name.format(unit_type="kg")}/{compound_name}"
 
-    if os.path.exists(f"{compound_file_name}.csv") and config["skip_downloaded"]:
+    if os.path.exists(f"{compound_file_kg}.csv") or\
+       os.path.exists(f"{compound_file_m3}.csv") and\
+       config["skip_downloaded"]:
         v_logger.info(f"{compound_name} is already downloaded, skip.",
                       LogMode.VERBOSELY)
         v_logger.warning(f"{"-" * 77}", LogMode.VERBOSELY)
@@ -244,37 +243,9 @@ def DownloadCompoundToxicity(compound_data: dict,
 
         return df
 
-    v_logger.info("Adding 'mw'...", LogMode.VERBOSELY)
-
-    acute_effects = CalcMolecularWeight(acute_effects, "cid")
-
-    try:
-        acute_effects["mw"] = pd.to_numeric(acute_effects["mw"], errors="coerce")
-
-        v_logger.success("Adding 'mw'!", LogMode.VERBOSELY)
-
-    except KeyError:
-        v_logger.warning(f"No 'mw' for {compound_name}.")
-
-    v_logger.info("Filtering 'organism' and 'route'...", LogMode.VERBOSELY)
-
-    acute_effects = acute_effects[acute_effects["organism"].isin(
-        filtering_config["kg"]["organism"])]
-    acute_effects = acute_effects[acute_effects["route"].isin(
-        filtering_config["kg"]["route"])]
-
-    v_logger.success("Filtering 'organism' and 'route'!", LogMode.VERBOSELY)
-
-    if acute_effects.empty:
-        v_logger.warning(f"{compound_name} is empty, no need saving, skip.",
-                         LogMode.VERBOSELY)
-        v_logger.warning(f"{"-" * 77}", LogMode.VERBOSELY)
-
-        return
-
-    v_logger.info("Filtering 'dose'...", LogMode.VERBOSELY)
-
-    def ExtractDoseAndTime(df: pd.DataFrame, valid_units: list[str]) -> pd.DataFrame:
+    def ExtractDoseAndTime(df: pd.DataFrame,
+                           valid_units: list[str]
+                           ) -> pd.DataFrame:
         """
         Преобразует DataFrame с данными о дозировках, извлекая числовое значение, 
         единицу измерения и период времени.
@@ -325,27 +296,36 @@ def DownloadCompoundToxicity(compound_data: dict,
                     num_dose = None
                     dose_unit = None
 
-            # перевод известных единиц к "mg/kg"
-            if num_dose is not None and dose_unit is not None:
-                match dose_unit:
-                    case "gm/kg":
-                        num_dose *= 1000
+            if num_dose is None or dose_unit is None:
+                return None, None, None
 
-                    case "ng/kg":
-                        num_dose *= 0.000001
-                    case "ug/kg":
-                        num_dose *= 0.001
+            unit_prefix, unit_suffix = dose_unit.split("/")
+            if unit_suffix not in ("kg", "m3"):
+                v_logger.warning(f"Unsupported dose_unit: {dose_unit}", LogMode.VERBOSELY)
+                return None, None, None
 
-                    case "mL/kg":
-                        num_dose *= 1000
-                    case "nL/kg":
-                        num_dose *= 0.001
-                        # num_dose *= (1000 * 0.000001)
-                    case "uL/kg":
-                        pass
-                        # num_dose *= (1000 * 0.001)
+            conversions = {
+                "mg": 1,
+                "gm": 1000,
+                "g": 1000,
+                "ng": 0.000001,
+                "ug": 0.001,
 
-                dose_unit = "mg/kg"
+                "mL": 1000,
+                "ml": 1000,
+                "nL": 0.001,  # 1000 * 0.000001
+                "nl": 0.001,  # 1000 * 0.000001
+                "uL": 1,      # 1000 * 0.001
+                "ul": 1,      # 1000 * 0.001
+            }
+
+            # перевод известных единиц к "mg/kg" и "mg/m3"
+            if unit_prefix in conversions:
+                num_dose *= conversions[unit_prefix]
+                dose_unit = "mg/" + unit_suffix
+            else:
+                v_logger.warning(f"Unsupported dose_unit: {dose_unit}", LogMode.VERBOSELY)
+                return None, None, None
 
             return num_dose, dose_unit, time_per
 
@@ -356,53 +336,10 @@ def DownloadCompoundToxicity(compound_data: dict,
 
         return df
 
-    ic(acute_effects)
-
-    acute_effects = ExtractDoseAndTime(acute_effects, ["gm/kg",
-
-                                                       "mg/kg",
-                                                       "ug/kg",
-                                                       "ng/kg",
-
-                                                       "mL/kg",
-                                                       "uL/kg"
-                                                       "nL/kg"])
-
-    ic(acute_effects)
-
-    acute_effects["dose"] = pd.to_numeric(acute_effects["dose"], errors="coerce")
-
-    v_logger.success("Filtering 'dose'!", LogMode.VERBOSELY)
-
-    if "mw" in acute_effects.columns:
-        v_logger.info("Adding 'pLD50'...", LogMode.VERBOSELY)
-
-        acute_effects["pLD50"] = -np.log10(
-            (acute_effects["dose"] / acute_effects["mw"]) / 1000000)
-
-        v_logger.success("Adding 'pLD50'!", LogMode.VERBOSELY)
-
-    if acute_effects.empty:
-        v_logger.info(f"{compound_name} is empty, no need saving, skip.",
-                      LogMode.VERBOSELY)
-        v_logger.warning(f"{"-" * 77}", LogMode.VERBOSELY)
-
-        return
-
-    v_logger.info(f"Saving {compound_name} to .csv...", LogMode.VERBOSELY)
-
-    acute_effects = acute_effects.replace('', np.nan)
-    acute_effects = acute_effects.dropna(axis=1, how='all')
-
-    acute_effects.to_csv(f"{compound_file_name}.csv", sep=";",
-                         index=False, mode="w")
-
-    v_logger.success(f"Saving {compound_name} to .csv!", LogMode.VERBOSELY)
-
-    def SaveMolfileWithToxicityToSDF():
+    def SaveMolfileWithToxicityToSDF(df: pd.DataFrame, unit_type: str):
         listed_df = pd.DataFrame()
-        for column_name in acute_effects.columns:
-            full_column_data = acute_effects[column_name].tolist()
+        for column_name in df.columns:
+            full_column_data = df[column_name].tolist()
 
             listed_df[column_name] = [full_column_data]
             # в том случае если уникальный элемент только 1
@@ -419,15 +356,128 @@ def DownloadCompoundToxicity(compound_data: dict,
         SaveMolfilesToSDF(data=pd.DataFrame({"cid": [cid],
                                              "molfile": [molfile]}),
                           file_name=(f"{toxicity_config["molfiles_folder_name"]}/"
-                                     f"{compound_name}"),
+                                     f"{compound_name}_{unit_type}"),
                           molecule_id_column_name="cid",
                           extra_data=listed_df,
                           indexing_lists=True)
 
-    if toxicity_config["download_compounds_sdf"]:
-        os.makedirs(toxicity_config["molfiles_folder_name"], exist_ok=True)
+    v_logger.info("Adding 'mw'...", LogMode.VERBOSELY)
 
-        SaveMolfileWithToxicityToSDF()
+    acute_effects = CalcMolecularWeight(acute_effects, "cid")
+
+    try:
+        acute_effects["mw"] = pd.to_numeric(acute_effects["mw"], errors="coerce")
+
+        v_logger.success("Adding 'mw'!", LogMode.VERBOSELY)
+
+    except KeyError:
+        v_logger.warning(f"No 'mw' for {compound_name}.")
+
+    v_logger.info("Filtering 'organism' and 'route'...", LogMode.VERBOSELY)
+
+    acute_effects_kg = acute_effects[acute_effects["organism"].isin(
+        filtering_config["kg"]["organism"])]
+    acute_effects_kg = acute_effects_kg[acute_effects_kg["route"].isin(
+        filtering_config["kg"]["route"])]
+
+    acute_effects_m3 = acute_effects[acute_effects["organism"].isin(
+        filtering_config["m3"]["organism"])]
+    acute_effects_m3 = acute_effects_m3[acute_effects_m3["route"].isin(
+        filtering_config["m3"]["route"])]
+
+    v_logger.success("Filtering 'organism' and 'route'!", LogMode.VERBOSELY)
+
+    v_logger.info("Filtering 'dose'...", LogMode.VERBOSELY)
+
+    if not acute_effects_kg.empty:
+        acute_effects_kg = ExtractDoseAndTime(acute_effects_kg, ["gm/kg",
+                                                                 "g/kg",
+
+                                                                 "mg/kg",
+                                                                 "ug/kg",
+                                                                 "ng/kg",
+
+                                                                 "mL/kg",
+                                                                 "uL/kg",
+                                                                 "nL/kg"])
+
+        acute_effects_kg["dose"] = pd.to_numeric(acute_effects_kg["dose"], errors="coerce")
+
+    if not acute_effects_m3.empty:
+        acute_effects_m3 = ExtractDoseAndTime(acute_effects_m3, ["gm/m3",
+                                                                 "g/m3",
+
+                                                                 "mg/m3",
+                                                                 "ug/m3",
+                                                                 "ng/m3",
+
+                                                                 "mL/m3",
+                                                                 "uL/m3",
+                                                                 "nL/m3"])
+
+        acute_effects_m3["dose"] = pd.to_numeric(acute_effects_m3["dose"], errors="coerce")
+
+    v_logger.success("Filtering 'dose'!", LogMode.VERBOSELY)
+
+    if "mw" in acute_effects_kg.columns:
+        v_logger.info("Adding 'pLD50' to kg...", LogMode.VERBOSELY)
+
+        if not acute_effects_kg.empty:
+            acute_effects_kg["pLD50"] = -np.log10(
+                (acute_effects_kg["dose"] / acute_effects_kg["mw"]) / 1000000)
+
+        v_logger.success("Adding 'pLD50' to kg!", LogMode.VERBOSELY)
+
+    if "mw" in acute_effects_m3.columns:
+        v_logger.info("Adding 'pLD50' to m3...", LogMode.VERBOSELY)
+
+        if not acute_effects_m3.empty:
+            acute_effects_m3["pLD50"] = -np.log10(
+                (acute_effects_m3["dose"] / acute_effects_m3["mw"]) / 1000000)
+
+        v_logger.success("Adding 'pLD50' to m3!", LogMode.VERBOSELY)
+
+    if acute_effects_kg.empty:
+        v_logger.warning(f"{compound_name}_kg is empty, no need saving.",
+                         LogMode.VERBOSELY)
+
+    if acute_effects_m3.empty:
+        v_logger.warning(f"{compound_name}_m3 is empty, no need saving.",
+                         LogMode.VERBOSELY)
+
+    v_logger.info(f"Saving {compound_name} to .csv...", LogMode.VERBOSELY)
+
+    if not acute_effects_kg.empty:
+        acute_effects_kg = acute_effects_kg.replace('', np.nan)
+        acute_effects_kg = acute_effects_kg.dropna(axis=1, how='all')
+
+        acute_effects_kg.to_csv(f"{compound_file_kg}.csv",
+                                sep=";",
+                                index=False,
+                                mode="w")
+
+    if not acute_effects_m3.empty:
+        acute_effects_m3 = acute_effects_m3.replace('', np.nan)
+        acute_effects_m3 = acute_effects_m3.dropna(axis=1, how='all')
+
+        acute_effects_m3.to_csv(f"{compound_file_m3}.csv",
+                                sep=";",
+                                index=False,
+                                mode="w")
+
+    v_logger.success(f"Saving {compound_name} to .csv!", LogMode.VERBOSELY)
+
+    if toxicity_config["download_compounds_sdf"]:
+        if not acute_effects_kg.empty:
+            os.makedirs(toxicity_config["molfiles_folder_name"], exist_ok=True)
+
+            SaveMolfileWithToxicityToSDF(acute_effects_kg, "kg")
+
+    if toxicity_config["download_compounds_sdf"]:
+        if not acute_effects_m3.empty:
+            os.makedirs(toxicity_config["molfiles_folder_name"], exist_ok=True)
+
+            SaveMolfileWithToxicityToSDF(acute_effects_m3, "m3")
 
     v_logger.success(f"Downloading {compound_name}!", LogMode.VERBOSELY)
     v_logger.info(f"{"-" * 77}", LogMode.VERBOSELY)

@@ -15,6 +15,8 @@ def DownloadPubChemCompoundsToxicity():
     """
 
     toxicity_config: Config = config["PubChem_download_toxicity"]
+    results_folder_kg: str = f"{toxicity_config["results_folder_name"]}/kg"
+    results_folder_m3: str = f"{toxicity_config["results_folder_name"]}/m3"
 
     if config["testing_flag"]:
         toxicity_config["start_page"] = 1
@@ -29,9 +31,11 @@ def DownloadPubChemCompoundsToxicity():
                       toxicity_config["end_page"] + 1):
         v_logger.info(f"Downloading page_{page}...")
 
-        page_folder_name = f"{toxicity_config["results_folder_name"]}/page_{page}"
+        page_folder_name = f"{toxicity_config["results_folder_name"]}/""{unit_type}"\
+            f"/page_{page}"
 
-        os.makedirs(page_folder_name, exist_ok=True)
+        os.makedirs(page_folder_name.format(unit_type="kg"), exist_ok=True)
+        os.makedirs(page_folder_name.format(unit_type="m3"), exist_ok=True)
 
         compound_link =\
             "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/annotations/heading/JSON"\
@@ -73,11 +77,16 @@ def DownloadPubChemCompoundsToxicity():
 
                 v_logger.info(f"Quarter: {quarter}%, combining files in page_{page} folder...")
 
-                CombineCSVInFolder(page_folder_name,
+                CombineCSVInFolder(page_folder_name.format(unit_type="kg"),
                                    f"{toxicity_config["results_file_name"]}_{quarters[i]}"
                                    f"_page_{page}")
 
-                v_logger.success(f"Quarter: {quarter}%, combining files in page_{page} folder!")
+                CombineCSVInFolder(page_folder_name.format(unit_type="m3"),
+                                   f"{toxicity_config["results_file_name"]}_{quarters[i]}"
+                                   f"_page_{page}")
+
+                v_logger.success(f"Quarter: {quarter}%, "
+                                 f"combining files in page_{page} folder!")
 
                 # перемещаем, чтобы не конкатенировать его с остальными
                 v_logger.info(f"Moving {toxicity_config["results_file_name"]}_"
@@ -85,13 +94,18 @@ def DownloadPubChemCompoundsToxicity():
                               f"{toxicity_config["results_folder_name"]}...",
                               LogMode.VERBOSELY)
 
-                MoveFileToFolder(f"{toxicity_config["results_file_name"]}_"
-                                 f"{quarters[i]}_page_{page}.csv",
-                                 page_folder_name,
-                                 toxicity_config["results_folder_name"])
+                quarter_file_name = f"{toxicity_config["results_file_name"]}_"\
+                    f"{quarters[i]}_page_{page}.csv"
 
-                v_logger.success(f"Moving {toxicity_config["results_file_name"]}"
-                                 f"_{quarters[i]}_page_{page}.csv to "
+                MoveFileToFolder(quarter_file_name,
+                                 page_folder_name.format(unit_type="kg"),
+                                 results_folder_kg)
+
+                MoveFileToFolder(quarter_file_name,
+                                 page_folder_name.format(unit_type="m3"),
+                                 results_folder_m3)
+
+                v_logger.success(f"Moving {quarter_file_name} to "
                                  f"{toxicity_config["results_folder_name"]}!",
                                  LogMode.VERBOSELY)
 
@@ -105,33 +119,53 @@ def DownloadPubChemCompoundsToxicity():
                     v_logger.info("Deleting old quarter file...",
                                   LogMode.VERBOSELY)
 
-                    os.remove(os.path.join(
-                        toxicity_config["results_folder_name"],
-                        f"{old_quarter_file_name}.csv"))
+                    if os.path.exists(os.path.join(results_folder_kg,
+                                                   f"{old_quarter_file_name}.csv")):
+                        os.remove(os.path.join(
+                            results_folder_kg,
+                            f"{old_quarter_file_name}.csv"))
+
+                    if os.path.exists(os.path.join(results_folder_m3,
+                                                   f"{old_quarter_file_name}.csv")):
+                        os.remove(os.path.join(
+                            results_folder_m3,
+                            f"{old_quarter_file_name}.csv"))
 
                     v_logger.success("Deleting old quarter file!",
                                      LogMode.VERBOSELY)
 
     if toxicity_config["need_combining"]:
-        CombineCSVInFolder(toxicity_config["results_folder_name"],
-                           toxicity_config["combined_file_name"])
+        CombineCSVInFolder(results_folder_kg,
+                           f"{toxicity_config["combined_file_name"]}_kg")
+
+        MoveFileToFolder(f"{toxicity_config["combined_file_name"]}_kg.csv",
+                         results_folder_kg,
+                         toxicity_config["results_folder_name"])
+
+        CombineCSVInFolder(results_folder_m3,
+                           f"{toxicity_config["combined_file_name"]}_m3")
+
+        MoveFileToFolder(f"{toxicity_config["combined_file_name"]}_m3.csv",
+                         results_folder_m3,
+                         toxicity_config["results_folder_name"])
 
     if toxicity_config["delete_after_combining"] and toxicity_config["need_combining"]:
         v_logger.info("Deleting files after combining in "
                       f"'{toxicity_config["results_folder_name"]}'...",
                       LogMode.VERBOSELY)
 
-        except_folders: list[str] = [f"{toxicity_config["combined_file_name"]}.csv"]
+        except_items: list[str] = [f"{toxicity_config["combined_file_name"]}_kg.csv",
+                                   f"{toxicity_config["combined_file_name"]}_m3.csv"]
         molfiles_folder_name: str = toxicity_config["molfiles_folder_name"]
 
         # в том случае, если molfiles_folder_name находится внутри results_folder_name
         # (т.е. путь к molfiles_folder_name содержит путь к results_folder_name)
         if toxicity_config["results_folder_name"] in molfiles_folder_name:
-            except_folders.append(molfiles_folder_name.replace(
+            except_items.append(molfiles_folder_name.replace(
                 toxicity_config["results_folder_name"], "").split("/")[1])
 
         DeleteFilesInFolder(toxicity_config["results_folder_name"],
-                            except_folders,
+                            except_items,
                             delete_folders=True)
 
         v_logger.success("Deleting files after combining in "

@@ -10,15 +10,15 @@ from Configurations.config import config, Config
 
 
 def DeleteFilesInFolder(folder_name: str,
-                        except_files: list[str] = [],
+                        except_items: list[str] = [],
                         delete_folders: bool = False):
     """
     Удаляет все файлы в указанной папке, кроме файлов в списке исключений.
 
     Args:
       folder_name (str): путь к папке.
-      except_files (list[str], optional): список имен файлов, 
-                                          которые нужно исключить из удаления. 
+      except_items (list[str], optional): список имен (файлов или папок),
+                                          которые нужно исключить из удаления.
                                           Defaults to [].
       delete_folders (bool, optional): удалять ли вложенные папки. Defaults to False.
     """
@@ -26,7 +26,7 @@ def DeleteFilesInFolder(folder_name: str,
     for item in os.listdir(folder_name):
         item_path: str = os.path.join(folder_name, item)
 
-        if item not in except_files:
+        if item not in except_items:
             if os.path.isfile(item_path):
                 os.remove(item_path)
 
@@ -82,12 +82,16 @@ def MoveFileToFolder(file_name: str,
     os.makedirs(folder_name, exist_ok=True)
 
     full_file_name = os.path.join(curr_folder_name, file_name)
+    next_file_name = os.path.join(folder_name, file_name)
 
     # если такой уже существует
-    if os.path.exists(os.path.join(folder_name, file_name)):
-        os.remove(os.path.join(folder_name, file_name))
+    if os.path.exists(next_file_name):
+        os.remove(next_file_name)
 
-    shutil.move(full_file_name, folder_name)
+    if os.path.exists(full_file_name):
+        shutil.move(full_file_name, folder_name)
+    else:
+        v_logger.warning(f"{full_file_name} does not exist!", LogMode.VERBOSELY)
 
 
 def CombineCSVInFolder(folder_name: str,
@@ -111,13 +115,19 @@ def CombineCSVInFolder(folder_name: str,
     if IsFileInFolder(folder_name, f"{combined_file_name}.csv") and\
             config["skip_downloaded"]:
         v_logger.info(
-            f"File '{combined_file_name}' is in folder, no need to combine.",
+            f"File '{combined_file_name}.csv' is in folder, no need to combine.",
             LogMode.VERBOSELY)
 
         v_logger.RestoreFormat(restore_index)
         return
 
     combined_df = pd.DataFrame()
+
+    if len(os.listdir(folder_name)) == 0:
+        v_logger.info(f"{folder_name} is empty, no need to combine.")
+
+        v_logger.RestoreFormat(restore_index)
+        return
 
     for file_name in os.listdir(folder_name):
         if file_name.endswith('.csv') and file_name != f"{combined_file_name}.csv":
