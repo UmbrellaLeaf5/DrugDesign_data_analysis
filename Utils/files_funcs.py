@@ -60,6 +60,7 @@ def IsFolderEmpty(folder_name: str) -> bool:
     Returns:
         True, если папка существует и пуста, иначе False.
     """
+
     try:
         return len(os.listdir(folder_name)) == 0
 

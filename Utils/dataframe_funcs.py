@@ -93,6 +93,7 @@ def MedianDedupedDF(df: pd.DataFrame,
                         bool: True, если все элементы списка (после приведения к строке) 
                               равны "nan", иначе False.
                     """
+
                     return all(str(elem) == "nan" for elem in l)
 
                 # если в списке нет элементов, или они все == "nan", то это не список

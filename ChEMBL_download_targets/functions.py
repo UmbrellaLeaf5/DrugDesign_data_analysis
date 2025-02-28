@@ -66,6 +66,7 @@ def ExpandedFromDictionariesTargetsDF(data: pd.DataFrame) -> pd.DataFrame:
         Returns:
             pd.Series: Series, содержащий списки извлеченных значений.
         """
+
         return df[column_name].apply(lambda x: [d[key] for d in x] if x else [])
 
     exposed_data = pd.DataFrame({

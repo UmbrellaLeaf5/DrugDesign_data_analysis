@@ -29,6 +29,7 @@ def GetResponse(request_url: str,
     Returns:
         requests.Response: объект ответа requests.
     """
+
     if sleep_time is not None:
         time.sleep(sleep_time)
 
@@ -165,8 +166,9 @@ def DownloadCompoundToxicity(compound_data: dict,
                          f"and 'sid' ({sid}).")
 
     compound_name: str = f"compound_{sid}_toxicity"
+
     compound_file_kg = f"{page_folder_name.format(unit_type="kg")}/{compound_name}"
-    compound_file_m3 = f"{page_folder_name.format(unit_type="kg")}/{compound_name}"
+    compound_file_m3 = f"{page_folder_name.format(unit_type="m3")}/{compound_name}"
 
     if os.path.exists(f"{compound_file_kg}.csv") or\
        os.path.exists(f"{compound_file_m3}.csv") and\
@@ -244,95 +246,101 @@ def DownloadCompoundToxicity(compound_data: dict,
         return df
 
     def ExtractDoseAndTime(df: pd.DataFrame,
-                           valid_units: list[str]
-                           ) -> pd.DataFrame:
+                           valid_units: list[str]) -> pd.DataFrame:
         """
         Преобразует DataFrame с данными о дозировках, извлекая числовое значение, 
         единицу измерения и период времени.
 
         Args:
             df (pd.DataFrame): таблица с колонкой "dose", содержащей информацию о дозировках.
-            valid_values (list[str]): список допустимых единиц измерения дозы.
+            valid_units (list[str]): список допустимых единиц измерения дозы.
 
         Returns:
             DataFrame с тремя новыми колонками: "numeric_dose", "dose_value", "time_period".
         """
 
-        def ExtractDose(dose_str: str) -> tuple[float | None, str | None, str | None]:
-            """
-            Извлекает числовое значение, единицы измерения и период времени из строки дозы.
-
-            Args:
-                dose_str (str): информация о дозе.
-
-            Returns:
-                tuple[float | None, str | None, str | None]: 
-                числовое значение дозы, единицы измерения дозы, периода времени.
-            """
-
-            num_dose = None
-            dose_unit = None
-            time_per = None
-
-            # попытка извлечь числовое значение и единицу измерения (например, "10 mg/kg")
-            re_match = re.search(r"([0-9.]+)\s*([a-zA-Z]+(?:/[a-zA-Z]+)?)", dose_str)
-            if re_match:
-                try:
-                    num_dose = float(re_match.group(1))
-                    dose_unit = re_match.group(2)
-
-                except ValueError:
-                    pass  # оставляем None, если не удалось преобразовать в число
-
-                if dose_unit in valid_units:
-                    # попытка извлечь период времени (например, "10 mg/kg/day")
-                    time_match = re.search(
-                        r"([0-9.]+)\s*([a-zA-Z]+(?:/[a-zA-Z]+)?)(?:/([0-9]+[a-zA-Z]+(?:-[IV]+)?))?", dose_str)
-                    if time_match and time_match.group(3):
-                        time_per = time_match.group(3)
-
-                else:
-                    # если единица измерения недопустима, сбрасываем значения
-                    num_dose = None
-                    dose_unit = None
-
-            if num_dose is None or dose_unit is None:
+        def ExtractDose(dose_str: str, mw: float) -> tuple[float | None, str | None, str | None]:
+            if " " not in dose_str:
                 return None, None, None
 
-            unit_prefix, unit_suffix = dose_unit.split("/")
-            if unit_suffix not in ("kg", "m3"):
+            num_dose: float | str | None = None
+            dose_unit: str | None = None
+            time_per: str | None = None
+
+            try:
+                if len(dose_str.split(" ")) != 2:
+                    return None, None, None
+
+                dose_amount_str, dose_and_time = dose_str.split(" ")
+                num_dose = float(dose_amount_str)
+
+            except ValueError:
+                v_logger.warning(
+                    f"Unsupported num_dose: {num_dose}, original: {dose_str}",
+                    LogMode.VERBOSELY)
+                return None, None, None
+
+            match dose_str.count("/"):
+                case 1:      # нету time period или это pp*/time
+                    if dose_and_time.startswith("p"):
+                        dose_unit, time_per = dose_and_time.split("/")
+                    else:
+                        dose_unit = dose_and_time
+                        time_per = None
+
+                case 2:      # есть time period
+                    dose_unit = "/".join(dose_and_time.split("/")[:-1])
+                    time_per = dose_and_time.split("/")[-1]
+
+                case _:
+                    return None, None, None
+
+            if dose_unit not in valid_units:
                 v_logger.warning(f"Unsupported dose_unit: {dose_unit}", LogMode.VERBOSELY)
                 return None, None, None
 
-            conversions = {
+            unit_prefix: str = dose_unit
+            unit_suffix: str = "m3"
+
+            if dose_unit.count("/") > 0:
+                unit_prefix, unit_suffix = dose_unit.split("/")
+
+                if unit_suffix not in ("kg", "m3"):
+                    v_logger.warning(f"Unsupported dose_unit: {dose_unit}", LogMode.VERBOSELY)
+                    return None, None, None
+
+            unit_prefix = unit_prefix.lower()
+
+            conversions: dict[str, float] = {
                 "mg": 1,
                 "gm": 1000,
-                "g": 1000,
+                "g":  1000,
                 "ng": 0.000001,
                 "ug": 0.001,
 
-                "mL": 1000,
                 "ml": 1000,
-                "nL": 0.001,  # 1000 * 0.000001
                 "nl": 0.001,  # 1000 * 0.000001
-                "uL": 1,      # 1000 * 0.001
                 "ul": 1,      # 1000 * 0.001
+
+                "ppm": 24.45/mw,          # 1 ppm = 1 mg/m3 * 24.45/mw
+                "ppb": 0.001 * 24.45/mw,  # 1 ppb = 0.001 ppm
+                "pph": 1/60 * 24.45/mw,   # 1 pph = 1/60 ppm
             }
 
             # перевод известных единиц к "mg/kg" и "mg/m3"
             if unit_prefix in conversions:
                 num_dose *= conversions[unit_prefix]
                 dose_unit = "mg/" + unit_suffix
+
             else:
                 v_logger.warning(f"Unsupported dose_unit: {dose_unit}", LogMode.VERBOSELY)
                 return None, None, None
 
             return num_dose, dose_unit, time_per
 
-        df[["numeric_dose", "dose_units", "time_period"]] = df["dose"].apply(
-            lambda x: pd.Series(ExtractDose(x)))
+        df[["numeric_dose", "dose_units", "time_period"]] = df.apply(
+            lambda row: pd.Series(ExtractDose(row["dose"], row["mw"])), axis=1)
         df = df.drop(columns=["dose"]).rename(columns={"numeric_dose": "dose"})
-        df = df.dropna(subset=['dose', 'dose_units'])
 
         return df
 
@@ -390,50 +398,64 @@ def DownloadCompoundToxicity(compound_data: dict,
     v_logger.info("Filtering 'dose'...", LogMode.VERBOSELY)
 
     if not acute_effects_kg.empty:
-        acute_effects_kg = ExtractDoseAndTime(acute_effects_kg, ["gm/kg",
-                                                                 "g/kg",
+        if "dose" in acute_effects_kg.columns:
+            acute_effects_kg = ExtractDoseAndTime(acute_effects_kg, ["gm/kg",
+                                                                     "g/kg",
 
-                                                                 "mg/kg",
-                                                                 "ug/kg",
-                                                                 "ng/kg",
+                                                                     "mg/kg",
+                                                                     "ug/kg",
+                                                                     "ng/kg",
 
-                                                                 "mL/kg",
-                                                                 "uL/kg",
-                                                                 "nL/kg"])
+                                                                     "mL/kg",
+                                                                     "uL/kg",
+                                                                     "nL/kg"])
 
-        acute_effects_kg["dose"] = pd.to_numeric(acute_effects_kg["dose"], errors="coerce")
+            acute_effects_kg["dose"] = pd.to_numeric(acute_effects_kg["dose"], errors="coerce")
+
+        else:
+            v_logger.warning(f"No dose in {compound_name}_kg!", LogMode.VERBOSELY)
+            acute_effects_kg = pd.DataFrame({})
 
     if not acute_effects_m3.empty:
-        acute_effects_m3 = ExtractDoseAndTime(acute_effects_m3, ["gm/m3",
-                                                                 "g/m3",
+        if "dose" in acute_effects_m3.columns:
+            acute_effects_m3 = ExtractDoseAndTime(acute_effects_m3, ["gm/m3",
+                                                                     "g/m3",
 
-                                                                 "mg/m3",
-                                                                 "ug/m3",
-                                                                 "ng/m3",
+                                                                     "mg/m3",
+                                                                     "ug/m3",
+                                                                     "ng/m3",
 
-                                                                 "mL/m3",
-                                                                 "uL/m3",
-                                                                 "nL/m3"])
+                                                                     "mL/m3",
+                                                                     "uL/m3",
+                                                                     "nL/m3",
 
-        acute_effects_m3["dose"] = pd.to_numeric(acute_effects_m3["dose"], errors="coerce")
+                                                                     "ppm",
+                                                                     "ppb",
+                                                                     "pph"])
+
+            acute_effects_m3["dose"] = pd.to_numeric(acute_effects_m3["dose"], errors="coerce")
+
+        else:
+            v_logger.warning(f"No dose in {compound_name}_m3!", LogMode.VERBOSELY)
+            acute_effects_m3 = pd.DataFrame({})
 
     v_logger.success("Filtering 'dose'!", LogMode.VERBOSELY)
 
-    if "mw" in acute_effects_kg.columns:
+    if "mw" in acute_effects_kg.columns and "dose" in acute_effects_kg.columns and\
+            not acute_effects_kg.empty:
         v_logger.info("Adding 'pLD50' to kg...", LogMode.VERBOSELY)
 
-        if not acute_effects_kg.empty:
-            acute_effects_kg["pLD50"] = -np.log10(
-                (acute_effects_kg["dose"] / acute_effects_kg["mw"]) / 1000000)
+        acute_effects_kg["pLD50"] = -np.log10(
+            (acute_effects_kg["dose"] / acute_effects_kg["mw"]) / 1000000)
 
         v_logger.success("Adding 'pLD50' to kg!", LogMode.VERBOSELY)
 
-    if "mw" in acute_effects_m3.columns:
+    if "mw" in acute_effects_m3.columns and "dose" in acute_effects_m3.columns and\
+            not acute_effects_m3.empty:
         v_logger.info("Adding 'pLD50' to m3...", LogMode.VERBOSELY)
 
-        if not acute_effects_m3.empty:
-            acute_effects_m3["pLD50"] = -np.log10(
-                (acute_effects_m3["dose"] / acute_effects_m3["mw"]) / 1000000)
+        acute_effects_m3["pLD50"] = -np.log10(
+            (acute_effects_m3["dose"] / acute_effects_m3["mw"]) / 1000000)
 
         v_logger.success("Adding 'pLD50' to m3!", LogMode.VERBOSELY)
 
@@ -447,7 +469,7 @@ def DownloadCompoundToxicity(compound_data: dict,
 
     v_logger.info(f"Saving {compound_name} to .csv...", LogMode.VERBOSELY)
 
-    if not acute_effects_kg.empty:
+    if not acute_effects_kg.empty and "pLD50" in acute_effects_kg.columns:
         acute_effects_kg = acute_effects_kg.replace('', np.nan)
         acute_effects_kg = acute_effects_kg.dropna(axis=1, how='all')
 
@@ -456,7 +478,7 @@ def DownloadCompoundToxicity(compound_data: dict,
                                 index=False,
                                 mode="w")
 
-    if not acute_effects_m3.empty:
+    if not acute_effects_m3.empty and "pLD50" in acute_effects_m3.columns:
         acute_effects_m3 = acute_effects_m3.replace('', np.nan)
         acute_effects_m3 = acute_effects_m3.dropna(axis=1, how='all')
 
@@ -467,17 +489,17 @@ def DownloadCompoundToxicity(compound_data: dict,
 
     v_logger.success(f"Saving {compound_name} to .csv!", LogMode.VERBOSELY)
 
-    if toxicity_config["download_compounds_sdf"]:
-        if not acute_effects_kg.empty:
-            os.makedirs(toxicity_config["molfiles_folder_name"], exist_ok=True)
+    if toxicity_config["download_compounds_sdf"] and not acute_effects_kg.empty and\
+            "pLD50" in acute_effects_kg.columns:
+        os.makedirs(toxicity_config["molfiles_folder_name"], exist_ok=True)
 
-            SaveMolfileWithToxicityToSDF(acute_effects_kg, "kg")
+        SaveMolfileWithToxicityToSDF(acute_effects_kg, "kg")
 
-    if toxicity_config["download_compounds_sdf"]:
-        if not acute_effects_m3.empty:
-            os.makedirs(toxicity_config["molfiles_folder_name"], exist_ok=True)
+    if toxicity_config["download_compounds_sdf"] and not acute_effects_m3.empty and\
+            "pLD50" in acute_effects_m3.columns:
+        os.makedirs(toxicity_config["molfiles_folder_name"], exist_ok=True)
 
-            SaveMolfileWithToxicityToSDF(acute_effects_m3, "m3")
+        SaveMolfileWithToxicityToSDF(acute_effects_m3, "m3")
 
     v_logger.success(f"Downloading {compound_name}!", LogMode.VERBOSELY)
     v_logger.info(f"{"-" * 77}", LogMode.VERBOSELY)

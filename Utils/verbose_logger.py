@@ -56,6 +56,7 @@ class VerboseLogger:
             log_mode (LogMode): режим логирования (RETICENTLY или VERBOSELY).
             message_ljust (int): ширина поля для выравнивания сообщений по левому краю.
             exceptions_file (str): путь к файлу для записи исключений.
+            standard_output (TextIO | TextIOWrapper, optional): вывод. Defaults to sys.stdout.
         """
 
         self.__logger = logger
@@ -211,6 +212,7 @@ class VerboseLogger:
                                                     Defaults to None: в таком случае 
                                                     устанавливает на стандартный.
         """
+
         if output is None:
             output = self.__standard_output
 
