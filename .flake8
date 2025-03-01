@@ -1,0 +1,4 @@
+[flake8]
+max-line-length = 90
+exclude = .git, __pycache__, temp.py, .venv, .vscode, .github, .extra
+ignore = F403, F405

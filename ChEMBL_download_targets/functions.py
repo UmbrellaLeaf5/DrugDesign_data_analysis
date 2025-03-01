@@ -1,9 +1,17 @@
+"""
+ChEMBL_download_targets/functions.py
+
+Этот модуль содержит функции для загрузки данных о целевых белках (targets)
+из базы данных ChEMBL, расширения словарей в DataFrame, добавления
+информации об активностях и сохранения результатов в CSV-файл.
+"""
+
 from chembl_webresource_client.new_client import new_client
 from chembl_webresource_client.query_set import QuerySet
 
 from ChEMBL_download_activities.download import DownloadTargetChEMBLActivities
-from ChEMBL_download_activities.functions import CountTargetActivitiesByIC50, \
-    CountTargetActivitiesByKi
+from ChEMBL_download_activities.functions import \
+    CountTargetActivitiesByIC50, CountTargetActivitiesByKi
 
 from Utils.decorators import ReTry
 from Utils.files_funcs import pd
@@ -21,6 +29,7 @@ def QuerySetAllTargets() -> QuerySet:
         QuerySet: набор всех целей
     """
 
+    # получаем все цели из базы ChEMBL.
     return new_client.target.filter()  # type: ignore
 
 
@@ -30,32 +39,34 @@ def QuerySetTargetsFromIdList(target_chembl_id_list: list[str]) -> QuerySet:
     Возвращает цели по списку id из базы ChEMBL.
 
     Args:
-        target_chembl_id_list (list[str]): список id
+        target_chembl_id_list (list[str]): список id.
 
     Returns:
-        QuerySet: набор целей по списку id
+        QuerySet: набор целей по списку id.
     """
 
-    return new_client.target.filter(target_chembl_id__in=target_chembl_id_list)  # type: ignore
+    # получаем цели по списку id из базы ChEMBL.
+    return new_client.target.filter(  # type: ignore
+        target_chembl_id__in=target_chembl_id_list)
 
 
 def ExpandedFromDictionariesTargetsDF(data: pd.DataFrame) -> pd.DataFrame:
     """
-    Избавляет pd.DataFrame от словарей и списков словарей в столбцах, 
-    разбивая их на подстолбцы.
+    Избавляет pd.DataFrame от словарей и списков словарей в столбцах, разбивая
+    их на подстолбцы.
 
     Args:
-        data (pd.DataFrame): исходный pd.DataFrame
+        data (pd.DataFrame): исходный pd.DataFrame.
 
     Returns:
-        pd.DataFrame: "раскрытый" pd.DataFrame
+        pd.DataFrame: "раскрытый" pd.DataFrame.
     """
 
     def ExtractedValuesFromColumn(df: pd.DataFrame,
                                   column_name: str,
                                   key: str) -> pd.Series:
         """
-        Извлекает значения из указанного столбца DataFrame, который содержит 
+        Извлекает значения из указанного столбца DataFrame, который содержит
         списки словарей, на основе заданного ключа.
 
         Args:
@@ -67,19 +78,18 @@ def ExpandedFromDictionariesTargetsDF(data: pd.DataFrame) -> pd.DataFrame:
             pd.Series: Series, содержащий списки извлеченных значений.
         """
 
-        return df[column_name].apply(lambda x: [d[key] for d in x] if x else [])
+        # извлекаем значения из указанного столбца DataFrame.
+        return df[column_name].apply(
+            lambda x: [d[key] for d in x] if x else [])
 
+    # извлекаем значения из столбца cross_references.
     exposed_data = pd.DataFrame({
-        #! cross_references
-        "xref_id":              ExtractedValuesFromColumn(data, "cross_references",
-                                                          "xref_id"),
-        "xref_name":            ExtractedValuesFromColumn(data, "cross_references",
-                                                          "xref_name"),
-        "xref_src":             ExtractedValuesFromColumn(data, "cross_references",
-                                                          "xref_src"),
+        "xref_id": ExtractedValuesFromColumn(data, "cross_references", "xref_id"),
+        "xref_name": ExtractedValuesFromColumn(data, "cross_references", "xref_name"),
+        "xref_src": ExtractedValuesFromColumn(data, "cross_references", "xref_src"),
     })
 
-    # избавлюсь от списков, так как в них находятся одиночные словари
+    # избавляемся от списков, так как в них находятся одиночные словари.
     data["target_components"] = data["target_components"].apply(
         lambda x: x[0] if x else {"accession": None,
                                   "component_description": None,
@@ -89,42 +99,49 @@ def ExpandedFromDictionariesTargetsDF(data: pd.DataFrame) -> pd.DataFrame:
                                   "target_component_synonyms": [],
                                   "target_component_xrefs": []})
 
+    # создаем DataFrame из столбца target_components.
     target_components_data = pd.DataFrame(
         data["target_components"].values.tolist())
 
+    # извлекаем значения из столбца target_component_synonyms и
+    # target_component_xrefs.
     exposed_target_components_data = pd.DataFrame({
-        #! target_component_synonyms
-        "component_synonym":                      ExtractedValuesFromColumn(
+        # ! target_component_synonyms
+        "component_synonym": ExtractedValuesFromColumn(
             target_components_data, "target_component_synonyms", "component_synonym"),
-        "syn_type":                               ExtractedValuesFromColumn(
+        "syn_type": ExtractedValuesFromColumn(
             target_components_data, "target_component_synonyms", "syn_type"),
-        #! target_component_xrefs
-        "xref_id_target_component_xrefs":         ExtractedValuesFromColumn(
+
+        # ! target_component_xrefs
+        "xref_id_target_component_xrefs": ExtractedValuesFromColumn(
             target_components_data, "target_component_xrefs", "xref_id"),
-        "xref_name_target_component_xrefs":       ExtractedValuesFromColumn(
+        "xref_name_target_component_xrefs": ExtractedValuesFromColumn(
             target_components_data, "target_component_xrefs", "xref_name"),
-        "xref_src_db_target_component_xrefs":     ExtractedValuesFromColumn(
+        "xref_src_db_target_component_xrefs": ExtractedValuesFromColumn(
             target_components_data, "target_component_xrefs", "xref_src_db"),
     })
 
+    # удаляем столбцы target_component_synonyms и target_component_xrefs.
     target_components_data = target_components_data.drop(
         ["target_component_synonyms", "target_component_xrefs"], axis=1)
+    # объединяем DataFrames.
     target_components_data = pd.concat(
         [target_components_data, exposed_target_components_data], axis=1)
 
+    # удаляем столбцы cross_references и target_components.
     data = data.drop(["cross_references", "target_components"], axis=1)
+    # объединяем DataFrames.
     data = pd.concat([data, exposed_data, target_components_data], axis=1)
 
     return data
 
 
 @ReTry(attempts_amount=1)
-def AddedIC50andKiToTargetsDF(data: pd.DataFrame
-                              ) -> pd.DataFrame:
+def AddedIC50andKiToTargetsDF(data: pd.DataFrame) -> pd.DataFrame:
     """
-    Добавляет столбцы 'IC50' и 'Ki' в DataFrame с данными о целевых белках (targets),
-    подсчитывая количество соответствующих активностей из базы данных ChEMBL,
-    а также опционально скачивает новые активности.
+    Добавляет столбцы 'IC50' и 'Ki' в DataFrame с данными о целевых белках
+    (targets), подсчитывая количество соответствующих активностей из базы данных
+    ChEMBL, а также опционально скачивает новые активности.
 
     Args:
         data (pd.DataFrame): DataFrame с данными о целевых белках.
@@ -134,30 +151,37 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame
                       содержащими количество соответствующих активностей.
     """
 
+    # получаем конфигурацию для скачивания целей.
     targets_config: Config = config["ChEMBL_download_targets"]
 
     v_logger.info(
-        f"Adding 'IC50' and 'Ki' columns to pandas.DataFrame...",
+        "Adding 'IC50' and 'Ki' columns to pandas.DataFrame...",
         LogMode.VERBOSELY)
 
+    # добавляем столбец 'IC50', подсчитывая активности.
     data["IC50"] = data["target_chembl_id"].apply(
         CountTargetActivitiesByIC50)
+    # добавляем столбец 'Ki', подсчитывая активности.
     data["Ki"] = data["target_chembl_id"].apply(
         CountTargetActivitiesByKi)
 
     v_logger.success(
-        f"Adding 'IC50' and 'Ki' columns to pandas.DataFrame!",
+        "Adding 'IC50' and 'Ki' columns to pandas.DataFrame!",
         LogMode.VERBOSELY)
 
+    # если нужно скачивать активности.
     if targets_config["download_activities"]:
+        # скачиваем активности для целевых белков.
         DownloadTargetChEMBLActivities(data)
 
         try:
+            # преобразуем типы столбцов.
             data["IC50_new"] = data["IC50_new"].astype(int)
             data["Ki_new"] = data["Ki_new"].astype(int)
 
-        except KeyError as exception:  # это исключение может возникнуть, если колонки нет
-            # новых activities не скачалось, т.е. значение пересчитывать не надо
+        # это исключение может возникнуть, если колонки нет.
+        except KeyError as exception:
+            # новых activities не скачалось, т.е. значение пересчитывать не надо.
             if not config["skip_downloaded"]:
                 raise exception
 
@@ -167,24 +191,30 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame
 @ReTry(attempts_amount=1)
 def DownloadTargetsFromIdList():
     """
-    Скачивает данные о целевых белках (targets) из ChEMBL по списку идентификаторов,
-    добавляет информацию об активностях IC50 и Ki, проводит первичный анализ
-    и сохраняет результаты в CSV-файл.
+    Скачивает данные о целевых белках (targets) из ChEMBL по списку
+    идентификаторов, добавляет информацию об активностях IC50 и Ki, проводит
+    первичный анализ и сохраняет результаты в CSV-файл.
     """
 
+    # получаем конфигурацию для скачивания целей.
     targets_config: Config = config["ChEMBL_download_targets"]
 
     v_logger.info("Downloading targets...", LogMode.VERBOSELY)
 
-    targets_with_ids: QuerySet = QuerySetTargetsFromIdList(targets_config["id_list"])
+    # получаем цели по списку id.
+    targets_with_ids: QuerySet = QuerySetTargetsFromIdList(
+        targets_config["id_list"])
 
+    # если список id пуст, получаем все цели.
     if targets_config["id_list"] == []:
         targets_with_ids = QuerySetAllTargets()
 
     v_logger.info(f"Amount: {len(targets_with_ids)}")  # type: ignore
     v_logger.success("Downloading targets!", LogMode.VERBOSELY)
-    v_logger.info("Collecting targets to pandas.DataFrame..", LogMode.VERBOSELY)
+    v_logger.info("Collecting targets to pandas.DataFrame..",
+                  LogMode.VERBOSELY)
 
+    # добавляем информацию об активностях IC50 и Ki.
     data_frame = AddedIC50andKiToTargetsDF(
         ExpandedFromDictionariesTargetsDF(
             pd.DataFrame(targets_with_ids)  # type: ignore
@@ -193,13 +223,18 @@ def DownloadTargetsFromIdList():
     v_logger.UpdateFormat(targets_config["logger_label"],
                           targets_config["logger_color"])
 
-    v_logger.success("Collecting targets to pandas.DataFrame!", LogMode.VERBOSELY)
+    v_logger.success("Collecting targets to pandas.DataFrame!",
+                     LogMode.VERBOSELY)
     v_logger.info(
         f"Collecting targets to .csv file in "
-        f"'{targets_config["results_folder_name"]}'...", LogMode.VERBOSELY)
+        f"'{targets_config["results_folder_name"]}'...",
+        LogMode.VERBOSELY)
 
-    file_name: str = f"{targets_config["results_folder_name"]}/{targets_config["results_file_name"]}.csv"
+    # формируем имя файла.
+    file_name: str = f"{targets_config["results_folder_name"]}/"\
+        f"{targets_config["results_file_name"]}.csv"
 
+    # сохраняем DataFrame в CSV-файл.
     data_frame.to_csv(file_name, sep=";", index=False)
 
     v_logger.success(

@@ -1,3 +1,10 @@
+"""
+ChEMBL_download_cell_lines/functions.py
+
+Этот модуль содержит функции для загрузки и обработки данных о клеточных линиях
+из базы данных ChEMBL.
+"""
+
 import gdown
 import zipfile
 
@@ -38,7 +45,8 @@ def QuerySetCellLinesFromIdList(cell_line_chembl_id_list: list[str]) -> QuerySet
         QuerySet: набор целей по списку id.
     """
 
-    return new_client.cell_line.filter(cell_chembl_id__in=cell_line_chembl_id_list)  # type: ignore
+    return new_client.cell_line.filter(  # type: ignore
+        cell_chembl_id__in=cell_line_chembl_id_list)
 
 
 def GetRawCellLinesData(file_id: str,
@@ -71,8 +79,8 @@ def GetRawCellLinesData(file_id: str,
 def AddedIC50andGI50ToCellLinesDF(data: pd.DataFrame
                                   ) -> pd.DataFrame:
     """
-    Добавляет столбцы `IC50` и `GI50` в DataFrame с данными о клеточных линиях, подсчитывая
-    количество соответствующих активностей из CSV-файлов, 
+    Добавляет столбцы `IC50` и `GI50` в DataFrame с данными о клеточных линиях,
+    подсчитывая количество соответствующих активностей из CSV-файлов,
     а также опционально скачивает новые активности.
 
     Args:
@@ -83,11 +91,13 @@ def AddedIC50andGI50ToCellLinesDF(data: pd.DataFrame
                       содержащими количество соответствующих активностей.
     """
 
+    # получаем конфигурацию для клеточных линий.
     cell_lines_config: Config = config["ChEMBL_download_cell_lines"]
 
     v_logger.info("Adding 'IC50' and 'GI50' columns to pandas.DataFrame...",
                   LogMode.VERBOSELY)
 
+    # проверяем, пуста ли папка с необработанными данными.
     if IsFolderEmpty(cell_lines_config["raw_csv_folder_name"]):
         v_logger.info("Getting raw cell_lines from Google.Drive...",
                       LogMode.VERBOSELY)
@@ -99,11 +109,13 @@ def AddedIC50andGI50ToCellLinesDF(data: pd.DataFrame
         v_logger.success("Getting raw cell_lines from Google.Drive!",
                          LogMode.VERBOSELY)
 
+    # добавляем столбец 'IC50', подсчитывая активности по файлам.
     data["IC50"] = data.apply(
         lambda value: CountCellLineActivitiesByFile(
             f"{cell_lines_config["raw_csv_folder_name"]}/"
             f"{value["cell_chembl_id"]}_IC50_activities.csv"), axis=1)
 
+    # добавляем столбец 'GI50', подсчитывая активности по файлам.
     data["GI50"] = data.apply(
         lambda value: CountCellLineActivitiesByFile(
             f"{cell_lines_config["raw_csv_folder_name"]}/"
@@ -112,6 +124,7 @@ def AddedIC50andGI50ToCellLinesDF(data: pd.DataFrame
     v_logger.success("Adding 'IC50' and 'GI50' columns to pandas.DataFrame!",
                      LogMode.VERBOSELY)
 
+    # проверяем, нужно ли скачивать активности.
     if cell_lines_config["download_activities"]:
         GetCellLineChEMBLActivitiesFromCSV(data)
 
@@ -119,8 +132,9 @@ def AddedIC50andGI50ToCellLinesDF(data: pd.DataFrame
             data["IC50_new"] = data["IC50_new"].astype(int)
             data["GI50_new"] = data["GI50_new"].astype(int)
 
-        except KeyError as exception:  # это исключение может возникнуть, если колонки нет
-            # новых activities не скачалось, т.е. значение пересчитывать не надо
+        # это исключение может возникнуть, если колонки нет.
+        except KeyError as exception:
+            # новых activities не скачалось, т.е. значение пересчитывать не надо.
             if not config["skip_downloaded"]:
                 raise exception
 
@@ -134,13 +148,16 @@ def DownloadCellLinesFromIdList():
     и сохраняет результаты в CSV-файл.
     """
 
+    # получаем конфигурацию для клеточных линий.
     cell_lines_config: Config = config["ChEMBL_download_cell_lines"]
 
     v_logger.info("Downloading cell_lines...", LogMode.VERBOSELY)
 
+    # получаем клеточные линии по списку id.
     cell_lines_with_ids: QuerySet = QuerySetCellLinesFromIdList(
         cell_lines_config["id_list"])
 
+    # если список id пуст, получаем все клеточные линии.
     if cell_lines_config["id_list"] == []:
         cell_lines_with_ids = QuerySetAllCellLines()
 
@@ -149,6 +166,7 @@ def DownloadCellLinesFromIdList():
     v_logger.info("Collecting cell_lines to pandas.DataFrame...",
                   LogMode.VERBOSELY)
 
+    # добавляем информацию об активностях IC50 и GI50.
     data_frame = AddedIC50andGI50ToCellLinesDF(
         pd.DataFrame(cell_lines_with_ids))  # type: ignore
 
@@ -162,9 +180,11 @@ def DownloadCellLinesFromIdList():
         f"'{cell_lines_config["results_folder_name"]}'...",
         LogMode.VERBOSELY)
 
+    # формируем имя файла для сохранения.
     file_name: str = f"{cell_lines_config["results_folder_name"]}/"\
         f"{cell_lines_config["results_file_name"]}.csv"
 
+    # сохраняем DataFrame в CSV-файл.
     data_frame.to_csv(file_name, sep=";", index=False)
 
     v_logger.success(

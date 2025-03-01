@@ -5,9 +5,9 @@ main.py:
 """
 
 # from ChEMBL_download_compounds.download import DownloadChEMBLCompounds
-# ! все соединения скачиваются в связке с целями/клеточными линиями,
-# ! так что их отдельное скачивание избыточно и этот функционал,
-# ! то есть ChEMBL_download_compounds, не используется.
+# ! Этот модуль импортирует DownloadChEMBLCompounds, но он не используется, поскольку
+# ! данные о соединениях загружаются вместе с данными о мишенях и клеточных линиях.
+# ! Отдельная загрузка соединений избыточна.
 
 from ChEMBL_download_targets.download import DownloadChEMBLTargets
 from ChEMBL_download_cell_lines.download import DownloadChEMBLCellLines

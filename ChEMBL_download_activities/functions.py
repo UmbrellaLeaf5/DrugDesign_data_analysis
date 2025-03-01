@@ -1,3 +1,11 @@
+"""
+ChEMBL_download_activities/functions.py
+
+Этот модуль содержит функции для запроса и обработки данных об активностях
+(IC50, Ki) из базы данных ChEMBL, а также для очистки данных об активностях
+клеточных линий.
+"""
+
 from chembl_webresource_client.new_client import new_client
 from chembl_webresource_client.query_set import QuerySet
 
@@ -9,13 +17,21 @@ from Utils.verbose_logger import LogMode, v_logger
 @ReTry()
 def QuerySetActivitiesByIC50(target_id: str) -> QuerySet:
     """
-    Возвращает активности по target_id по IC50.
+    Возвращает QuerySet активностей для указанной цели (target_id) на основе IC50.
+
+    IC50 (Half maximal inhibitory concentration) - полумаксимальная ингибирующая
+    концентрация.
 
     Args:
-        target_id (str): идентификатор цели из базы ChEMBL.
+        target_id (str): Идентификатор цели из базы ChEMBL.
 
     Returns:
-        QuerySet: набор активностей.
+        QuerySet: QuerySet, содержащий активности, отфильтрованные по target_id и
+                  типу "IC50".
+
+    Raises:
+        Exception: Если не удается получить данные после нескольких попыток
+                   (благодаря декоратору ReTry).
     """
 
     return new_client.activity.filter(  # type: ignore
@@ -25,13 +41,20 @@ def QuerySetActivitiesByIC50(target_id: str) -> QuerySet:
 @ReTry()
 def QuerySetActivitiesByKi(target_id: str) -> QuerySet:
     """
-    Возвращает активности по target_id по Ki.
+    Возвращает QuerySet активностей для указанной цели (target_id) на основе Ki.
+
+    Ki (Inhibition constant) - константа ингибирования.
 
     Args:
-        target_id (str): идентификатор цели из базы ChEMBL.
+        target_id (str): Идентификатор цели из базы ChEMBL.
 
     Returns:
-        QuerySet: набор активностей.
+        QuerySet: QuerySet, содержащий активности, отфильтрованные по target_id и
+                  типу "Ki".
+
+    Raises:
+        Exception: Если не удается получить данные после нескольких попыток
+                   (благодаря декоратору ReTry).
     """
 
     return new_client.activity.filter(  # type: ignore
@@ -40,14 +63,13 @@ def QuerySetActivitiesByKi(target_id: str) -> QuerySet:
 
 def CountTargetActivitiesByIC50(target_id: str) -> int:
     """
-    Подсчитывает кол-во активностей по target_id по IC50.
-    (иначе говоря, численное значение IC50 для конкретной цели)
+    Подсчитывает количество активностей для указанной цели (target_id) на основе IC50.
 
     Args:
-        target_id (str): идентификатор цели из базы ChEMBL.
+        target_id (str): Идентификатор цели из базы ChEMBL.
 
     Returns:
-        int: количество.
+        int: Количество активностей типа IC50 для указанной цели.
     """
 
     return len(QuerySetActivitiesByIC50(target_id))  # type: ignore
@@ -55,14 +77,13 @@ def CountTargetActivitiesByIC50(target_id: str) -> int:
 
 def CountTargetActivitiesByKi(target_id: str) -> int:
     """
-    Подсчитывает кол-во активностей по target_id по Ki.
-    (иначе говоря, численное значение Ki для конкретной цели)
+    Подсчитывает количество активностей для указанной цели (target_id) на основе Ki.
 
     Args:
-        target_id (str): идентификатор цели из базы ChEMBL.
+        target_id (str): Идентификатор цели из базы ChEMBL.
 
     Returns:
-        int: количество.
+        int: Количество активностей типа Ki для указанной цели.
     """
 
     return len(QuerySetActivitiesByKi(target_id))  # type: ignore
@@ -70,13 +91,15 @@ def CountTargetActivitiesByKi(target_id: str) -> int:
 
 def CountCellLineActivitiesByFile(file_name: str) -> int:
     """
-    Подсчитывает кол-во активностей клеточных линий по .csv файлу, в котором они находятся.
+    Подсчитывает количество строк (активностей) в CSV-файле,
+    содержащем данные о клеточных линиях.
 
     Args:
-        file_name (str): имя файла.
+        file_name (str): Имя файла CSV,
+                         содержащего данные об активностях клеточных линий.
 
     Returns:
-        int: количество.
+        int: Количество строк в файле (предположительно, количество активностей).
     """
 
     return sum(1 for _ in open(file_name, "r"))
@@ -88,20 +111,34 @@ def CleanedTargetActivitiesDF(data: pd.DataFrame,
                               activities_type: str,
                               ) -> pd.DataFrame:
     """
-    Производит чистку выборки activities конкретной цели по IC50 и Ki.
+    Очищает DataFrame с данными об активностях
+    для указанной цели (target_id) по IC50 и Ki.
+
+    Функция выполняет следующие шаги:
+        1. Удаляет неинформативные столбцы.
+        2. Фильтрует данные, оставляя только значения с отношением "=", единицами "nM",
+           организмом "Homo sapiens", типом "IC50" или "Ki" и типом анализа "B".
+        3. Преобразует столбец "standard_value" в числовой тип.
+        4. Удаляет значения "standard_value", превышающие 1000000000 (1e9).
+        5. Заменяет значения "Not Determined" в столбце 'activity_comment' на None.
+        6. Удаляет столбцы "target_organism" и "standard_type".
+        7. Вычисляет медиану для дублирующихся значений "standard_value"
+           по "molecule_chembl_id".
+        8. Переиндексирует столбцы DataFrame в логическом порядке.
 
     Args:
-        data (pd.DataFrame): выборка activities.
-        target_id (str): идентификатор цели.
-        activities_type (str): IC50 или Ki.
+        data (pd.DataFrame): DataFrame с данными об активностях, полученными из ChEMBL.
+        target_id (str): Идентификатор цели из базы ChEMBL.
+        activities_type (str): Тип активности ("IC50" или "Ki")
+                               (используется только для логирования).
 
     Returns:
-        pd.DataFrame: очищенная выборка
+        pd.DataFrame: Очищенный DataFrame с данными об активностях.
     """
 
     v_logger.info(f"Start cleaning {activities_type} activities DataFrame from "
                   f"{target_id}...", LogMode.VERBOSELY)
-    v_logger.info(f"Deleting useless columns...", LogMode.VERBOSELY)
+    v_logger.info("Deleting useless columns...", LogMode.VERBOSELY)
 
     data = data.drop(["activity_id", "activity_properties",
                       "document_journal", "document_year",
@@ -163,15 +200,31 @@ def CleanedCellLineActivitiesDF(data: pd.DataFrame,
                                 activities_type: str,
                                 ) -> pd.DataFrame:
     """
-    Производит чистку выборки activities конкретной клеточной линии по IC50 и GI50.
+    Очищает DataFrame с данными об активностях
+    для указанной клеточной линии (cell_id) по IC50 и GI50.
+
+    Функция выполняет следующие шаги:
+        1. Выбирает нужные столбцы из DataFrame.
+        2. Переименовывает столбцы,
+           приводя их к нижнему регистру и заменяя пробелы на "_".
+        3. Фильтрует данные, оставляя только значения с отношением "=", единицами "nM",
+           организмом "Homo sapiens" и типом "IC50" или "GI50".
+        4. Преобразует столбец "standard_value" в числовой тип.
+        5. Удаляет значения "standard_value", превышающие 1000000000 (1e9).
+        6. Удаляет столбец "assay_organism" и "standard_type".
+        7. Переименовывает столбец "smiles" в "canonical_smiles".
+        8. Вычисляет медиану для дублирующихся значений "standard_value"
+           по "molecule_chembl_id".
+        9. Переиндексирует столбцы DataFrame в логическом порядке.
 
     Args:
-        data (pd.DataFrame): выборка activities.
-        cell_id (str): идентификатор клеточной линии.
-        activities_type (str): IC50 или GI50.
+        data (pd.DataFrame): DataFrame с данными об активностях клеточных линий.
+        cell_id (str): Идентификатор клеточной линии.
+        activities_type (str): Тип активности ("IC50" или "GI50")
+                               (используется только для логирования).
 
     Returns:
-        pd.DataFrame: очищенная выборка
+        pd.DataFrame: Очищенный DataFrame с данными об активностях клеточной линии.
     """
 
     v_logger.info(f"Start cleaning {activities_type} activities DataFrame from "

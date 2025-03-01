@@ -3,6 +3,7 @@ gdown
 icecream
 ipykernel
 IPython
+flake8
 loguru
 numpy
 pandas
