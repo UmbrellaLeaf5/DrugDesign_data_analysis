@@ -37,7 +37,7 @@ def DownloadPubChemCompoundsToxicity():
         os.makedirs(page_folder_name.format(unit_type="kg"), exist_ok=True)
         os.makedirs(page_folder_name.format(unit_type="m3"), exist_ok=True)
 
-        compound_link =\
+        compound_link: str =\
             "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/annotations/heading/JSON"\
             "?heading=Acute+Effects"\
             f"&page={page}"
@@ -169,7 +169,8 @@ def DownloadPubChemCompoundsToxicity():
                             delete_folders=True)
 
         v_logger.success("Deleting files after combining in "
-                         f"'{toxicity_config["results_folder_name"]}'!", LogMode.VERBOSELY)
+                         f"'{toxicity_config["results_folder_name"]}'!",
+                         LogMode.VERBOSELY)
 
     v_logger.success(f"{'-' * 21} PubChem downloading for DrugDesign {'-' * 20}")
     v_logger.info(f"{'-' * 77}")
