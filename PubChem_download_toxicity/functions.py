@@ -575,8 +575,7 @@ def DownloadCompoundToxicity(compound_data: dict,
             acute_effects_unit =\
                 acute_effects_unit[(acute_effects_unit['dose_units'].notna()
                                     ) & (
-                    acute_effects_unit['dose'].notna())
-                ]
+                    acute_effects_unit['dose'].notna())]
 
         # если нет нужных столбцов.
         else:

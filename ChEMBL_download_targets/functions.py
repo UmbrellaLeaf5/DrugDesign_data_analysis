@@ -175,6 +175,11 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame) -> pd.DataFrame:
         DownloadTargetChEMBLActivities(data)
 
         try:
+            # оставляем только строки, в которых есть IC50_new и Ki_new
+            data = data[(data['IC50_new'].notna()
+                         ) & (
+                data['Ki_new'].notna())]
+
             # преобразуем типы столбцов.
             data["IC50_new"] = data["IC50_new"].astype(int)
             data["Ki_new"] = data["Ki_new"].astype(int)
@@ -184,6 +189,10 @@ def AddedIC50andKiToTargetsDF(data: pd.DataFrame) -> pd.DataFrame:
             # новых activities не скачалось, т.е. значение пересчитывать не надо.
             if not config["skip_downloaded"]:
                 raise exception
+
+        # это исключение может возникнуть, если какое-то значение оказалось невалидным.
+        except pd.errors.IntCastingNaNError:
+            v_logger.warning("Cannot convert non-finite values!")
 
     return data
 

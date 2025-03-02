@@ -129,6 +129,11 @@ def AddedIC50andGI50ToCellLinesDF(data: pd.DataFrame
         GetCellLineChEMBLActivitiesFromCSV(data)
 
         try:
+            # оставляем только строки, в которых есть IC50_new и Ki_new
+            data = data[(data['IC50_new'].notna()
+                         ) & (
+                data['GI50_new'].notna())]
+
             data["IC50_new"] = data["IC50_new"].astype(int)
             data["GI50_new"] = data["GI50_new"].astype(int)
 
@@ -137,6 +142,10 @@ def AddedIC50andGI50ToCellLinesDF(data: pd.DataFrame
             # новых activities не скачалось, т.е. значение пересчитывать не надо.
             if not config["skip_downloaded"]:
                 raise exception
+
+        # это исключение может возникнуть, если какое-то значение оказалось невалидным.
+        except pd.errors.IntCastingNaNError:
+            v_logger.warning("Cannot convert non-finite values!")
 
     return data
 
