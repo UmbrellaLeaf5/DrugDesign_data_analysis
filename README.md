@@ -3,6 +3,13 @@
 [![License: Unlicense](https://img.shields.io/badge/license-Unlicense-green.svg)](http://unlicense.org/)
 [![Contributing](https://img.shields.io/badge/contributing-.md-blue.svg)](./CONTRIBUTING.md)
 
+## Contents
+  * [Description](#description)
+  * [Documentation](#documentation)
+  * [Installation](#installation)
+  * [Configurations](#configurations)
+  * [Sources](#sources)
+
 ## Description
 
 Этот модуль отвечает за загрузку и предварительную обработку данных из [ChEMBL](#sources) и [PubChem](#sources), необходимых для дальнейшего моделирования и анализа при разработке лекарств.
@@ -107,6 +114,8 @@
 
 #### ChEMBL_download_activities
 
+Подзадача загрузки активностей с ChEMBL для различных мишеней и клеточных линий, которая выполняется при включении определенных флагов в других задачах.
+
 *   `logger_label`: *string* - метка, используемая для сообщений журнала, связанных с этой задачей (для идентификации в логах).
 *   `logger_color`: *string* - цветовой код для вывода журнала.
 *   `results_folder_name`: *string* - имя папки для хранения загруженных данных об активности.
@@ -114,6 +123,9 @@
 
 #### ChEMBL_download_cell_lines
 
+Задача по загрузке клеточных линий с ChEMBL.
+
+*   `download`: *boolean* - логический флаг, указывающий, следует выполнять эту задачу в текущем запуске программы.
 *   `logger_label`: *string* - метка, используемая для сообщений журнала, связанных с этой задачей.
 *   `logger_color`: *string* - цветовой код для вывода журнала.
 *   `results_folder_name`: *string* - имя папки для хранения загруженных данных о клеточных линиях.
@@ -127,6 +139,9 @@
 
 #### ChEMBL_download_compounds
 
+Задача по загрузке соединений с ChEMBL.
+
+*   `download`: *boolean* - логический флаг, указывающий, следует выполнять эту задачу в текущем запуске программы.
 *   `logger_label`: *string* - метка, используемая для сообщений журнала, связанных с этой задачей.
 *   `logger_color`: *string* - цветовой код для вывода журнала.
 *   `results_folder_name`: *string* - имя папки для хранения загруженных данных о соединениях.
@@ -134,10 +149,13 @@
 *   `combined_file_name`: *string* - имя файла для сохранения объединенных данных о соединениях.
 *   `need_combining`: *boolean* - логический флаг, указывающий, нужно ли объединять соединения в один файл.
 *   `delete_after_combining`: *boolean* - логический флаг, указывающий, следует ли удалять оставшиеся данные после объединения.
-*   `mw_ranges`: *list[lists[floats]]* - список диапазонов молекулярной массы, используемых для фильтрации загрузки соединений.
+*   `mw_ranges`: *list[lists[float]]* - список диапазонов молекулярной массы, используемых для фильтрации загрузки соединений.
 
 #### ChEMBL_download_targets
 
+Задача по загрузке мишеней с ChEMBL.
+
+*   `download`: *boolean* - логический флаг, указывающий, следует выполнять эту задачу в текущем запуске программы.
 *   `logger_label`: *string* - метка, используемая для сообщений журнала, связанных с этой задачей.
 *   `logger_color`: *string* - цветовой код для вывода журнала.
 *   `results_folder_name`: *string* - имя папки для хранения загруженных данных о мишенях.
@@ -151,6 +169,9 @@
 
 #### PubChem_download_toxicity
 
+Задача по загрузке токсичности соединений линий с PubChem (ChemIDPlus).
+
+*   `download`: *boolean* - логический флаг, указывающий, следует выполнять эту задачу в текущем запуске программы.
 *   `logger_label`: *string* - метка, используемая для сообщений журнала, связанных с этой задачей.
 *   `logger_color`: *string* - цветовой код для вывода журнала.
 *   `results_folder_name`: *string* - имя папки для хранения загруженных данных о токсичности.
@@ -176,20 +197,20 @@
 
 #### CombineCSVInFolder
 
-*   `logger_label`: *string* - метка, используемая для сообщений журнала, связанных с этой задачей. Значение: `Utils___combine`.
-*   `logger_color`: *string* - цветовой код для вывода журнала. Значение: `fg #474747`.
+*   `logger_label`: *string* - метка, используемая для сообщений журнала, связанных с этой задачей.
+*   `logger_color`: *string* - цветовой код для вывода журнала.
 
 #### VerboseLogger
 
-*   `verbose_print`: *boolean* - логический флаг, указывающий, включен ли подробный вывод в консоль. Значение: `true`.
-*   `message_ljust`: *integer* - ширина левого выравнивания для сообщений лога. Значение: `78`.
-*   `exceptions_file`: *string* - имя файла для записи исключений. Значение: `exceptions.log`.
-*   `output_to_exceptions_file`: *boolean* - логический флаг, указывающий, следует ли выводить весь вывод только в файл для записи исключений. Значение: `false`.
+*   `verbose_print`: *boolean* - логический флаг, указывающий, включен ли подробный вывод в консоль.
+*   `message_ljust`: *integer* - ширина левого выравнивания для сообщений лога.
+*   `exceptions_file`: *string* - имя файла для записи исключений.
+*   `output_to_exceptions_file`: *boolean* - логический флаг, указывающий, следует ли выводить весь вывод только в файл для записи исключений.
 
 #### ReTry
 
-*   `attempts_amount`: *integer* - количество попыток по умолчанию. Значение: `5`.
-*   `sleep_time`: *float* - время ожидания между попытками (в секундах) по умолчанию. Значение: `1`.
+*   `attempts_amount`: *integer* - количество попыток по умолчанию.
+*   `sleep_time`: *float* - время ожидания между попытками (в секундах) по умолчанию.
 
 ## Sources
 
@@ -217,7 +238,7 @@
 
 <hr></hr>
 
-### Notebooks submodules:
+### Notebooks submodules (removed):
 
   * IUPAC WFChemCookbook repository / International Union of Pure and Applied Chemistry. — Текст : электронный // GitHub : [сайт](https://github.com/IUPAC/WFChemCookbook)
   * FionaEBI ChEMBL notebooks repository / FionaEBI. — Текст : электронный // GitHub : [сайт](https://github.com/chembl/notebooks)

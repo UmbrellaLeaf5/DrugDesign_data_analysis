@@ -10,6 +10,7 @@
     "download_compounds_sdf": true
   },
   "ChEMBL_download_cell_lines": {
+    "download": true,
     "logger_label": "ChEMBL____cells",
     "logger_color": "fg #C96E91",
     "results_folder_name": "results/chembl/cell_lines",
@@ -40,6 +41,7 @@
     ]
   },
   "ChEMBL_download_compounds": {
+    "download": false,
     "logger_label": "ChEMBL_compound",
     "logger_color": "fg #85BEDB",
     "results_folder_name": "results/chembl/compounds",
@@ -59,6 +61,7 @@
     ]
   },
   "ChEMBL_download_targets": {
+    "download": true,
     "logger_label": "ChEMBL__targets",
     "logger_color": "fg #B3BC60",
     "results_folder_name": "results/chembl/targets",
@@ -99,6 +102,7 @@
     ]
   },
   "PubChem_download_toxicity": {
+    "download": true,
     "logger_label": "PubChem_toxcomp",
     "logger_color": "fg #D68C6D",
     "results_folder_name": "results/pubchem/toxicity",
