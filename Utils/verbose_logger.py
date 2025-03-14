@@ -269,7 +269,7 @@ class VerboseLogger:
         # получаем имя уровня в верхнем регистре.
         level_name = level.upper()
 
-        def Wrapper(message: str,
+        def Wrapper(message: str = f"{"-" * (self.__message_ljust - 1)}",
                     log_mode: LogMode = LogMode.RETICENTLY):
             # вызываем метод Log с заданным уровнем и сообщением.
             self.Log(level_name, message, log_mode)

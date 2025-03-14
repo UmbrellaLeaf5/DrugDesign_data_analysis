@@ -154,7 +154,8 @@ def DownloadCompoundToxicity(compound_data: dict,
         v_logger.warning(
             f"No 'cid' for 'sid': {compound_data["LinkedRecords"]["SID"][0]}"
             f", skip.")
-        v_logger.warning(f"{"-" * 77}", LogMode.VERBOSELY)
+        v_logger.info(
+            f"{"-" * (config["Utils"]["VerboseLogger"]["message_ljust"] - 1)}", LogMode.VERBOSELY)
 
         return
         # не сохраняем те соединения, у которых нет cid,
@@ -206,7 +207,8 @@ def DownloadCompoundToxicity(compound_data: dict,
             config["skip_downloaded"]:
         v_logger.info(f"{compound_name} is already downloaded, skip.",
                       LogMode.VERBOSELY)
-        v_logger.warning(f"{"-" * 77}", LogMode.VERBOSELY)
+        v_logger.info(
+            f"{"-" * (config["Utils"]["VerboseLogger"]["message_ljust"] - 1)}", LogMode.VERBOSELY)
 
         return
 
@@ -626,7 +628,8 @@ def DownloadCompoundToxicity(compound_data: dict,
         v_logger.warning(f"No 'mw' for {compound_name}, skip.")
         return
 
-    v_logger.info(f"{"- " * 38 + "-"}", LogMode.VERBOSELY)
+    v_logger.info(
+        f"{"~" * (config["Utils"]["VerboseLogger"]["message_ljust"] - 1)}", LogMode.VERBOSELY)
 
     # сохраняем данные о токсичности для единиц измерения "kg".
     SaveToxicityUnitSpecification(compound_file_unit=compound_file_kg,
@@ -643,7 +646,8 @@ def DownloadCompoundToxicity(compound_data: dict,
                                                "nL/kg"],
                                   acute_effects=acute_effects)
 
-    v_logger.info(f"{" - " * 25 + " -"}", LogMode.VERBOSELY)
+    v_logger.info(
+        f"{"·" * (config["Utils"]["VerboseLogger"]["message_ljust"] - 1)}", LogMode.VERBOSELY)
 
     # сохраняем данные о токсичности для единиц измерения "m3".
     SaveToxicityUnitSpecification(compound_file_unit=compound_file_m3,
@@ -664,6 +668,8 @@ def DownloadCompoundToxicity(compound_data: dict,
                                                "pph"],
                                   acute_effects=acute_effects)
 
-    v_logger.info(f"{" - " * 25 + " -"}", LogMode.VERBOSELY)
+    v_logger.info(
+        f"{"·" * (config["Utils"]["VerboseLogger"]["message_ljust"] - 1)}", LogMode.VERBOSELY)
     v_logger.success(f"Downloading {compound_name}!", LogMode.VERBOSELY)
-    v_logger.info(f"{"-" * 77}", LogMode.VERBOSELY)
+    v_logger.info(
+        f"{"-" * (config["Utils"]["VerboseLogger"]["message_ljust"] - 1)}", LogMode.VERBOSELY)

@@ -234,11 +234,11 @@ def GetCellLineChEMBLActivitiesFromCSV(cell_lines_data: pd.DataFrame):
         # читаем данные об активностях IC50 и GI50 из CSV-файлов.
         data_frame_ic50 = pd.read_csv(
             f"{cell_lines_config["raw_csv_folder_name"]}/{file_name_ic50}.csv",
-            sep=";", low_memory=False)
+            sep=config["csv_separator"], low_memory=False)
 
         data_frame_gi50 = pd.read_csv(
             f"{cell_lines_config["raw_csv_folder_name"]}/{file_name_gi50}.csv",
-            sep=";", low_memory=False)
+            sep=config["csv_separator"], low_memory=False)
 
         v_logger.info("Amount: "
                       f"IC50: {len(data_frame_ic50)}; "
