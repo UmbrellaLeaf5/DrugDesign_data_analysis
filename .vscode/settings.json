@@ -112,6 +112,7 @@
     "spyproject",
     "startswith",
     "targs",
+    "testtype",
     "toid",
     "toxcomp",
     "Uberon",
