@@ -188,6 +188,9 @@
     *   `m3`: *dictionary* - фильтрация для дозы, указанной в `mg/m3`.
         *   `organism`: *list[string]* - список организмов для фильтрации.
         *   `route`: *list[string]* - список способов введения для фильтрации.
+    *   `need_filtering_by_characteristics`: *boolean* - логический флаг, указывающий, следует сохранять отфильтрованные по количеству вхождений характеристик выборки токсичности.
+    *   `occurrence_characteristics_number`: *integer* - минимальное количество вхождений характеристик в соотв. выборки.
+    *   `characteristics_folder_name`: *string* - имя папки для хранения отфильтрованных по количеству вхождений характеристик выборок токсичности.
 *   `sleep_time`: *float* - число с плавающей точкой, представляющее время ожидания между запросами (в секундах, для предотвращения блокировки со стороны PubChem).
 *   `start_page`: *integer* - число, представляющее начальную страницу данных о токсичности.
 *   `end_page`: *integer* - число, представляющее последнюю страницу данных о токсичности.
@@ -242,4 +245,3 @@
 
   * IUPAC WFChemCookbook repository / International Union of Pure and Applied Chemistry. — Текст : электронный // GitHub : [сайт](https://github.com/IUPAC/WFChemCookbook)
   * FionaEBI ChEMBL notebooks repository / FionaEBI. — Текст : электронный // GitHub : [сайт](https://github.com/chembl/notebooks)
-

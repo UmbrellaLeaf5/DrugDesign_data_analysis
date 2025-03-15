@@ -1,6 +1,6 @@
 {
   "testing_flag": false,
-  "skip_downloaded": true,
+  "skip_downloaded": false,
   "csv_separator": ";",
   "keyboard_end_message": "\n    End of downloading for DrugDesign by keyboard...\n",
   "ChEMBL_download_activities": {
@@ -133,7 +133,10 @@
         "route": [
           "inhalation"
         ]
-      }
+      },
+      "need_filtering_by_characteristics": true,
+      "occurrence_characteristics_number": 100,
+      "characteristics_folder_name": "characteristics"
     },
     "sleep_time": 0.211,
     "start_page": 1,

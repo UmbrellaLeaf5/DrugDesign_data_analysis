@@ -39,7 +39,7 @@ def DownloadTargetChEMBLActivities(targets_data: pd.DataFrame):
                           activities_config["logger_color"])
 
     v_logger.info("Start download activities connected with targets...")
-    v_logger.info(f"{'-' * 77}", LogMode.VERBOSELY)
+    v_logger.info("-", LogMode.VERBOSELY)
 
     # итерируемся по идентификаторам мишеней.
     for target_id in targets_data['target_chembl_id']:
@@ -56,7 +56,7 @@ def DownloadTargetChEMBLActivities(targets_data: pd.DataFrame):
             v_logger.info("Activities connected with target "
                           f"{target_id} is already downloaded, skip.",
                           LogMode.VERBOSELY)
-            v_logger.info(f"{'-' * 77}", LogMode.VERBOSELY)
+            v_logger.info("-", LogMode.VERBOSELY)
 
             continue  # переходим к следующей мишени.
 
@@ -173,7 +173,7 @@ def DownloadTargetChEMBLActivities(targets_data: pd.DataFrame):
             v_logger.UpdateFormat(activities_config["logger_label"],
                                   activities_config["logger_color"])
 
-        v_logger.info(f"{'-' * 77}", LogMode.VERBOSELY)
+        v_logger.info("-", LogMode.VERBOSELY)
 
     v_logger.success("End download activities connected with targets!")
 
@@ -208,7 +208,7 @@ def GetCellLineChEMBLActivitiesFromCSV(cell_lines_data: pd.DataFrame):
                                                activities_config["logger_color"]) - 1
 
     v_logger.info("Start getting activities connected with cell_lines...")
-    v_logger.info(f"{'-' * 77}", LogMode.VERBOSELY)
+    v_logger.info("-", LogMode.VERBOSELY)
 
     # итерируемся по идентификаторам клеточных линий.
     for cell_id in cell_lines_data['cell_chembl_id']:
@@ -224,7 +224,7 @@ def GetCellLineChEMBLActivitiesFromCSV(cell_lines_data: pd.DataFrame):
 
             v_logger.info("Activities connected with target "
                           f"{cell_id} is already gotten, skip", LogMode.VERBOSELY)
-            v_logger.info(f"{'-' * 77}", LogMode.VERBOSELY)
+            v_logger.info("-", LogMode.VERBOSELY)
 
             continue  # переходим к следующей клеточной линии.
 
@@ -341,7 +341,7 @@ def GetCellLineChEMBLActivitiesFromCSV(cell_lines_data: pd.DataFrame):
             v_logger.UpdateFormat(activities_config["logger_label"],
                                   activities_config["logger_color"])
 
-        v_logger.info(f"{'-' * 77}", LogMode.VERBOSELY)
+        v_logger.info("-", LogMode.VERBOSELY)
 
     v_logger.success("End getting activities connected with cell_lines!")
 

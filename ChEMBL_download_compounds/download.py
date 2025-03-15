@@ -37,7 +37,7 @@ def DownloadChEMBLCompounds():
     v_logger.UpdateFormat(compounds_config["logger_label"],
                           compounds_config["logger_color"])
 
-    v_logger.info(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
+    v_logger.info(f"{"• " * 10} ChEMBL downloading for DrugDesign.")
 
     # создаем директорию для результатов, если она не существует.
     os.makedirs(compounds_config["results_folder_name"], exist_ok=True)
@@ -69,7 +69,7 @@ def DownloadChEMBLCompounds():
                 f"{greater_limit}) is already downloaded, skip.",
                 LogMode.VERBOSELY)
 
-        v_logger.info(f"{'-' * 77}", LogMode.VERBOSELY)
+        v_logger.info("-", LogMode.VERBOSELY)
 
     # если нужно объединять файлы.
     if compounds_config["need_combining"]:
@@ -92,5 +92,5 @@ def DownloadChEMBLCompounds():
             f"Deleting files after combining in "
             f"'{compounds_config["results_folder_name"]}'!")
 
-    v_logger.success(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
-    v_logger.info(f"{'-' * 77}")
+    v_logger.success(f"{"• " * 10} ChEMBL downloading for DrugDesign!")
+    v_logger.info()

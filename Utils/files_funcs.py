@@ -138,7 +138,7 @@ def CombineCSVInFolder(folder_name: str,
         combine_config["logger_label"], combine_config["logger_color"]) - 1
 
     v_logger.info("Start combining downloads...")
-    v_logger.info(f"{'-' * 77}", LogMode.VERBOSELY)
+    v_logger.info("-", LogMode.VERBOSELY)
 
     # если файл уже существует и нужно пропускать скачанные, выходим.
     if IsFileInFolder(folder_name, f"{combined_file_name}.csv") and\
@@ -193,7 +193,7 @@ def CombineCSVInFolder(folder_name: str,
             v_logger.success(
                 f"Concatenating '{file_name}' to combined_data_frame!",
                 LogMode.VERBOSELY)
-            v_logger.info(f"{'-' * 77}", LogMode.VERBOSELY)
+            v_logger.info("-", LogMode.VERBOSELY)
 
     v_logger.info(f"Collecting to combined .csv file in '{folder_name}'...",
                   LogMode.VERBOSELY)
@@ -203,9 +203,9 @@ def CombineCSVInFolder(folder_name: str,
         f"{folder_name}/{combined_file_name}.csv",
         sep=config["csv_separator"], index=False)
 
-    v_logger.success(f"Collecting to combined .csv file in '{folder_name}'!",
-                     LogMode.VERBOSELY)
-    v_logger.info(f"{'-' * 77}", LogMode.VERBOSELY)
+    v_logger.success(
+        f"Collecting to combined .csv file in '{folder_name}'!", LogMode.VERBOSELY)
+    v_logger.info("-", LogMode.VERBOSELY)
     v_logger.success("End combining downloads!")
 
     # восстанавливаем формат логгера.

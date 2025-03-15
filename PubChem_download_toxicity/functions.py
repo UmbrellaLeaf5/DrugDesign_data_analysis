@@ -11,18 +11,25 @@ import numpy as np
 import requests
 import urllib.parse
 
-from Utils.dataframe_funcs import DedupedList
+from Utils.dataframe_funcs import DedupedList, MedianDedupedDF
 from Utils.decorators import ReTry, time
 from Utils.files_funcs import os, pd, SaveMolfilesToSDF
 from Utils.verbose_logger import v_logger, LogMode
 
 from Configurations.config import config, Config
 
+# конфигурация для скачивания токсичности.
+toxicity_config: Config = config["PubChem_download_toxicity"]
+
+# конфигурация конфигурацию для фильтрации токсичности.
+filtering_config: Config = toxicity_config["filtering"]
+
 
 @ReTry()
 def GetResponse(request_url: str,
                 stream: bool,
-                sleep_time: float | None
+                sleep_time: float | None =
+                config["PubChem_download_toxicity"]["sleep_time"]
                 ) -> requests.Response:
     """
     Отправляет GET-запрос по указанному URL, повторяет попытку в случае ошибки.
@@ -30,7 +37,8 @@ def GetResponse(request_url: str,
     Args:
         request_url (str): URL для запроса.
         stream (bool): если True, ответ будет получен потоком.
-        sleep_time (float | None): время ожидания перед повторной попыткой в секундах.
+        sleep_time (float | None, optional): время ожидания перед повторной попыткой
+        в секундах. Defaults to config["PubChem_download_toxicity"]["sleep_time"].
 
     Returns:
         requests.Response: объект ответа requests.
@@ -47,9 +55,104 @@ def GetResponse(request_url: str,
     return response
 
 
+def GetMolfileFromCID(cid: str,
+                      sleep_time: float | None =
+                      config["PubChem_download_toxicity"]["sleep_time"]
+                      ) -> str:
+    """
+    Возвращает molfile-строку из GET-запроса для соединения с cid из базы PubChem.
+
+    Args:
+        cid (str): CID соединения.
+        sleep_time (float | None, optional): время ожидания перед повторной попыткой
+        в секундах. Defaults to config["PubChem_download_toxicity"]["sleep_time"].
+
+    Returns:
+        str: molfile-строка.
+    """
+
+    # получаем molfile соединения из PubChem.
+    molfile: str = GetResponse(
+        "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/CID/"
+        f"{cid}/record/SDF?record_type=2d",
+        True,
+        sleep_time).text
+
+    v_logger.info(f"Return molfile (len: {len(molfile)}) for cid: {cid}.",
+                  LogMode.VERBOSELY)
+
+    # очищаем molfile от лишних символов.
+    return molfile[molfile.find("\n"):].replace("$$$$", "").rstrip()
+
+
+def GetMolfilesFromCIDs(cids: list[str],
+                        sleep_time: float | None =
+                        config["PubChem_download_toxicity"]["sleep_time"]) -> list[str]:
+    """
+    Возвращает список molfile-строк для заданного списка CID.
+    Соединяет CID в строку, разделяет ее на более короткие подстроки, чтобы избежать
+    ограничений на длину URL при запросе к PubChem, и получает molfile для каждого CID.
+
+    Args:
+        cids (list[str]): список CID соединений.
+        sleep_time (float | None, optional): время ожидания перед повторной попыткой
+        в секундах. Defaults to config["PubChem_download_toxicity"]["sleep_time"].
+
+    Returns:
+        list[str]: список molfile-строк.
+    """
+
+    cids_str = ",".join(str(cid) for cid in cids).replace(" ", "")
+
+    def SplitLongStringWithCommas(s: str) -> list[str]:
+        """
+        Разбивает длинную строку, содержащую CID, разделенные запятыми,
+        на список более коротких строк.
+
+        Это необходимо для избежания ограничений на длину URL при запросе к PubChem.
+        Разбивает так, чтобы длина каждой подстроки не превышала 2000 символов.
+
+        Args:
+            s (str): строка, содержащая CID, разделенные запятыми.
+
+        Returns:
+            list[str]: список строк, содержащих CID, разделенные запятыми.
+        """
+
+        if len(s) <= 2000:
+            return [s]
+
+        chunks = []
+        curr_chunk = ""
+        for cid in s.split(","):
+            if len(curr_chunk) + len(f"{cid},") <= 2000:
+                curr_chunk += f"{cid},"
+
+            else:
+                chunks.append(curr_chunk.rstrip(","))
+                curr_chunk = f"{cid},"
+
+        if curr_chunk not in chunks:
+            chunks.append(curr_chunk.rstrip(","))
+        return chunks
+
+    # получаем molfile для каждой подстроки CID.
+    molfiles_str: str = ""
+    for cids_str_shorter in SplitLongStringWithCommas(cids_str):
+        molfiles_str += GetResponse(
+            "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/CID/"
+            f"{cids_str_shorter}/record/SDF?record_type=2d",
+            True,
+            sleep_time).text
+
+    # разделяем строку с molfile на отдельные molfile и очищаем их.
+    return [f"\n{molfile.split("\n", 1)[1]}"
+            for molfile in molfiles_str.split("\n\n$$$$\n")[:-1]]
+
+
 def GetDataFrameFromUrl(request_url: str, sleep_time: float) -> pd.DataFrame:
     """
-    Скачиваем данные из CSV-файла по URL и преобразуем их в pandas DataFrame.
+    Скачивает данные из CSV-файла по URL и преобразует их в pandas.DataFrame.
 
     Args:
         request_url (str): URL CSV-файла.
@@ -126,6 +229,9 @@ def GetLinkFromSid(sid: int,
     return start + "&" + QueryDictToStr(query)
 
 
+# MARK: DownloadCompoundToxicity
+
+
 @ReTry(attempts_amount=1)
 def DownloadCompoundToxicity(compound_data: dict,
                              page_folder_name: str):
@@ -138,11 +244,6 @@ def DownloadCompoundToxicity(compound_data: dict,
         page_folder_name (str): путь к директории, в которой будет сохранен файл.
     """
 
-    # получаем конфигурацию для скачивания токсичности.
-    toxicity_config: Config = config["PubChem_download_toxicity"]
-    # получаем конфигурацию для фильтрации.
-    filtering_config: Config = toxicity_config["filtering"]
-
     cid: str = ""
 
     try:
@@ -154,8 +255,7 @@ def DownloadCompoundToxicity(compound_data: dict,
         v_logger.warning(
             f"No 'cid' for 'sid': {compound_data["LinkedRecords"]["SID"][0]}"
             f", skip.")
-        v_logger.info(
-            f"{"-" * (config["Utils"]["VerboseLogger"]["message_ljust"] - 1)}", LogMode.VERBOSELY)
+        v_logger.info("-", LogMode.VERBOSELY)
 
         return
         # не сохраняем те соединения, у которых нет cid,
@@ -207,8 +307,7 @@ def DownloadCompoundToxicity(compound_data: dict,
             config["skip_downloaded"]:
         v_logger.info(f"{compound_name} is already downloaded, skip.",
                       LogMode.VERBOSELY)
-        v_logger.info(
-            f"{"-" * (config["Utils"]["VerboseLogger"]["message_ljust"] - 1)}", LogMode.VERBOSELY)
+        v_logger.info("-", LogMode.VERBOSELY)
 
         return
 
@@ -456,20 +555,10 @@ def DownloadCompoundToxicity(compound_data: dict,
                 # то записываем только его.
                 listed_df.loc[0, column_name] = full_column_data[0]
 
-        # получаем molfile соединения из PubChem.
-        molfile: str = GetResponse(
-            "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/CID/"
-            f"{cid}/record/SDF?record_type=2d",
-            True,
-            None).text
-
-        # очищаем molfile от лишних символов.
-        molfile = molfile[molfile.find("\n"):].replace("$$$$", "").rstrip()
-
         # сохраняем molfile в SDF-файл.
         SaveMolfilesToSDF(
             data=pd.DataFrame({"cid": [cid],
-                               "molfile": [molfile]}),
+                               "molfile": [GetMolfileFromCID(cid)]}),
             file_name=(
                 f"{toxicity_config["molfiles_folder_name"]}/"
                 f"{compound_name}_{unit_type}"),
@@ -628,8 +717,7 @@ def DownloadCompoundToxicity(compound_data: dict,
         v_logger.warning(f"No 'mw' for {compound_name}, skip.")
         return
 
-    v_logger.info(
-        f"{"~" * (config["Utils"]["VerboseLogger"]["message_ljust"] - 1)}", LogMode.VERBOSELY)
+    v_logger.info("~", LogMode.VERBOSELY)
 
     # сохраняем данные о токсичности для единиц измерения "kg".
     SaveToxicityUnitSpecification(compound_file_unit=compound_file_kg,
@@ -646,8 +734,7 @@ def DownloadCompoundToxicity(compound_data: dict,
                                                "nL/kg"],
                                   acute_effects=acute_effects)
 
-    v_logger.info(
-        f"{"·" * (config["Utils"]["VerboseLogger"]["message_ljust"] - 1)}", LogMode.VERBOSELY)
+    v_logger.info("·", LogMode.VERBOSELY)
 
     # сохраняем данные о токсичности для единиц измерения "m3".
     SaveToxicityUnitSpecification(compound_file_unit=compound_file_m3,
@@ -668,8 +755,145 @@ def DownloadCompoundToxicity(compound_data: dict,
                                                "pph"],
                                   acute_effects=acute_effects)
 
-    v_logger.info(
-        f"{"·" * (config["Utils"]["VerboseLogger"]["message_ljust"] - 1)}", LogMode.VERBOSELY)
+    v_logger.info("·", LogMode.VERBOSELY)
     v_logger.success(f"Downloading {compound_name}!", LogMode.VERBOSELY)
-    v_logger.info(
-        f"{"-" * (config["Utils"]["VerboseLogger"]["message_ljust"] - 1)}", LogMode.VERBOSELY)
+    v_logger.info("-", LogMode.VERBOSELY)
+
+
+# MARK: FilterDownloadedToxicityByCharacteristics
+
+
+def FilterDownloadedToxicityByCharacteristics(unit_type: str,
+                                              charact_1: str,
+                                              charact_2: str,
+                                              charact_3: str) -> None:
+    """
+    Фильтрует данные о токсичности из CSV-файла по заданным характеристикам,
+    загружает molfile для каждого соединения и сохраняет результаты в CSV и SDF файлы.
+
+    Args:
+        unit_type (str): тип единиц измерения (например, "kg" или "m3").
+        charact_1 (str): название первой характеристики для фильтрации.
+        charact_2 (str): название второй характеристики для фильтрации.
+        charact_3 (str): название третьей характеристики для фильтрации.
+    """
+    toxicity_config: Config = config["PubChem_download_toxicity"]
+
+    v_logger.info(f"Filtering by characteristics for {unit_type}...")
+
+    # папка для результатов фильтрации.
+    charact_folder_name: str =\
+        f"{toxicity_config["results_folder_name"]}/"\
+        f"{filtering_config["characteristics_folder_name"]}"
+    os.makedirs(charact_folder_name, exist_ok=True)
+
+    # читаем CSV-файл с данными о токсичности.
+    unit_type_df = pd.read_csv(f"{toxicity_config["results_folder_name"]}/"
+                               f"{toxicity_config["combined_file_name"]}_{unit_type}.csv",
+                               sep=config["csv_separator"],
+                               low_memory=False)
+
+    unique_charact_1 = unit_type_df[charact_1].unique()
+    v_logger.info(f"Unique {charact_1}s: {unique_charact_1}.", LogMode.VERBOSELY)
+
+    # заменяем отсутствующие значения времени на "no_exact_time".
+    if charact_2 == "time_period":
+        unit_type_df[charact_2] =\
+            unit_type_df[charact_2].replace(np.nan, "no_exact_time")
+
+    unique_charact_2 = unit_type_df[charact_2].unique()
+    v_logger.info(f"Unique {charact_2}s: {unique_charact_2}.", LogMode.VERBOSELY)
+
+    # словарь для хранения отфильтрованных данных.
+    unique_separated: dict[str, dict[str, pd.DataFrame]] = {}
+
+    # группируем данные по первой и второй характеристикам.
+    for u_charact_1, charact_1_df in unit_type_df.groupby(charact_1):
+        unique_separated.setdefault(str(u_charact_1), {})
+
+        for u_charact_2, charact_2_df in charact_1_df.groupby(charact_2):
+            unique_separated[str(u_charact_1)][str(u_charact_2)] =\
+                charact_2_df.copy()
+
+    unique_charact_3 = unit_type_df[charact_3].unique()
+    v_logger.info(f"Unique {charact_3}s: {unique_charact_3}.", LogMode.VERBOSELY)
+
+    # словарь для хранения окончательно отфильтрованных данных.
+    unique_filtered: dict[str, dict[str, dict[str, pd.DataFrame]]] = {}
+
+    # итерируемся по уникальным значениям характеристик и фильтруем данные.
+    for u_charact_1 in unique_charact_1:
+        v_logger.info("-", LogMode.VERBOSELY)
+        v_logger.info(f"Current {charact_1}: {u_charact_1}.", LogMode.VERBOSELY)
+
+        unique_filtered.setdefault(u_charact_1, {})
+
+        for u_charact_2 in unique_charact_2:
+            v_logger.info(f"Current {charact_2}: {u_charact_2}.", LogMode.VERBOSELY)
+
+            unique_filtered[u_charact_1].setdefault(u_charact_2, {})
+
+            df: pd.DataFrame
+            try:
+                # DataFrame для текущих значений первой и второй характеристик.
+                df = unique_separated[u_charact_1][u_charact_2]
+
+            except KeyError:
+                # если DataFrame не существует, переходим к следующей итерации.
+                continue
+
+            for u_charact_3 in unique_charact_3:
+                # фильтруем DataFrame по третьей характеристике.
+                charact_df = df[df[charact_3] == u_charact_3].copy()
+
+                filtered_file_name = f"{charact_folder_name}/{unit_type}/"\
+                    f"{toxicity_config["results_file_name"]}_"\
+                    f"{u_charact_1}_{u_charact_2}_{u_charact_3}"
+
+                # если файл уже существует и скачивание пропущено, пропускаем.
+                if os.path.exists(f"{filtered_file_name}.csv") and\
+                        config["skip_downloaded"]:
+                    v_logger.info(f"{u_charact_1}_{u_charact_2}_{u_charact_3}"
+                                  " is already downloaded, skip.",
+                                  LogMode.VERBOSELY)
+                    v_logger.info("~", LogMode.VERBOSELY)
+
+                    continue
+
+                # устраняем дубликаты по 'sid', используя медиану 'pLD50'.
+                charact_df = MedianDedupedDF(charact_df, "sid", "pLD50")
+
+                # если количество записей в отфильтрованном DataFrame больше или равно
+                # filtering_config["occurrence_characteristics_number"], сохраняем его.
+                if len(charact_df) >=\
+                        filtering_config["occurrence_characteristics_number"]:
+                    unique_filtered[u_charact_1][u_charact_2][u_charact_3] = charact_df
+
+                    os.makedirs(f"{charact_folder_name}/{unit_type}", exist_ok=True)
+
+                    charact_df.to_csv(f"{filtered_file_name}.csv")
+
+                    # если необходимо скачивать соединения в SDF.
+                    if toxicity_config["download_compounds_sdf"]:
+                        v_logger.info(f"Saving {unit_type} characteristics to .sdf...",
+                                      LogMode.VERBOSELY)
+
+                        cids: list[str] = list(charact_df["cid"])
+                        SaveMolfilesToSDF(data=pd.DataFrame(
+                            {"cid": cids,
+                             "molfile": GetMolfilesFromCIDs(cids)}),
+                            file_name=filtered_file_name,
+                            molecule_id_column_name="cid",
+                            extra_data=charact_df,
+                            indexing_lists=True)
+
+                        v_logger.success(f"Saving {unit_type} characteristics to .sdf!",
+                                         LogMode.VERBOSELY)
+
+                    v_logger.success(
+                        f"Current {charact_3}: {u_charact_3}, len: "
+                        f"{len(unique_filtered[u_charact_1][u_charact_2][u_charact_3])}!",
+                        LogMode.VERBOSELY)
+                    v_logger.info("~", LogMode.VERBOSELY)
+
+    v_logger.success(f"Filtering by characteristics for {unit_type}!")

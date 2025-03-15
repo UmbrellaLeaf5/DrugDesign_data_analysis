@@ -29,7 +29,7 @@ def DownloadChEMBLCellLines():
     v_logger.UpdateFormat(cell_lines_config["logger_label"],
                           cell_lines_config["logger_color"])
 
-    v_logger.info(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
+    v_logger.info(f"{"• " * 10} ChEMBL downloading for DrugDesign.")
 
     # создаем директорию для сохранения результатов, если она не существует.
     os.makedirs(cell_lines_config["results_folder_name"], exist_ok=True)
@@ -60,5 +60,5 @@ def DownloadChEMBLCellLines():
             f"downloaded, skip.",
             LogMode.VERBOSELY)
 
-    v_logger.success(f"{'-' * 21} ChEMBL downloading for DrugDesign {'-' * 21}")
-    v_logger.info(f"{'-' * 77}")
+    v_logger.success(f"{"• " * 10} ChEMBL downloading for DrugDesign!")
+    v_logger.info()

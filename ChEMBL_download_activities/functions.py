@@ -189,7 +189,7 @@ def CleanedTargetActivitiesDF(data: pd.DataFrame,
     v_logger.success("Reindexing columns in logical order!", LogMode.VERBOSELY)
     v_logger.success(f"End cleaning activities DataFrame from {target_id}!",
                      LogMode.VERBOSELY)
-    v_logger.info(f"{'-' * 77}", LogMode.VERBOSELY)
+    v_logger.info("-", LogMode.VERBOSELY)
 
     return data
 
@@ -278,6 +278,6 @@ def CleanedCellLineActivitiesDF(data: pd.DataFrame,
     v_logger.success("Reindexing columns in logical order!", LogMode.VERBOSELY)
     v_logger.success(f"End cleaning activities DataFrame from {cell_id}!",
                      LogMode.VERBOSELY)
-    v_logger.info(f"{'-' * 77}", LogMode.VERBOSELY)
+    v_logger.info("-", LogMode.VERBOSELY)
 
     return data

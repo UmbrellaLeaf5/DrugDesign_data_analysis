@@ -271,6 +271,10 @@ class VerboseLogger:
 
         def Wrapper(message: str = f"{"-" * (self.__message_ljust - 1)}",
                     log_mode: LogMode = LogMode.RETICENTLY):
+            # в том случае, если сообщение состоит из одного символа, превращаем в полосу.
+            if len(message) == 1:
+                message = f"{f"{message}" * (self.__message_ljust - 1)}"
+
             # вызываем метод Log с заданным уровнем и сообщением.
             self.Log(level_name, message, log_mode)
 
