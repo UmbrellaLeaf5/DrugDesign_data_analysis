@@ -860,8 +860,8 @@ def FilterDownloadedToxicityByCharacteristics(unit_type: str,
 
                     continue
 
-                # устраняем дубликаты по 'sid', используя медиану 'pLD50'.
-                charact_df = MedianDedupedDF(charact_df, "sid", "pLD50")
+                # устраняем дубликаты по 'cid', используя медиану 'pLD50'.
+                charact_df = MedianDedupedDF(charact_df, "cid", "pLD50")
 
                 # если количество записей в отфильтрованном DataFrame больше или равно
                 # filtering_config["occurrence_characteristics_number"], сохраняем его.
