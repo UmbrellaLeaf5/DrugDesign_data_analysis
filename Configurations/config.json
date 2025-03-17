@@ -17,7 +17,7 @@
     "results_file_name": "cell_lines_data_from_ChEMBL",
     "download_activities": true,
     "raw_csv_folder_name": "raw/cell_lines_activities",
-    "raw_csv_g_drive_id": "1xw5nFTVZdycSG4BhaoeludtCwJU0gsXI",
+    "raw_csv_g_drive_id": "1Q-NPIXc1UJtIK_bPL81EZLj1ICHx-CSl",
     "download_all": false,
     "download_compounds_sdf": true,
     "id_list": [

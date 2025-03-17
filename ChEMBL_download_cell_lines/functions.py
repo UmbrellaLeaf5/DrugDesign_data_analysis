@@ -134,6 +134,8 @@ def AddedIC50andGI50ToCellLinesDF(data: pd.DataFrame
                          ) & (
                 data['GI50_new'].notna())]
 
+            data = data.copy()
+
             data["IC50_new"] = data["IC50_new"].astype(int)
             data["GI50_new"] = data["GI50_new"].astype(int)
 
