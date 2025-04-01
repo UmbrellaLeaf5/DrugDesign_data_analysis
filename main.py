@@ -21,10 +21,10 @@ download_tasks = {
 }
 
 if __name__ == "__main__":
-    try:
-        for task, DownloadFunction in download_tasks.items():
-            if config[task]["download"]:
-                DownloadFunction()
+  try:
+    for task, DownloadFunction in download_tasks.items():
+      if config[task]["download"]:
+        DownloadFunction()
 
-    except KeyboardInterrupt:
-        print(config["keyboard_end_message"])
+  except KeyboardInterrupt:
+    print(config["keyboard_end_message"])

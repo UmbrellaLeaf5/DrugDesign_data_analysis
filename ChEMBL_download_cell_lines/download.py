@@ -16,49 +16,49 @@ from Configurations.config import config, Config
 
 @IgnoreWarnings
 def DownloadChEMBLCellLines():
-    """
-    Скачивает информацию о клеточных линиях из базы данных ChEMBL на основе
-    конфигурации (`config.json`).
-    """
+  """
+  Скачивает информацию о клеточных линиях из базы данных ChEMBL на основе
+  конфигурации (`config.json`).
+  """
 
-    # конфигурация для скачивания клеточных линий.
-    cell_lines_config: Config = config["ChEMBL_download_cell_lines"]
-    # конфигурация для скачивания активностей.
-    activities_config: Config = config["ChEMBL_download_activities"]
+  # конфигурация для скачивания клеточных линий.
+  cell_lines_config: Config = config["ChEMBL_download_cell_lines"]
+  # конфигурация для скачивания активностей.
+  activities_config: Config = config["ChEMBL_download_activities"]
 
-    v_logger.UpdateFormat(cell_lines_config["logger_label"],
-                          cell_lines_config["logger_color"])
+  v_logger.UpdateFormat(cell_lines_config["logger_label"],
+                        cell_lines_config["logger_color"])
 
-    v_logger.info(f"{"• " * 10} ChEMBL downloading for DrugDesign.")
+  v_logger.info(f"{"• " * 10} ChEMBL downloading for DrugDesign.")
 
-    # создаем директорию для сохранения результатов, если она не существует.
-    os.makedirs(cell_lines_config["results_folder_name"], exist_ok=True)
+  # создаем директорию для сохранения результатов, если она не существует.
+  os.makedirs(cell_lines_config["results_folder_name"], exist_ok=True)
 
-    # если нужно скачивать активности, создаем и для них директорию.
-    if cell_lines_config["download_activities"]:
-        os.makedirs(activities_config["results_folder_name"], exist_ok=True)
+  # если нужно скачивать активности, создаем и для них директорию.
+  if cell_lines_config["download_activities"]:
+    os.makedirs(activities_config["results_folder_name"], exist_ok=True)
 
-    # если установлен флаг тестирования, ограничиваем список id.
-    if config["testing_flag"]:
-        cell_lines_config["id_list"] = ["CHEMBL4295386", "CHEMBL3307781"]
+  # если установлен флаг тестирования, ограничиваем список id.
+  if config["testing_flag"]:
+    cell_lines_config["id_list"] = ["CHEMBL4295386", "CHEMBL3307781"]
 
-    # если не нужно пропускать скачанные или файл не существует.
-    if not config["skip_downloaded"] or not IsFileInFolder(
-            f"{cell_lines_config["results_file_name"]}.csv",
-            f"{cell_lines_config["results_folder_name"]}"):
+  # если не нужно пропускать скачанные или файл не существует.
+  if not config["skip_downloaded"] or not IsFileInFolder(
+          f"{cell_lines_config["results_file_name"]}.csv",
+          f"{cell_lines_config["results_folder_name"]}"):
 
-        # если нужно скачивать все, очищаем список id (скачаются все).
-        if cell_lines_config["download_all"]:
-            cell_lines_config["id_list"] = []
+    # если нужно скачивать все, очищаем список id (скачаются все).
+    if cell_lines_config["download_all"]:
+      cell_lines_config["id_list"] = []
 
-        DownloadCellLinesFromIdList()
+    DownloadCellLinesFromIdList()
 
-    # если файл уже скачан, пропускаем.
-    else:
-        v_logger.info(
-            f"{cell_lines_config["results_file_name"]} is already "
-            f"downloaded, skip.",
-            LogMode.VERBOSELY)
+  # если файл уже скачан, пропускаем.
+  else:
+    v_logger.info(
+        f"{cell_lines_config["results_file_name"]} is already "
+        f"downloaded, skip.",
+        LogMode.VERBOSELY)
 
-    v_logger.success(f"{"• " * 10} ChEMBL downloading for DrugDesign!")
-    v_logger.info()
+  v_logger.success(f"{"• " * 10} ChEMBL downloading for DrugDesign!")
+  v_logger.info()

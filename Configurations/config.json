@@ -7,7 +7,21 @@
     "logger_label": "ChEMBL____activ",
     "logger_color": "fg #61B78C",
     "results_folder_name": "results/chembl/activities",
-    "download_compounds_sdf": true
+    "download_compounds_sdf": true,
+    "filtering": {
+      "targets": {
+        "standard_relation": [
+          "="
+        ],
+        "standard_units": [
+          "nM"
+        ],
+        "target_organism": [
+          "Homo sapiens"
+        ]
+      },
+      "cell_lines": {}
+    }
   },
   "ChEMBL_download_cell_lines": {
     "download": true,
