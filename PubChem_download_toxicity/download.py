@@ -53,18 +53,23 @@ def DownloadPubChemCompoundsToxicity():
       v_logger.info(f"Downloading page_{page_num}...")
 
       # формируем имя папки для текущей страницы.
-      page_folder_name = f"{toxicity_config["results_folder_name"]}/""{unit_type}"\
-          f"/page_{page_num}"
+      page_folder_name = f"{toxicity_config["results_folder_name"]}/"\
+          "{unit_type}/page_{page_num}"
 
+      # если существуют папки для следующих страниц, значит, эти полностью загружены.
       if config["skip_downloaded"] and\
-              (os.path.exists(page_folder_name.format(unit_type="kg")) or
-               os.path.exists(page_folder_name.format(unit_type="m3"))):
+              (os.path.exists(page_folder_name.format(unit_type="kg",
+                                                      page_num=page_num + 1)) or
+               os.path.exists(page_folder_name.format(unit_type="m3",
+                                                      page_num=page_num + 1))):
         v_logger.info(f"Folder for page_{page_num} is already exists, skip.")
         continue
 
       # создаем директории для единиц измерения "kg" и "m3".
-      os.makedirs(page_folder_name.format(unit_type="kg"), exist_ok=True)
-      os.makedirs(page_folder_name.format(unit_type="m3"), exist_ok=True)
+      os.makedirs(page_folder_name.format(unit_type="kg",
+                                          page_num=page_num), exist_ok=True)
+      os.makedirs(page_folder_name.format(unit_type="m3",
+                                          page_num=page_num), exist_ok=True)
 
       # формируем ссылку для скачивания данных о соединениях.
       compound_link: str =\
@@ -105,7 +110,8 @@ def DownloadPubChemCompoundsToxicity():
 
         # скачиваем данные о токсичности соединения.
         DownloadCompoundToxicity(compound_data,
-                                 page_folder_name)
+                                 f"{toxicity_config["results_folder_name"]}/"
+                                 "{unit_type}/"f"page_{page_num}")
 
         # фиксируем время окончания обработки.
         end_time = time.time()
@@ -126,12 +132,14 @@ def DownloadPubChemCompoundsToxicity():
                         f"page_{page_num} folder...")
 
           # объединяем CSV-файлы для единиц измерения "kg".
-          CombineCSVInFolder(page_folder_name.format(unit_type="kg"),
+          CombineCSVInFolder(page_folder_name.format(unit_type="kg",
+                                                     page_num=page_num),
                              f"{toxicity_config["results_file_name"]}_"
                              f"{quarters[i]}_page_{page_num}")
 
           # объединяем CSV-файлы для единиц измерения "m3".
-          CombineCSVInFolder(page_folder_name.format(unit_type="m3"),
+          CombineCSVInFolder(page_folder_name.format(unit_type="m3",
+                                                     page_num=page_num),
                              f"{toxicity_config["results_file_name"]}_"
                              f"{quarters[i]}_page_{page_num}")
 
@@ -151,12 +159,14 @@ def DownloadPubChemCompoundsToxicity():
 
           # перемещаем файл для единиц измерения "kg".
           MoveFileToFolder(quarter_file_name,
-                           page_folder_name.format(unit_type="kg"),
+                           page_folder_name.format(unit_type="kg",
+                                                   page_num=page_num),
                            results_folder_kg)
 
           # перемещаем файл для единиц измерения "m3".
           MoveFileToFolder(quarter_file_name,
-                           page_folder_name.format(unit_type="m3"),
+                           page_folder_name.format(unit_type="m3",
+                                                   page_num=page_num),
                            results_folder_m3)
 
           v_logger.success(

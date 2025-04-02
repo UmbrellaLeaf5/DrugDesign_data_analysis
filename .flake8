@@ -1,4 +1,5 @@
 [flake8]
+indent-size = 2
 max-line-length = 90
-exclude = .git, __pycache__, temp.py, .venv, .vscode, .github, .extra
-ignore = F403, F405
+exclude = .git, __pycache__, temp.py, .venv, .vscode, .github, .extra, results, raw
+ignore = E126, E127, F403, F405, W504

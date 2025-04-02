@@ -232,7 +232,8 @@ def CleanedCellLineActivitiesDF(data: pd.DataFrame,
   """
 
   # конфигурация для фильтрации активностей (клеточных линий).
-  filtering_config: Config = config["ChEMBL_download_activities"]["filtering"]["cell_lines"]
+  filtering_config: Config =\
+      config["ChEMBL_download_activities"]["filtering"]["cell_lines"]
 
   v_logger.info(f"Start cleaning {activities_type} activities DataFrame from "
                 f"{cell_id}...", LogMode.VERBOSELY)
