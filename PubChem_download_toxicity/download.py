@@ -40,19 +40,27 @@ def DownloadPubChemCompoundsToxicity():
   v_logger.info(f"{"• " * 10} PubChem downloading for DrugDesign.")
 
   # если файлы не скачаны или их нет в папке.
-  if not config["skip_downloaded"] or not IsFileInFolder(
+  if not config["skip_downloaded"] or\
+      not IsFileInFolder(
           f"{toxicity_config["combined_file_name"]}_m3.csv",
-          toxicity_config["results_folder_name"]) or not IsFileInFolder(
+          toxicity_config["results_folder_name"]) or\
+      not IsFileInFolder(
           f"{toxicity_config["combined_file_name"]}_kg.csv",
           toxicity_config["results_folder_name"]):
     # итерируемся по страницам (включая последнюю).
-    for page in range(toxicity_config["start_page"],
-                      toxicity_config["end_page"] + 1):
-      v_logger.info(f"Downloading page_{page}...")
+    for page_num in range(toxicity_config["start_page"],
+                          toxicity_config["end_page"] + 1):
+      v_logger.info(f"Downloading page_{page_num}...")
 
       # формируем имя папки для текущей страницы.
       page_folder_name = f"{toxicity_config["results_folder_name"]}/""{unit_type}"\
-          f"/page_{page}"
+          f"/page_{page_num}"
+
+      if config["skip_downloaded"] and\
+              (os.path.exists(page_folder_name.format(unit_type="kg")) or
+               os.path.exists(page_folder_name.format(unit_type="m3"))):
+        v_logger.info(f"Folder for page_{page_num} is already exists, skip.")
+        continue
 
       # создаем директории для единиц измерения "kg" и "m3".
       os.makedirs(page_folder_name.format(unit_type="kg"), exist_ok=True)
@@ -63,7 +71,7 @@ def DownloadPubChemCompoundsToxicity():
           "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/annotations/"\
           "heading/JSON"\
           "?heading=Acute+Effects"\
-          f"&page={page}"
+          f"&page={page_num}"
 
       # получаем данные с веб-страницы.
       data = GetResponse(compound_link,
@@ -84,9 +92,9 @@ def DownloadPubChemCompoundsToxicity():
       total_pages = int(data["TotalPages"])
 
       # проверяем, что номер текущей страницы не превышает общее количество.
-      if page > total_pages:
+      if page_num > total_pages:
         v_logger.LogException(IndexError(
-            f"Invalid page index: '{page}'! Should be: 1 < 'page' < "
+            f"Invalid page index: '{page_num}'! Should be: 1 < 'page' < "
             f"{total_pages}"))
         continue
 
@@ -115,31 +123,31 @@ def DownloadPubChemCompoundsToxicity():
           quarter = quarters[i]
 
           v_logger.info(f"Quarter: {quarter}%, combining files in "
-                        f"page_{page} folder...")
+                        f"page_{page_num} folder...")
 
           # объединяем CSV-файлы для единиц измерения "kg".
           CombineCSVInFolder(page_folder_name.format(unit_type="kg"),
                              f"{toxicity_config["results_file_name"]}_"
-                             f"{quarters[i]}_page_{page}")
+                             f"{quarters[i]}_page_{page_num}")
 
           # объединяем CSV-файлы для единиц измерения "m3".
           CombineCSVInFolder(page_folder_name.format(unit_type="m3"),
                              f"{toxicity_config["results_file_name"]}_"
-                             f"{quarters[i]}_page_{page}")
+                             f"{quarters[i]}_page_{page_num}")
 
           v_logger.success(f"Quarter: {quarter}%, combining files in "
-                           f"page_{page} folder!")
+                           f"page_{page_num} folder!")
 
           # перемещаем объединенные файлы.
           v_logger.info(
               f"Moving {toxicity_config["results_file_name"]}_"
-              f"{quarters[i]}_page_{page}.csv to "
+              f"{quarters[i]}_page_{page_num}.csv to "
               f"{toxicity_config["results_folder_name"]}...",
               LogMode.VERBOSELY)
 
           # формируем имя файла для перемещения.
           quarter_file_name = f"{toxicity_config["results_file_name"]}_"\
-              f"{quarters[i]}_page_{page}.csv"
+              f"{quarters[i]}_page_{page_num}.csv"
 
           # перемещаем файл для единиц измерения "kg".
           MoveFileToFolder(quarter_file_name,
@@ -164,7 +172,7 @@ def DownloadPubChemCompoundsToxicity():
             # формируем имя предыдущего файла.
             old_quarter_file_name: str =\
                 f"{toxicity_config["results_file_name"]}_"\
-                f"{prev_quarter}_page_{page}"
+                f"{prev_quarter}_page_{page_num}"
 
             v_logger.info("Deleting old quarter file...",
                           LogMode.VERBOSELY)
@@ -239,7 +247,7 @@ def DownloadPubChemCompoundsToxicity():
   else:
     v_logger.info(
         f"{toxicity_config["results_file_name"]} is already "
-        f"downloaded, skip",
+        f"downloaded, skip.",
         LogMode.VERBOSELY)
 
   if toxicity_config["filtering"]["need_filtering_by_characteristics"]:

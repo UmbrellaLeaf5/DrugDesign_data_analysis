@@ -640,14 +640,14 @@ def DownloadCompoundToxicity(compound_data: dict,
     v_logger.success(f"Filtering 'dose' in {unit_str}!",
                      LogMode.VERBOSELY)
 
-    v_logger.info(f"Adding 'pLD50' to {compound_name}_{unit_str}...",
+    v_logger.info(f"Adding 'pLD' to {compound_name}_{unit_str}...",
                   LogMode.VERBOSELY)
 
-    # вычисляем pLD50.
-    acute_effects_unit["pLD50"] = -np.log10(
+    # вычисляем pLD.
+    acute_effects_unit["pLD"] = -np.log10(
         (acute_effects_unit["dose"] / acute_effects_unit["mw"]) / 1000000)
 
-    v_logger.success(f"Adding 'pLD50' to {compound_name}_{unit_str}!",
+    v_logger.success(f"Adding 'pLD' to {compound_name}_{unit_str}!",
                      LogMode.VERBOSELY)
 
     v_logger.info(f"Saving {compound_name}_{unit_str} to .csv...",
@@ -863,9 +863,9 @@ def FilterDownloadedToxicityByCharacteristics(unit_type: str,
         # устраняем дубликаты по 'cid', используя медиану 'dose'.
         charact_df = MedianDedupedDF(charact_df, "cid", "dose")
 
-        # перевычисляем pLD50.
+        # перевычисляем pLD.
         if not charact_df.empty:
-          charact_df["pLD50"] = -np.log10(
+          charact_df["pLD"] = -np.log10(
               (charact_df["dose"] / charact_df["mw"]) / 1000000)
 
         # если количество записей в отфильтрованном DataFrame больше или равно
