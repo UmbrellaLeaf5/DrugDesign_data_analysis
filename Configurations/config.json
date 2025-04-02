@@ -11,16 +11,42 @@
     "filtering": {
       "targets": {
         "standard_relation": [
-          "="
+          "=",
+          "'='"
         ],
         "standard_units": [
           "nM"
         ],
         "target_organism": [
           "Homo sapiens"
+        ],
+        "standard_type": [
+          "IC50",
+          "Ki"
+        ],
+        "assay_type": [
+          "B"
         ]
       },
-      "cell_lines": {}
+      "cell_lines": {
+        "standard_relation": [
+          "=",
+          "'='"
+        ],
+        "standard_units": [
+          "nM"
+        ],
+        "assay_organism": [
+          "Homo sapiens"
+        ],
+        "standard_type": [
+          "IC50",
+          "GI50"
+        ],
+        "assay_type": [
+          "B"
+        ]
+      }
     }
   },
   "ChEMBL_download_cell_lines": {

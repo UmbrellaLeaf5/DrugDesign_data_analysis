@@ -13,6 +13,8 @@ from Utils.dataframe_funcs import MedianDedupedDF, pd
 from Utils.decorators import ReTry
 from Utils.verbose_logger import LogMode, v_logger
 
+from Configurations.config import config, Config
+
 
 @ReTry()
 def QuerySetActivitiesByIC50(target_id: str) -> QuerySet:
@@ -116,8 +118,8 @@ def CleanedTargetActivitiesDF(data: pd.DataFrame,
 
   Функция выполняет следующие шаги:
       1. Удаляет неинформативные столбцы.
-      2. Фильтрует данные, оставляя только значения с отношением "=", единицами "nM",
-         организмом "Homo sapiens", типом "IC50" или "Ki" и типом анализа "B".
+      2. Фильтрует данные, оставляя только значения с отношением, единицами,
+         организмами, типами активности и типами анализа из файла с конфигурациями.
       3. Преобразует столбец "standard_value" в числовой тип.
       4. Удаляет значения "standard_value", превышающие 1000000000 (1e9).
       5. Заменяет значения "Not Determined" в столбце 'activity_comment' на None.
@@ -135,6 +137,8 @@ def CleanedTargetActivitiesDF(data: pd.DataFrame,
   Returns:
       pd.DataFrame: Очищенный DataFrame с данными об активностях.
   """
+  # конфигурация для фильтрации активностей (мишеней).
+  filtering_config: Config = config["ChEMBL_download_activities"]["filtering"]["targets"]
 
   v_logger.info(f"Start cleaning {activities_type} activities DataFrame from "
                 f"{target_id}...", LogMode.VERBOSELY)
@@ -154,11 +158,11 @@ def CleanedTargetActivitiesDF(data: pd.DataFrame,
   v_logger.success("Deleting useless columns!", LogMode.VERBOSELY)
   v_logger.info("Deleting inappropriate elements...", LogMode.VERBOSELY)
 
-  data = data[data["standard_relation"] == "="]
-  data = data[data["standard_units"] == "nM"]
-  data = data[data["target_organism"] == "Homo sapiens"]
-  data = data[data["standard_type"].isin(["IC50", "Ki"])]
-  data = data[data["assay_type"] == "B"]
+  data = data[data["standard_relation"].isin(filtering_config["standard_relation"])]
+  data = data[data["standard_units"].isin(filtering_config["standard_units"])]
+  data = data[data["target_organism"].isin(filtering_config["target_organism"])]
+  data = data[data["standard_type"].isin(filtering_config["standard_type"])]
+  data = data[data["assay_type"].isin(filtering_config["assay_type"])]
 
   data["standard_value"] = data["standard_value"].astype(float)
   # неправдоподобные значения
@@ -207,8 +211,8 @@ def CleanedCellLineActivitiesDF(data: pd.DataFrame,
       1. Выбирает нужные столбцы из DataFrame.
       2. Переименовывает столбцы,
          приводя их к нижнему регистру и заменяя пробелы на "_".
-      3. Фильтрует данные, оставляя только значения с отношением "=", единицами "nM",
-         организмом "Homo sapiens" и типом "IC50" или "GI50".
+      3. Фильтрует данные, оставляя только значения с отношениями, единицами,
+         организмами и типами активности из файла с конфигурациями.
       4. Преобразует столбец "standard_value" в числовой тип.
       5. Удаляет значения "standard_value", превышающие 1000000000 (1e9).
       6. Удаляет столбец "assay_organism" и "standard_type".
@@ -227,6 +231,9 @@ def CleanedCellLineActivitiesDF(data: pd.DataFrame,
       pd.DataFrame: Очищенный DataFrame с данными об активностях клеточной линии.
   """
 
+  # конфигурация для фильтрации активностей (клеточных линий).
+  filtering_config: Config = config["ChEMBL_download_activities"]["filtering"]["cell_lines"]
+
   v_logger.info(f"Start cleaning {activities_type} activities DataFrame from "
                 f"{cell_id}...", LogMode.VERBOSELY)
   v_logger.info("Deleting useless columns...", LogMode.VERBOSELY)
@@ -244,13 +251,10 @@ def CleanedCellLineActivitiesDF(data: pd.DataFrame,
   v_logger.success("Deleting useless columns!", LogMode.VERBOSELY)
   v_logger.info("Deleting inappropriate elements...", LogMode.VERBOSELY)
 
-  data = data[data["standard_relation"] == "'='"]
-  data["standard_relation"] = data["standard_relation"].str.replace(
-      "'='", "=")
-
-  data = data[data['standard_units'] == "nM"]
-  data = data[data['assay_organism'] == "Homo sapiens"]
-  data = data[data['standard_type'].isin(["IC50", "GI50"])]
+  data = data[data["standard_relation"].isin(filtering_config["standard_relation"])]
+  data = data[data["standard_units"].isin(filtering_config["standard_units"])]
+  data = data[data["assay_organism"].isin(filtering_config["assay_organism"])]
+  data = data[data["standard_type"].isin(filtering_config["standard_type"])]
 
   data['standard_value'] = data['standard_value'].astype(float)
   data = data[data['standard_value'] <= 1000000000]
