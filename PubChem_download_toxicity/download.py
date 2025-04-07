@@ -6,6 +6,8 @@ PubChem_download_toxicity/download.py
 """
 
 from PubChem_download_toxicity.functions import *
+from PubChem_download_toxicity.characteristics import\
+    FilterDownloadedToxicityByCharacteristics
 
 from Utils.files_funcs import CombineCSVInFolder, DeleteFilesInFolder, \
     IsFileInFolder, MoveFileToFolder, os
@@ -20,9 +22,6 @@ def DownloadPubChemCompoundsToxicity():
   Скачиваем информацию о токсичности соединений из базы данных PubChem на
   основе конфигурации (`config.json`).
   """
-
-  # конфигурация для скачивания данных о токсичности.
-  toxicity_config: Config = config["PubChem_download_toxicity"]
 
   # путь к папке для результатов в единицах "kg".
   results_folder_kg: str = f"{toxicity_config["results_folder_name"]}/kg"

@@ -157,7 +157,7 @@
         ]
       },
       "need_filtering_by_characteristics": true,
-      "occurrence_characteristics_number": 10,
+      "occurrence_characteristics_number": 100,
       "characteristics_folder_name": "characteristics"
     },
     "sleep_time": 0.211,

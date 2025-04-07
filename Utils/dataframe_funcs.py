@@ -73,7 +73,7 @@ def MedianDedupedDF(df: pd.DataFrame,
   median_and_id_data: dict = {}
 
   # значения в столбце, где будут медианы - должно быть типа float.
-  df[median_column_name] = df[median_column_name].astype(float)
+  df.loc[:, median_column_name] = df[median_column_name].astype(float)
 
   name_values_dict: dict[str, float | list]
 
