@@ -103,7 +103,7 @@
     ]
   },
   "ChEMBL_download_targets": {
-    "download": true,
+    "download": false,
     "logger_label": "ChEMBL__targets",
     "logger_color": "fg #B3BC60",
     "results_folder_name": "results/chembl/targets",
@@ -131,33 +131,32 @@
     "filtering": {
       "kg": {
         "organism": [
-          "cat",
-          "chicken",
-          "guinea pig",
-          "guinea_pig",
-          "quail"
+          "human",
+          "infant",
+          "child",
+          "women",
+          "woman",
+          "man",
+          "men"
         ],
-        "route": [
-          "oral",
-          "intraperitoneal",
-          "intravenous",
-          "subcutaneous"
-        ]
+        "route": []
       },
       "m3": {
         "organism": [
-          "cat",
-          "chicken",
-          "guinea pig",
-          "guinea_pig",
-          "quail"
+          "human",
+          "infant",
+          "child",
+          "women",
+          "woman",
+          "man",
+          "men"
         ],
         "route": [
           "inhalation"
         ]
       },
       "need_filtering_by_characteristics": true,
-      "occurrence_characteristics_number": 100,
+      "occurrence_characteristics_number": 1,
       "characteristics_folder_name": "characteristics"
     },
     "sleep_time": 0.211,
