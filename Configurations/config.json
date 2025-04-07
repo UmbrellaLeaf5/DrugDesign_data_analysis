@@ -1,6 +1,6 @@
 {
   "testing_flag": false,
-  "skip_downloaded": false,
+  "skip_downloaded": true,
   "csv_separator": ";",
   "keyboard_end_message": "\n    End of downloading for DrugDesign by keyboard...\n",
   "ChEMBL_download_activities": {
@@ -25,7 +25,8 @@
           "Ki"
         ],
         "assay_type": [
-          "B"
+          "B",
+          "F"
         ]
       },
       "cell_lines": {
@@ -44,13 +45,14 @@
           "GI50"
         ],
         "assay_type": [
-          "B"
+          "B",
+          "F"
         ]
       }
     }
   },
   "ChEMBL_download_cell_lines": {
-    "download": true,
+    "download": false,
     "logger_label": "ChEMBL____cells",
     "logger_color": "fg #C96E91",
     "results_folder_name": "results/chembl/cell_lines",
@@ -110,35 +112,6 @@
     "download_all": false,
     "download_compounds_sdf": true,
     "id_list": [
-      "CHEMBL220",
-      "CHEMBL251",
-      "CHEMBL229",
-      "CHEMBL1867",
-      "CHEMBL213",
-      "CHEMBL210",
-      "CHEMBL1871",
-      "CHEMBL216",
-      "CHEMBL211",
-      "CHEMBL245",
-      "CHEMBL218",
-      "CHEMBL253",
-      "CHEMBL2056",
-      "CHEMBL217",
-      "CHEMBL252",
-      "CHEMBL231",
-      "CHEMBL214",
-      "CHEMBL1898",
-      "CHEMBL224",
-      "CHEMBL1833",
-      "CHEMBL240",
-      "CHEMBL258",
-      "CHEMBL1951",
-      "CHEMBL4777",
-      "CHEMBL2034",
-      "CHEMBL236",
-      "CHEMBL233",
-      "CHEMBL222",
-      "CHEMBL228",
       "CHEMBL230",
       "CHEMBL221",
       "CHEMBL3587"
@@ -158,8 +131,11 @@
     "filtering": {
       "kg": {
         "organism": [
-          "rat",
-          "mouse"
+          "cat",
+          "chicken",
+          "guinea pig",
+          "guinea_pig",
+          "quail"
         ],
         "route": [
           "oral",
@@ -170,15 +146,18 @@
       },
       "m3": {
         "organism": [
-          "rat",
-          "mouse"
+          "cat",
+          "chicken",
+          "guinea pig",
+          "guinea_pig",
+          "quail"
         ],
         "route": [
           "inhalation"
         ]
       },
       "need_filtering_by_characteristics": true,
-      "occurrence_characteristics_number": 100,
+      "occurrence_characteristics_number": 10,
       "characteristics_folder_name": "characteristics"
     },
     "sleep_time": 0.211,
