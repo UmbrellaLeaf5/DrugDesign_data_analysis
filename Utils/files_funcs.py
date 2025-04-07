@@ -327,3 +327,25 @@ def SaveMolfilesToSDF(data: pd.DataFrame,
       v_logger.info(
           f"Writing {molecule_id} data to .sdf file...",
           LogMode.VERBOSELY)
+
+  # переоткрываем файл, чтобы исправить избыточные переносы строк
+  # (да, заново открыть его - это самый простой способ)
+  with open(f"{file_name}.sdf", 'r', encoding='utf-8') as f:
+    sdf_content = f.read()
+
+  # максимальное кол-во переносов строк
+  max_n_amounts = 0
+  while ("\n" * max_n_amounts in sdf_content):
+    max_n_amounts += 1
+
+  # заменяем все идущие подряд переносы
+  # (вплоть до "\n\n" невключительно)
+  for amount in range(max_n_amounts, 2, -1):
+    sdf_content = sdf_content.replace("\n" * amount, "\n\n")
+
+  # после окончания блока должен быть лишь 1 перенос
+  sdf_content = sdf_content.replace("$$$$\n\n", "$$$$\n")
+
+  # перезаписываем файл
+  with open(f"{file_name}.sdf", 'w', encoding='utf-8') as f:
+    f.write(sdf_content)
