@@ -259,11 +259,12 @@ def DownloadPubChemCompoundsToxicity():
         f"downloaded, skip.",
         LogMode.VERBOSELY)
 
-  if toxicity_config["filtering"]["need_filtering_by_characteristics"]:
+  if filtering_config["need_filtering_by_characteristics"]:
     v_logger.info("·", LogMode.VERBOSELY)
 
     FilterDownloadedToxicityByCharacteristics("m3",
                                               "organism",
+                                              "route",
                                               "time_period",
                                               "testtype")
 
@@ -272,6 +273,7 @@ def DownloadPubChemCompoundsToxicity():
     FilterDownloadedToxicityByCharacteristics("kg",
                                               "organism",
                                               "route",
+                                              "time_period",
                                               "testtype")
 
   v_logger.success(f"{"• " * 10} PubChem downloading for DrugDesign!")

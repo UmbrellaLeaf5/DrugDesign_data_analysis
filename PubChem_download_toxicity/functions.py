@@ -345,6 +345,8 @@ def DownloadCompoundToxicity(compound_data: dict,
         "time_period".
     """
 
+    df = df.copy()
+
     def ExtractDose(dose_str: str,
                     mw: float
                     ) -> tuple[float | None, str | None, str | None]:
@@ -460,6 +462,7 @@ def DownloadCompoundToxicity(compound_data: dict,
     df[["numeric_dose", "dose_units", "time_period"]] = df.apply(
         lambda row: pd.Series(ExtractDose(row["dose"], row["mw"])),
         axis=1)
+
     # удаляем исходный столбец "dose" и переименовываем новый.
     df = df.drop(columns=["dose"]).rename(
         columns={"numeric_dose": "dose"})
@@ -520,12 +523,17 @@ def DownloadCompoundToxicity(compound_data: dict,
                   LogMode.VERBOSELY)
 
     # фильтруем данные по организму.
-    acute_effects_unit = acute_effects[acute_effects["organism"].isin(
+    if len(filtering_config[unit_str]["organism"]) != 0:
+      acute_effects_unit = acute_effects[acute_effects["organism"].isin(
         filtering_config[unit_str]["organism"])]
+
+    else:
+      acute_effects_unit = acute_effects
+
     # фильтруем данные по способу введения.
-    acute_effects_unit = acute_effects_unit[
-        acute_effects_unit["route"].isin(
-            filtering_config[unit_str]["route"])]
+    if len(filtering_config[unit_str]["route"]) != 0:
+      acute_effects_unit = acute_effects_unit[acute_effects_unit["route"].isin(
+        filtering_config[unit_str]["route"])]
 
     v_logger.success("Filtering 'organism' and 'route'!",
                      LogMode.VERBOSELY)

@@ -107,9 +107,12 @@ def FilterDownloadedToxicityByCharacteristics(unit_type: str,
                              sep=config["csv_separator"],
                              low_memory=False)
 
-  # если одна из характеристик - это период времени,
+  # если одна из характеристик - период времени,
   # заменяем отсутствующие значения на "no_exact_time".
   for charact in [charact_1, charact_2, charact_3, charact_4]:
+    if charact not in unit_type_df.keys():
+      unit_type_df[charact] = np.nan
+
     if charact == "time_period":
       unit_type_df[charact] = unit_type_df[charact].replace(np.nan, "no_exact_time")
 
@@ -130,7 +133,11 @@ def FilterDownloadedToxicityByCharacteristics(unit_type: str,
 
   # итерация по всем возможным комбинациям характеристик.
   for u_charact_1 in unique_charact_1:
+    v_logger.info("-", LogMode.VERBOSELY)
+    v_logger.info(f"Current {charact_1}: {u_charact_1}.", LogMode.VERBOSELY)
+
     for u_charact_2 in unique_charact_2:
+      v_logger.info(f"Current {charact_2}: {u_charact_2}.", LogMode.VERBOSELY)
 
       # фильтрация по первой и второй характеристикам.
       df_lvl2: pd.DataFrame = unit_type_df[
@@ -170,6 +177,8 @@ def FilterDownloadedToxicityByCharacteristics(unit_type: str,
             if os.path.exists(f"{filtered_file_name}.csv") and config["skip_downloaded"]:
               v_logger.info(f"{file_suffix} is already downloaded, skip.",
                             LogMode.VERBOSELY)
+              v_logger.info("~", LogMode.VERBOSELY)
+
               continue
 
             # сохраняем отфильтрованный DataFrame в CSV.
@@ -197,6 +206,7 @@ def FilterDownloadedToxicityByCharacteristics(unit_type: str,
             # логируем успешное сохранение данных.
             v_logger.success(
               f"Saved {file_suffix}, len: {len(df_lvl4)}!", LogMode.VERBOSELY)
+            v_logger.info("~", LogMode.VERBOSELY)
 
   # логируем завершение процесса фильтрации.
   v_logger.success(f"Filtering by characteristics for {unit_type}!")
