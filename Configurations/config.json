@@ -1,5 +1,5 @@
 {
-  "testing_flag": false,
+  "testing_flag": true,
   "skip_downloaded": true,
   "csv_separator": ";",
   "keyboard_end_message": "\n    End of downloading for DrugDesign by keyboard...\n",
@@ -139,7 +139,11 @@
           "man",
           "men"
         ],
-        "route": []
+        "route": [],
+        "testtype": [
+          "TDLo",
+          "LDLo"
+        ]
       },
       "m3": {
         "organism": [
@@ -153,10 +157,14 @@
         ],
         "route": [
           "inhalation"
+        ],
+        "testtype": [
+          "TDLo",
+          "LDLo"
         ]
       },
       "need_filtering_by_characteristics": true,
-      "occurrence_characteristics_number": 1,
+      "occurrence_characteristics_number": 10,
       "characteristics_folder_name": "characteristics"
     },
     "sleep_time": 0.211,

@@ -64,6 +64,21 @@ def DownloadPubChemCompoundsToxicity():
         v_logger.info(f"Folder for page_{page_num} is already exists, skip.")
         continue
 
+      # если существуют на 100% завершенные файлы страниц.
+      if config["skip_downloaded"]:
+        full_quarter_file_name: str =\
+            f"{toxicity_config["results_file_name"]}_"\
+            f"100_page_{page_num}"
+
+        full_quarter_path = f"{toxicity_config["results_folder_name"]}/"\
+            "{unit_type}/"f"{full_quarter_file_name}.csv"
+
+        if (os.path.exists(full_quarter_path.format(unit_type="kg")) or
+                os.path.exists(full_quarter_path.format(unit_type="m3"))):
+
+          v_logger.info(f"100 quarter file for page_{page_num} is already exists, skip.")
+          continue
+
       # создаем директории для единиц измерения "kg" и "m3".
       os.makedirs(page_folder_name.format(unit_type="kg",
                                           page_num=page_num), exist_ok=True)

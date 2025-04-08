@@ -409,7 +409,7 @@ def DownloadCompoundToxicity(compound_data: dict,
 
       # если единица измерения не поддерживается.
       if dose_unit not in valid_units:
-        v_logger.warning(f"Unsupported dose_unit: {dose_unit}",
+        v_logger.warning(f"Unsupported dose_unit (non-valid): {dose_unit}",
                          LogMode.VERBOSELY)
         return None, None, None
 
@@ -422,7 +422,7 @@ def DownloadCompoundToxicity(compound_data: dict,
 
         # если суффикс не поддерживается.
         if unit_suffix not in ("kg", "m3"):
-          v_logger.warning(f"Unsupported dose_unit: {dose_unit}",
+          v_logger.warning(f"Unsupported dose_unit (suffix): {dose_unit}",
                            LogMode.VERBOSELY)
           return None, None, None
 
@@ -452,7 +452,7 @@ def DownloadCompoundToxicity(compound_data: dict,
 
       # если префикс не поддерживается.
       else:
-        v_logger.warning(f"Unsupported dose_unit: {dose_unit}",
+        v_logger.warning(f"Unsupported dose_unit (prefix): {dose_unit}",
                          LogMode.VERBOSELY)
         return None, None, None
 
@@ -519,23 +519,18 @@ def DownloadCompoundToxicity(compound_data: dict,
         acute_effects (pd.DataFrame): DataFrame с данными о токсичности.
     """
 
-    v_logger.info("Filtering 'organism' and 'route'...",
+    v_logger.info(f"Filtering by {filtering_config[unit_str].keys()}...",
                   LogMode.VERBOSELY)
 
-    # фильтруем данные по организму.
-    if len(filtering_config[unit_str]["organism"]) != 0:
-      acute_effects_unit = acute_effects[acute_effects["organism"].isin(
-        filtering_config[unit_str]["organism"])]
+    acute_effects_unit: pd.DataFrame = acute_effects.copy()
 
-    else:
-      acute_effects_unit = acute_effects
+    # фильтрация данных по тем признакам, что есть в `filtering_config[unit_str]`
+    for key in filtering_config[unit_str].keys():
+      if len(filtering_config[unit_str][key]) != 0:
+        acute_effects_unit = acute_effects_unit[acute_effects_unit[key].isin(
+          filtering_config[unit_str][key])]
 
-    # фильтруем данные по способу введения.
-    if len(filtering_config[unit_str]["route"]) != 0:
-      acute_effects_unit = acute_effects_unit[acute_effects_unit["route"].isin(
-        filtering_config[unit_str]["route"])]
-
-    v_logger.success("Filtering 'organism' and 'route'!",
+    v_logger.success(f"Filtering by {filtering_config[unit_str].keys()}!",
                      LogMode.VERBOSELY)
 
     v_logger.info(f"Filtering 'dose' in {unit_str}...",
