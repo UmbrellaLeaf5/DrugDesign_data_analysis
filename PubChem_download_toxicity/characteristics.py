@@ -101,11 +101,19 @@ def FilterDownloadedToxicityByCharacteristics(unit_type: str,
       f"{filtering_config['characteristics_folder_name']}"
   os.makedirs(charact_folder_name, exist_ok=True)
 
-  # читаем объединённый CSV-файл, содержащий данные по токсичности для заданного unit_type.
-  unit_type_df = pd.read_csv(f"{toxicity_config['results_folder_name']}/"
-                             f"{toxicity_config['combined_file_name']}_{unit_type}.csv",
-                             sep=config["csv_separator"],
-                             low_memory=False)
+  unit_type_df: pd.DataFrame
+
+  try:
+    # читаем объединённый CSV-файл, содержащий данные по токсичности для заданного unit_type.
+    unit_type_df = pd.read_csv(f"{toxicity_config['results_folder_name']}/"
+                               f"{toxicity_config['combined_file_name']}_{unit_type}.csv",
+                               sep=config["csv_separator"],
+                               low_memory=False)
+
+  except pd.errors.EmptyDataError:
+    v_logger.warning(
+      f"{unit_type} .csv file is empty, skip filtering by characteristics.")
+    return
 
   # если одна из характеристик - период времени,
   # заменяем отсутствующие значения на "no_exact_time".
