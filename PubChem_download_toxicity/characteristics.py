@@ -104,7 +104,8 @@ def FilterDownloadedToxicityByCharacteristics(unit_type: str,
   unit_type_df: pd.DataFrame
 
   try:
-    # читаем объединённый CSV-файл, содержащий данные по токсичности для заданного unit_type.
+    # читаем объединённый CSV-файл,
+    # содержащий данные по токсичности для заданного unit_type.
     unit_type_df = pd.read_csv(f"{toxicity_config['results_folder_name']}/"
                                f"{toxicity_config['combined_file_name']}_{unit_type}.csv",
                                sep=config["csv_separator"],
@@ -129,7 +130,8 @@ def FilterDownloadedToxicityByCharacteristics(unit_type: str,
   unique_charact_2 = unit_type_df[charact_2].unique()
   unique_charact_3 = unit_type_df[charact_3].unique()
 
-  # если charact_4 передан, получаем уникальные значения, иначе используем список из одного None.
+  # если charact_4 передан, получаем уникальные значения,
+  # иначе используем список из одного None.
   unique_charact_4 = unit_type_df[charact_4].unique() if charact_4 else [None]
 
   v_logger.info(f"Unique {charact_1}s: {unique_charact_1}.", LogMode.VERBOSELY)

@@ -13,7 +13,7 @@ from Utils.files_funcs import CombineCSVInFolder, DeleteFilesInFolder, \
     IsFileInFolder, MoveFileToFolder, os
 from Utils.verbose_logger import v_logger, LogMode
 
-from Configurations.config import config, Config
+from Configurations.config import config
 
 
 @ReTry(attempts_amount=1)
