@@ -164,8 +164,8 @@
         ]
       },
       "need_filtering_by_characteristics": true,
-      "occurrence_characteristics_number": 10,
-      "characteristics_folder_name": "characteristics"
+      "occurrence_characteristics_number": 100,
+      "characteristics_subfolder_name": "characteristics"
     },
     "sleep_time": 0.211,
     "start_page": 1,

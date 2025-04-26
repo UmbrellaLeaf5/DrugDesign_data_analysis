@@ -98,7 +98,7 @@ def FilterDownloadedToxicityByCharacteristics(unit_type: str,
   # путь к папке для хранения результатов фильтрации.
   charact_folder_name: str =\
       f"{toxicity_config['results_folder_name']}/"\
-      f"{filtering_config['characteristics_folder_name']}"
+      f"{filtering_config['characteristics_subfolder_name']}"
   os.makedirs(charact_folder_name, exist_ok=True)
 
   unit_type_df: pd.DataFrame
