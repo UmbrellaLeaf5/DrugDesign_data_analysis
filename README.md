@@ -3,6 +3,10 @@
 [![License: Unlicense](https://img.shields.io/badge/license-Unlicense-green.svg)](http://unlicense.org/)
 [![Contributing](https://img.shields.io/badge/contributing-.md-blue.svg)](./CONTRIBUTING.md)
 
+templated: generated from [UmbrellaLeaf5/template_python_usual](https://github.com/UmbrellaLeaf5/template_python_usual)
+
+___
+
 ## Contents
   * [Description](#description)
   * [Documentation](#documentation)
@@ -98,6 +102,44 @@
     ```bash
     pip install -r requirements.txt
     ```
+**Или просто используйте [`uv`](https://github.com/astral-sh/uv):**
+
+```bash
+uv venv .venv
+```
+
+*   **Linux/macOS:**
+
+    ```bash
+    source .venv/bin/activate
+    ```
+
+*   **Windows (Git Bash):**
+
+    ```bash
+    source .venv/Scripts/activate
+    ```
+
+*   **Windows (Command Prompt):**
+
+    ```cmd
+    .venv\Scripts\activate
+    ```
+
+*   **Windows (PowerShell):**
+
+    ```powershell
+    .venv\Scripts\Activate.ps1
+    ```
+
+```bash
+uv pip install -r requirements.txt
+```
+
+P.S. одной строкой:
+```bash
+uv venv .venv && source .venv/Scripts/activate && uv pip install -r requirements.txt
+```
 
 ## Configurations
 
@@ -256,7 +298,7 @@
 
 <hr></hr>
 
-### Notebooks submodules (removed):
+### Notebooks submodules (used, but removed from repo):
 
   * IUPAC WFChemCookbook repository / International Union of Pure and Applied Chemistry. — Текст : электронный // GitHub : [сайт](https://github.com/IUPAC/WFChemCookbook)
   * FionaEBI ChEMBL notebooks repository / FionaEBI. — Текст : электронный // GitHub : [сайт](https://github.com/chembl/notebooks)

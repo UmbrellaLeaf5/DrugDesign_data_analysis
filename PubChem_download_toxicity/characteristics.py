@@ -6,13 +6,12 @@ PubChem_download_toxicity/characteristics.py
 """
 
 from PubChem_download_toxicity.functions import *
-
 from Utils.dataframe_funcs import MedianDedupedDF
 
 
-def GetMolfilesFromCIDs(cids: list[str],
-                        sleep_time: float | None =
-                        toxicity_config["sleep_time"]) -> list[str]:
+def GetMolfilesFromCIDs(
+  cids: list[str], sleep_time: float | None = toxicity_config["sleep_time"]
+) -> list[str]:
   """
   Возвращает список molfile-строк для заданного списка CID.
   Соединяет CID в строку, разделяет ее на более короткие подстроки, чтобы избежать
@@ -29,13 +28,13 @@ def GetMolfilesFromCIDs(cids: list[str],
 
   cids_str = ",".join(str(cid) for cid in cids).replace(" ", "")
 
-  def SplitLongStringWithCommas(s: str) -> list[str]:
+  def SplitLongStringWithCommas(s: str, max_separated_len: int = 2000) -> list[str]:
     """
     Разбивает длинную строку, содержащую CID, разделенные запятыми,
     на список более коротких строк.
 
     Это необходимо для избежания ограничений на длину URL при запросе к PubChem.
-    Разбивает так, чтобы длина каждой подстроки не превышала 2000 символов.
+    Разбивает так, чтобы длина каждой подстроки не превышала max_separated_len символов.
 
     Args:
         s (str): строка, содержащая CID, разделенные запятыми.
@@ -44,13 +43,13 @@ def GetMolfilesFromCIDs(cids: list[str],
         list[str]: список строк, содержащих CID, разделенные запятыми.
     """
 
-    if len(s) <= 2000:
+    if len(s) <= max_separated_len:
       return [s]
 
     chunks = []
     curr_chunk = ""
     for cid in s.split(","):
-      if len(curr_chunk) + len(f"{cid},") <= 2000:
+      if len(curr_chunk) + len(f"{cid},") <= max_separated_len:
         curr_chunk += f"{cid},"
 
       else:
@@ -65,21 +64,25 @@ def GetMolfilesFromCIDs(cids: list[str],
   molfiles_str: str = ""
   for cids_str_shorter in SplitLongStringWithCommas(cids_str):
     molfiles_str += GetResponse(
-        "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/CID/"
-        f"{cids_str_shorter}/record/SDF?record_type=2d",
-        True,
-        sleep_time).text
+      "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/CID/"
+      f"{cids_str_shorter}/record/SDF?record_type=2d",
+      True,
+      sleep_time,
+    ).text
 
   # разделяем строку с molfile на отдельные molfile и очищаем их.
-  return [f"\n{molfile.split("\n", 1)[1]}"
-          for molfile in molfiles_str.split("\n\n$$$$\n")[:-1]]
+  return [
+    f"\n{molfile.split('\n', 1)[1]}" for molfile in molfiles_str.split("\n\n$$$$\n")[:-1]
+  ]
 
 
-def FilterDownloadedToxicityByCharacteristics(unit_type: str,
-                                              charact_1: str,
-                                              charact_2: str,
-                                              charact_3: str,
-                                              charact_4: str | None = None) -> None:
+def FilterDownloadedToxicityByCharacteristics(
+  unit_type: str,
+  charact_1: str,
+  charact_2: str,
+  charact_3: str,
+  charact_4: str | None = None,
+) -> None:
   """
   Фильтрует данные о токсичности из CSV-файла по заданным характеристикам,
   загружает molfile для каждого соединения и сохраняет результаты в CSV и SDF файлы.
@@ -96,9 +99,10 @@ def FilterDownloadedToxicityByCharacteristics(unit_type: str,
   v_logger.info(f"Filtering by characteristics for {unit_type}...")
 
   # путь к папке для хранения результатов фильтрации.
-  charact_folder_name: str =\
-      f"{toxicity_config['results_folder_name']}/"\
-      f"{filtering_config['characteristics_subfolder_name']}"
+  charact_folder_name: str = (
+    f"{toxicity_config['results_folder_name']}/"
+    f"{filtering_config['characteristics_subfolder_name']}"
+  )
   os.makedirs(charact_folder_name, exist_ok=True)
 
   unit_type_df: pd.DataFrame
@@ -106,14 +110,17 @@ def FilterDownloadedToxicityByCharacteristics(unit_type: str,
   try:
     # читаем объединённый CSV-файл,
     # содержащий данные по токсичности для заданного unit_type.
-    unit_type_df = pd.read_csv(f"{toxicity_config['results_folder_name']}/"
-                               f"{toxicity_config['combined_file_name']}_{unit_type}.csv",
-                               sep=config["csv_separator"],
-                               low_memory=False)
+    unit_type_df = pd.read_csv(
+      f"{toxicity_config['results_folder_name']}/"
+      f"{toxicity_config['combined_file_name']}_{unit_type}.csv",
+      sep=config["csv_separator"],
+      low_memory=False,
+    )
 
   except pd.errors.EmptyDataError:
     v_logger.warning(
-      f"{unit_type} .csv file is empty, skip filtering by characteristics.")
+      f"{unit_type} .csv file is empty, skip filtering by characteristics."
+    )
     return
 
   # если одна из характеристик - период времени,
@@ -143,7 +150,7 @@ def FilterDownloadedToxicityByCharacteristics(unit_type: str,
 
   # итерация по всем возможным комбинациям характеристик.
   for u_charact_1 in unique_charact_1:
-    v_logger.info("-", LogMode.VERBOSELY)
+    v_logger.info("-", LogMode.VERBOSELY)  # noqa: PLE1205
     v_logger.info(f"Current {charact_1}: {u_charact_1}.", LogMode.VERBOSELY)
 
     for u_charact_2 in unique_charact_2:
@@ -151,8 +158,8 @@ def FilterDownloadedToxicityByCharacteristics(unit_type: str,
 
       # фильтрация по первой и второй характеристикам.
       df_lvl2: pd.DataFrame = unit_type_df[
-          (unit_type_df[charact_1] == u_charact_1) &
-          (unit_type_df[charact_2] == u_charact_2)
+        (unit_type_df[charact_1] == u_charact_1)
+        & (unit_type_df[charact_2] == u_charact_2)
       ]
 
       for u_charact_3 in unique_charact_3:
@@ -161,8 +168,9 @@ def FilterDownloadedToxicityByCharacteristics(unit_type: str,
 
         for u_charact_4 in unique_charact_4:
           # финальная фильтрация по четвёртой характеристике, если она указана.
-          df_lvl4: pd.DataFrame = df_lvl3 if charact_4 is None else df_lvl3[
-            df_lvl3[charact_4] == u_charact_4]
+          df_lvl4: pd.DataFrame = (
+            df_lvl3 if charact_4 is None else df_lvl3[df_lvl3[charact_4] == u_charact_4]
+          )
 
           if df_lvl4.empty:
             continue
@@ -171,8 +179,10 @@ def FilterDownloadedToxicityByCharacteristics(unit_type: str,
           df_lvl4 = MedianDedupedDF(df_lvl4, "cid", "dose")
 
           # если таблица непустая и содержит достаточно записей — продолжаем.
-          if len(df_lvl4) >= filtering_config["occurrence_characteristics_number"] and\
-                  not df_lvl4.empty:
+          if (
+            len(df_lvl4) >= filtering_config["occurrence_characteristics_number"]
+            and not df_lvl4.empty
+          ):
             df_lvl4["pLD"] = -np.log10((df_lvl4["dose"] / df_lvl4["mw"]) / 1_000_000)
 
             os.makedirs(f"{charact_folder_name}/{unit_type}", exist_ok=True)
@@ -181,13 +191,16 @@ def FilterDownloadedToxicityByCharacteristics(unit_type: str,
             if charact_4:
               file_suffix += f"_{u_charact_4}"
 
-            filtered_file_name = f"{charact_folder_name}/{unit_type}/"\
-                f"{toxicity_config['results_file_name']}_{file_suffix}"
+            filtered_file_name = (
+              f"{charact_folder_name}/{unit_type}/"
+              f"{toxicity_config['results_file_name']}_{file_suffix}"
+            )
 
             if os.path.exists(f"{filtered_file_name}.csv") and config["skip_downloaded"]:
-              v_logger.info(f"{file_suffix} is already downloaded, skip.",
-                            LogMode.VERBOSELY)
-              v_logger.info("~", LogMode.VERBOSELY)
+              v_logger.info(
+                f"{file_suffix} is already downloaded, skip.", LogMode.VERBOSELY
+              )
+              v_logger.info("~", LogMode.VERBOSELY)  # noqa: PLE1205
 
               continue
 
@@ -196,27 +209,29 @@ def FilterDownloadedToxicityByCharacteristics(unit_type: str,
 
             # если необходимо сохранить структуру соединений в формате SDF.
             if toxicity_config["download_compounds_sdf"]:
-              v_logger.info(f"Saving {unit_type} characteristics to .sdf...",
-                            LogMode.VERBOSELY)
+              v_logger.info(
+                f"Saving {unit_type} characteristics to .sdf...", LogMode.VERBOSELY
+              )
 
               # получаем список CID'ов и скачиваем molfile.
               cids: list[str] = list(df_lvl4["cid"])
               SaveMolfilesToSDF(
-                  data=pd.DataFrame({"cid": cids,
-                                     "molfile": GetMolfilesFromCIDs(cids)}),
-                  file_name=filtered_file_name,
-                  molecule_id_column_name="cid",
-                  extra_data=df_lvl4,
-                  indexing_lists=True
+                data=pd.DataFrame({"cid": cids, "molfile": GetMolfilesFromCIDs(cids)}),
+                file_name=filtered_file_name,
+                molecule_id_column_name="cid",
+                extra_data=df_lvl4,
+                indexing_lists=True,
               )
 
-              v_logger.success(f"Saving {unit_type} characteristics to .sdf!",
-                               LogMode.VERBOSELY)
+              v_logger.success(
+                f"Saving {unit_type} characteristics to .sdf!", LogMode.VERBOSELY
+              )
 
             # логируем успешное сохранение данных.
             v_logger.success(
-              f"Saved {file_suffix}, len: {len(df_lvl4)}!", LogMode.VERBOSELY)
-            v_logger.info("~", LogMode.VERBOSELY)
+              f"Saved {file_suffix}, len: {len(df_lvl4)}!", LogMode.VERBOSELY
+            )
+            v_logger.info("~", LogMode.VERBOSELY)  # noqa: PLE1205
 
   # логируем завершение процесса фильтрации.
   v_logger.success(f"Filtering by characteristics for {unit_type}!")

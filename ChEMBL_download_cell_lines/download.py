@@ -6,12 +6,10 @@ ChEMBL и сохранение их в файлы.
 """
 
 from ChEMBL_download_cell_lines.functions import *
-
+from Configurations.config import Config, config
 from Utils.decorators import IgnoreWarnings
 from Utils.files_funcs import IsFileInFolder, os
 from Utils.verbose_logger import LogMode
-
-from Configurations.config import config, Config
 
 
 @IgnoreWarnings
@@ -26,10 +24,11 @@ def DownloadChEMBLCellLines():
   # конфигурация для скачивания активностей.
   activities_config: Config = config["ChEMBL_download_activities"]
 
-  v_logger.UpdateFormat(cell_lines_config["logger_label"],
-                        cell_lines_config["logger_color"])
+  v_logger.UpdateFormat(
+    cell_lines_config["logger_label"], cell_lines_config["logger_color"]
+  )
 
-  v_logger.info(f"{"• " * 10} ChEMBL downloading for DrugDesign.")
+  v_logger.info(f"{'• ' * 10} ChEMBL downloading for DrugDesign.")
 
   # создаем директорию для сохранения результатов, если она не существует.
   os.makedirs(cell_lines_config["results_folder_name"], exist_ok=True)
@@ -44,9 +43,9 @@ def DownloadChEMBLCellLines():
 
   # если не нужно пропускать скачанные или файл не существует.
   if not config["skip_downloaded"] or not IsFileInFolder(
-          f"{cell_lines_config["results_file_name"]}.csv",
-          f"{cell_lines_config["results_folder_name"]}"):
-
+    f"{cell_lines_config['results_file_name']}.csv",
+    f"{cell_lines_config['results_folder_name']}",
+  ):
     # если нужно скачивать все, очищаем список id (скачаются все).
     if cell_lines_config["download_all"]:
       cell_lines_config["id_list"] = []
@@ -56,9 +55,9 @@ def DownloadChEMBLCellLines():
   # если файл уже скачан, пропускаем.
   else:
     v_logger.info(
-        f"{cell_lines_config["results_file_name"]} is already "
-        f"downloaded, skip.",
-        LogMode.VERBOSELY)
+      f"{cell_lines_config['results_file_name']} is already downloaded, skip.",
+      LogMode.VERBOSELY,
+    )
 
-  v_logger.success(f"{"• " * 10} ChEMBL downloading for DrugDesign!")
+  v_logger.success(f"{'• ' * 10} ChEMBL downloading for DrugDesign!")
   v_logger.info()

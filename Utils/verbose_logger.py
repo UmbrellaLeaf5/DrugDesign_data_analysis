@@ -5,16 +5,19 @@ Utils/verbose_logger.py
 настраиваемым форматированием и записью исключений в файл.
 """
 
-from enum import Enum
-from io import TextIOWrapper
 import re
 import sys
 import traceback
-from typing import Any, Callable, TextIO
+from collections.abc import Callable
+from enum import Enum
+from io import TextIOWrapper
+from typing import Any, TextIO
+
+import loguru
 
 from Configurations.config import config
 
-import loguru
+
 # аннотируем тип logger.
 Logger = loguru._logger.Logger  # type: ignore
 
@@ -49,12 +52,14 @@ class VerboseLogger:
 
   __standard_output: TextIOWrapper | TextIO | Any
 
-  def __init__(self,
-               logger: Logger,  # type: ignore
-               log_mode: LogMode,
-               message_ljust: int,
-               exceptions_file: str,
-               standard_output: TextIO | TextIOWrapper = sys.stdout):
+  def __init__(
+    self,
+    logger: Logger,  # type: ignore
+    log_mode: LogMode,
+    message_ljust: int,
+    exceptions_file: str,
+    standard_output: TextIO | TextIOWrapper = sys.stdout,
+  ):
     """
     Инициализирует класс VerboseLogger.
 
@@ -87,18 +92,17 @@ class VerboseLogger:
     v_logger_config = config["Utils"]["VerboseLogger"]
 
     # создаем и возвращаем экземпляр класса.
-    return cls(loguru.logger,
-               LogMode.VERBOSELY if v_logger_config["verbose_print"]
-               else LogMode.RETICENTLY,
-               v_logger_config["message_ljust"],
-               v_logger_config["exceptions_file"],
-               v_logger_config["exceptions_file"] if
-               v_logger_config["output_to_exceptions_file"]
-               else sys.stdout)
+    return cls(
+      loguru.logger,
+      LogMode.VERBOSELY if v_logger_config["verbose_print"] else LogMode.RETICENTLY,
+      v_logger_config["message_ljust"],
+      v_logger_config["exceptions_file"],
+      v_logger_config["exceptions_file"]
+      if v_logger_config["output_to_exceptions_file"]
+      else sys.stdout,
+    )
 
-  def UpdateFormat(self,
-                   logger_label: str,
-                   logger_color: str) -> int:
+  def UpdateFormat(self, logger_label: str, logger_color: str) -> int:
     """
     Обновляет формат вывода логирования.
 
@@ -111,10 +115,12 @@ class VerboseLogger:
     """
 
     # задаем формат вывода.
-    self.__format = lambda record: "[{time:DD.MM.YYYY HH:mm:ss}] " +\
-        f"<{logger_color}>{logger_label}:</{logger_color}> " +\
-        f"{record['message']} ".ljust(self.__message_ljust) +\
-        f"[<level>{record['level']}</level>]\n"
+    self.__format = (
+      lambda record: "[{time:DD.MM.YYYY HH:mm:ss}] "
+      + f"<{logger_color}>{logger_label}:</{logger_color}> "
+      + f"{record['message']} ".ljust(self.__message_ljust)
+      + f"[<level>{record['level']}</level>]\n"
+    )
 
     # добавляем заголовок и цвет в списки.
     self.__labels.append(logger_label)
@@ -140,14 +146,15 @@ class VerboseLogger:
     # проверяем, установлен ли формат логгера.
     if len(self.__labels) == 0:
       raise NotImplementedError(
-          "VerboseLogger: logger format is not set. Call "
-          "'logger.UpdateFormat' first.")
+        "VerboseLogger: logger format is not set. Call 'logger.UpdateFormat' first."
+      )
 
     # проверяем, не выходит ли index за границы.
     if index >= len(self.__labels):
       raise IndexError(
-          f"VerboseLogger: RestoreFormat: index ({index}) is out of "
-          f"range [0, {len(self.__labels) - 1}].")
+        f"VerboseLogger: RestoreFormat: index ({index}) is out of "
+        f"range [0, {len(self.__labels) - 1}]."
+      )
 
     # если текущий формат уже установлен, предупреждаем и выходим.
     if index == len(self.__labels) - 1:
@@ -155,21 +162,22 @@ class VerboseLogger:
       return
 
     # задаем формат вывода.
-    self.__format = lambda record: "[{time:DD.MM.YYYY HH:mm:ss}] " +\
-        f"<{self.__colors[index]}>{self.__labels[index]}:" \
-        f"</{self.__colors[index]}> " +\
-        f"{record['message']} ".ljust(self.__message_ljust) +\
-        f"[<level>{record['level']}</level>]\n"
+    self.__format = (
+      lambda record: "[{time:DD.MM.YYYY HH:mm:ss}] "
+      + f"<{self.__colors[index]}>{self.__labels[index]}:"
+      f"</{self.__colors[index]}> "
+      + f"{record['message']} ".ljust(self.__message_ljust)
+      + f"[<level>{record['level']}</level>]\n"
+    )
 
     # обрезаем списки заголовков и цветов.
-    self.__labels = self.__labels[:index + 1]
-    self.__colors = self.__colors[:index + 1]
+    self.__labels = self.__labels[: index + 1]
+    self.__colors = self.__colors[: index + 1]
 
     # настраиваем логгер.
     self.__Configure()
 
-  def LogException(self,
-                   exception: Exception):
+  def LogException(self, exception: Exception):
     """
     Логирует исключение в консоль и записываем его в файл.
 
@@ -183,8 +191,8 @@ class VerboseLogger:
     # проверяем, установлен ли формат логгера.
     if len(self.__labels) == 0:
       raise NotImplementedError(
-          "VerboseLogger: logger format is not set. Call "
-          "'logger.UpdateFormat' first.")
+        "VerboseLogger: logger format is not set. Call 'logger.UpdateFormat' first."
+      )
 
     # логируем исключение в консоль.
     self.__logger.error(f"{exception}")
@@ -195,23 +203,20 @@ class VerboseLogger:
 
       # логируем traceback в файл исключений.
       self.__logger.error(
-          f"{re.sub(r'"(.*?)\",\s+line\s+(\d+)',
-                    r'\1:\2', traceback.format_exc())}")
+        f"{re.sub(r'"(.*?)\",\s+line\s+(\d+)', r'\1:\2', traceback.format_exc())}"
+      )
 
     # если не удалось записать исключение в файл.
-    except Exception as exception:
+    except Exception as extra_exception:
       self.__logger.error(
-          "VerboseLogger: failed to write exception to file: "
-          f"{exception}.")
+        f"VerboseLogger: failed to write exception to file: {extra_exception}."
+      )
 
     # в любом случае восстанавливаем исходную конфигурацию логгера.
     finally:
       self.__Configure()
 
-  def Log(self,
-          level: str,
-          message: str,
-          log_mode: LogMode = LogMode.RETICENTLY):
+  def Log(self, level: str, message: str, log_mode: LogMode = LogMode.RETICENTLY):
     """
     Логирует сообщение с указанным уровнем.
 
@@ -227,16 +232,14 @@ class VerboseLogger:
     # проверяем, установлен ли формат логгера.
     if len(self.__labels) == 0:
       raise NotImplementedError(
-          "VerboseLogger: logger format is not set. Call "
-          "'logger.UpdateFormat' first!")
+        "VerboseLogger: logger format is not set. Call 'logger.UpdateFormat' first!"
+      )
 
     # логируем сообщение, если режим логирования соответствует.
-    if self.__log_mode == LogMode.VERBOSELY or\
-            log_mode == LogMode.RETICENTLY:
+    if self.__log_mode == LogMode.VERBOSELY or log_mode == LogMode.RETICENTLY:
       self.__logger.log(level, message)
 
-  def __Configure(self,
-                  output: TextIO | Any | None = None):
+  def __Configure(self, output: TextIO | Any | None = None):
     """
     Настраивает вывод логгера.
 
@@ -251,11 +254,9 @@ class VerboseLogger:
     # удаляем предыдущие обработчики.
     self.__logger.remove()
     # добавляем новый обработчик с заданным форматом и выводом.
-    self.__logger.add(sink=output,
-                      format=self.__format)
+    self.__logger.add(sink=output, format=self.__format)
 
-  def __LogMethod(self,
-                  level: str) -> Callable:
+  def __LogMethod(self, level: str) -> Callable:
     """
     Создает функцию-обертку для логирования сообщений с определенным уровнем.
 
@@ -269,11 +270,13 @@ class VerboseLogger:
     # получаем имя уровня в верхнем регистре.
     level_name = level.upper()
 
-    def Wrapper(message: str = f"{"-" * (self.__message_ljust - 1)}",
-                log_mode: LogMode = LogMode.RETICENTLY):
+    def Wrapper(
+      message: str = f"{'-' * (self.__message_ljust - 1)}",
+      log_mode: LogMode = LogMode.RETICENTLY,
+    ):
       # в том случае, если сообщение состоит из одного символа, превращаем в полосу.
       if len(message) == 1:
-        message = f"{f"{message}" * (self.__message_ljust - 1)}"
+        message = f"{f'{message}' * (self.__message_ljust - 1)}"
 
       # вызываем метод Log с заданным уровнем и сообщением.
       self.Log(level_name, message, log_mode)
@@ -281,8 +284,7 @@ class VerboseLogger:
     # возвращаем функцию-обертку.
     return Wrapper
 
-  def __getattr__(self,
-                  name: str) -> Any:
+  def __getattr__(self, name: str) -> Any:
     """
     Перехватывает обращение к атрибутам класса.
 
@@ -298,8 +300,7 @@ class VerboseLogger:
     """
 
     # проверяем, является ли имя одним из уровней логирования.
-    if name in [string.lower() for string in
-                loguru.logger._core.levels.keys()]:  # type: ignore
+    if name in [string.lower() for string in loguru.logger._core.levels.keys()]:  # type: ignore
       # возвращаем обертку для метода логирования.
       return self.__LogMethod(name)
 

@@ -1,5 +1,5 @@
 {
-  "testing_flag": true,
+  "testing_flag": false,
   "skip_downloaded": true,
   "csv_separator": ";",
   "keyboard_end_message": "\n    End of downloading for DrugDesign by keyboard...\n",

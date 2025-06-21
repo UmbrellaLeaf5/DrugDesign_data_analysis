@@ -1,0 +1,19 @@
+[project]
+name = "DrugDesign-data-analysis"
+version = "0.1.0"
+description = "Module of the DrugDesign project responsible for loading and pre-processing data from ChEMBL and PubChem, necessary for further modeling and analysis in drug development"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+  "chembl-webresource-client>=0.10.9",
+  "flake8>=7.3.0",
+  "gdown>=5.2.0",
+  "icecream>=2.1.4",
+  "ipykernel>=6.29.5",
+  "ipython>=9.3.0",
+  "loguru>=0.7.3",
+  "numpy>=2.3.1",
+  "pandas>=2.3.0",
+  "pubchempy>=1.0.4",
+  "requests>=2.32.4",
+]

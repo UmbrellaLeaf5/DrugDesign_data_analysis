@@ -6,20 +6,19 @@ Utils/files_funcs.py
 молекулярных структур в формате SDF.
 """
 
-from io import TextIOWrapper
 import os
 import shutil
+from io import TextIOWrapper
 
 import pandas as pd
 
-from Utils.verbose_logger import Any, v_logger, LogMode
+from Configurations.config import Config, config
+from Utils.verbose_logger import Any, LogMode, v_logger
 
-from Configurations.config import config, Config
 
-
-def DeleteFilesInFolder(folder_name: str,
-                        except_items: list[str] = [],
-                        delete_folders: bool = False):
+def DeleteFilesInFolder(
+  folder_name: str, except_items: list[str] | None = None, delete_folders: bool = False
+):
   """
   Удаляет все файлы в указанной папке, кроме файлов в списке исключений.
 
@@ -33,6 +32,8 @@ def DeleteFilesInFolder(folder_name: str,
   """
 
   # итерируемся по элементам в папке.
+  if except_items is None:
+    except_items = []
   for item in os.listdir(folder_name):
     # формируем путь к текущему элементу.
     item_path: str = os.path.join(folder_name, item)
@@ -86,9 +87,7 @@ def IsFolderEmpty(folder_name: str) -> bool:
     return True
 
 
-def MoveFileToFolder(file_name: str,
-                     curr_folder_name: str,
-                     folder_name: str):
+def MoveFileToFolder(file_name: str, curr_folder_name: str, folder_name: str):
   """
   Перемещает файл в указанную папку.
 
@@ -116,12 +115,10 @@ def MoveFileToFolder(file_name: str,
 
   # если файл не существует, логируем предупреждение.
   else:
-    v_logger.warning(f"{full_file_name} does not exist!",
-                     LogMode.VERBOSELY)
+    v_logger.warning(f"{full_file_name} does not exist!", LogMode.VERBOSELY)
 
 
-def CombineCSVInFolder(folder_name: str,
-                       combined_file_name: str):
+def CombineCSVInFolder(folder_name: str, combined_file_name: str):
   """
   Склеивает все .csv файлы в папке в один.
 
@@ -134,19 +131,22 @@ def CombineCSVInFolder(folder_name: str,
   combine_config: Config = config["Utils"]["CombineCSVInFolder"]
 
   # получаем индекс формата логгера.
-  restore_index: int = v_logger.UpdateFormat(
-      combine_config["logger_label"], combine_config["logger_color"]) - 1
+  restore_index: int = (
+    v_logger.UpdateFormat(combine_config["logger_label"], combine_config["logger_color"])
+    - 1
+  )
 
   v_logger.info("Start combining downloads...")
   v_logger.info("-", LogMode.VERBOSELY)
 
   # если файл уже существует и нужно пропускать скачанные, выходим.
-  if IsFileInFolder(folder_name, f"{combined_file_name}.csv") and\
-          config["skip_downloaded"]:
+  if (
+    IsFileInFolder(folder_name, f"{combined_file_name}.csv") and config["skip_downloaded"]
+  ):
     v_logger.info(
-        f"File '{combined_file_name}.csv' is in folder, no need to "
-        f"combine.",
-        LogMode.VERBOSELY)
+      f"File '{combined_file_name}.csv' is in folder, no need to combine.",
+      LogMode.VERBOSELY,
+    )
 
     # восстанавливаем формат логгера.
     v_logger.RestoreFormat(restore_index)
@@ -167,44 +167,42 @@ def CombineCSVInFolder(folder_name: str,
   for file_name in os.listdir(folder_name):
     # проверяем, является ли файл CSV-файлом и не является ли он
     # результирующим.
-    if file_name.endswith('.csv') and file_name != \
-            f"{combined_file_name}.csv":
+    if file_name.endswith(".csv") and file_name != f"{combined_file_name}.csv":
       # формируем полный путь к файлу.
       full_file_name: str = os.path.join(folder_name, file_name)
 
-      v_logger.info(
-          f"Collecting '{file_name}' to pandas.DataFrame...",
-          LogMode.VERBOSELY)
+      v_logger.info(f"Collecting '{file_name}' to pandas.DataFrame...", LogMode.VERBOSELY)
 
       # читаем CSV-файл в DataFrame.
-      df = pd.read_csv(full_file_name, sep=config["csv_separator"],
-                       low_memory=False)
+      df = pd.read_csv(full_file_name, sep=config["csv_separator"], low_memory=False)
 
       v_logger.success(
-          f"Collecting '{file_name}' to pandas.DataFrame!",
-          LogMode.VERBOSELY)
+        f"Collecting '{file_name}' to pandas.DataFrame!", LogMode.VERBOSELY
+      )
       v_logger.info(
-          f"Concatenating '{file_name}' to combined_data_frame...",
-          LogMode.VERBOSELY)
+        f"Concatenating '{file_name}' to combined_data_frame...", LogMode.VERBOSELY
+      )
 
       # объединяем DataFrame с общим DataFrame.
       combined_df = pd.concat([combined_df, df], ignore_index=True)
 
       v_logger.success(
-          f"Concatenating '{file_name}' to combined_data_frame!",
-          LogMode.VERBOSELY)
+        f"Concatenating '{file_name}' to combined_data_frame!", LogMode.VERBOSELY
+      )
       v_logger.info("-", LogMode.VERBOSELY)
 
-  v_logger.info(f"Collecting to combined .csv file in '{folder_name}'...",
-                LogMode.VERBOSELY)
+  v_logger.info(
+    f"Collecting to combined .csv file in '{folder_name}'...", LogMode.VERBOSELY
+  )
 
   # сохраняем объединенный DataFrame в CSV-файл.
   combined_df.to_csv(
-      f"{folder_name}/{combined_file_name}.csv",
-      sep=config["csv_separator"], index=False)
+    f"{folder_name}/{combined_file_name}.csv", sep=config["csv_separator"], index=False
+  )
 
   v_logger.success(
-      f"Collecting to combined .csv file in '{folder_name}'!", LogMode.VERBOSELY)
+    f"Collecting to combined .csv file in '{folder_name}'!", LogMode.VERBOSELY
+  )
   v_logger.info("-", LogMode.VERBOSELY)
   v_logger.success("End combining downloads!")
 
@@ -212,11 +210,13 @@ def CombineCSVInFolder(folder_name: str,
   v_logger.RestoreFormat(restore_index)
 
 
-def SaveMolfilesToSDF(data: pd.DataFrame,
-                      file_name: str,
-                      molecule_id_column_name: str,
-                      extra_data: pd.DataFrame = pd.DataFrame(),
-                      indexing_lists: bool = False):
+def SaveMolfilesToSDF(
+  data: pd.DataFrame,
+  file_name: str,
+  molecule_id_column_name: str,
+  extra_data: pd.DataFrame = pd.DataFrame(),
+  indexing_lists: bool = False,
+):
   """
   Сохраняет molfiles из pd.DataFrame в .sdf файл.
 
@@ -230,9 +230,7 @@ def SaveMolfilesToSDF(data: pd.DataFrame,
                                        Defaults to False.
   """
 
-  def WriteColumnAndValueToSDF(file: TextIOWrapper,
-                               value: Any,
-                               column: str = ""):
+  def WriteColumnAndValueToSDF(file: TextIOWrapper, value: Any, column: str = ""):
     """
     Записывает столбец и значение в .sdf файл.
 
@@ -264,7 +262,7 @@ def SaveMolfilesToSDF(data: pd.DataFrame,
           elem = str(elem)
 
           # если элемент не пустой, записываем его.
-          if elem != "nan" and elem != "None" and elem != "":
+          if elem not in {"nan", "None", ""}:
             # если нужно индексировать списки.
             if indexing_lists:
               file.write(f"{i}: {elem}\n")
@@ -283,7 +281,7 @@ def SaveMolfilesToSDF(data: pd.DataFrame,
         elem = str(elem)
 
         # если элемент не пустой, записываем его.
-        if elem != "nan" and elem != "None" and elem != "":
+        if elem not in {"nan", "None", ""}:
           file.write(f"{key}: {elem}\n")
 
     # если значение - не список и не словарь.
@@ -292,7 +290,7 @@ def SaveMolfilesToSDF(data: pd.DataFrame,
       value = str(value)
 
       # если значение не пустое, записываем его.
-      if value != "nan" and value != "None" and value != "":
+      if value not in {"nan", "None", ""}:
         file.write(f"> <{column}>\n")
 
         file.write(f"{value}\n")
@@ -303,7 +301,7 @@ def SaveMolfilesToSDF(data: pd.DataFrame,
   # открываем файл для записи.
   with open(f"{file_name}.sdf", "w", encoding="utf-8") as f:
     # итерируемся по строкам DataFrame.
-    for value in data.values:
+    for value in data.to_numpy():
       # получаем id молекулы и molfile.
       molecule_id, molfile = value
 
@@ -318,24 +316,21 @@ def SaveMolfilesToSDF(data: pd.DataFrame,
         # итерируемся по столбцам DataFrame.
         for column in df.columns:
           # записываем столбец и значение в файл.
-          WriteColumnAndValueToSDF(
-              f, df.loc[molecule_id, column], column)
+          WriteColumnAndValueToSDF(f, df.loc[molecule_id, column], column)
 
       # записываем разделитель между молекулами.
       f.write("$$$$\n")
 
-      v_logger.info(
-          f"Writing {molecule_id} data to .sdf file...",
-          LogMode.VERBOSELY)
+      v_logger.info(f"Writing {molecule_id} data to .sdf file...", LogMode.VERBOSELY)
 
   # переоткрываем файл, чтобы исправить избыточные переносы строк
   # (да, заново открыть его - это самый простой способ)
-  with open(f"{file_name}.sdf", 'r', encoding='utf-8') as f:
+  with open(f"{file_name}.sdf", encoding="utf-8") as f:
     sdf_content = f.read()
 
   # максимальное кол-во переносов строк
   max_n_amounts = 0
-  while ("\n" * max_n_amounts in sdf_content):
+  while "\n" * max_n_amounts in sdf_content:
     max_n_amounts += 1
 
   # заменяем все идущие подряд переносы
@@ -347,5 +342,5 @@ def SaveMolfilesToSDF(data: pd.DataFrame,
   sdf_content = sdf_content.replace("$$$$\n\n", "$$$$\n")
 
   # перезаписываем файл
-  with open(f"{file_name}.sdf", 'w', encoding='utf-8') as f:
+  with open(f"{file_name}.sdf", "w", encoding="utf-8") as f:
     f.write(sdf_content)

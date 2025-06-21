@@ -7,6 +7,7 @@ Configurations/config.py
 import json
 from typing import Any
 
+
 # создаем тип для конфигурации (словарь).
 Config = dict[str, Any]
 
@@ -16,9 +17,7 @@ config_file_name: str = "config.json"
 main_config_file_name: str = f"Configurations/{config_file_name}"
 
 
-def GetConfig(file_name: str = main_config_file_name,
-              encoding: str = "utf-8"
-              ) -> Config:
+def GetConfig(file_name: str = main_config_file_name, encoding: str = "utf-8") -> Config:
   """
   Загружает конфигурацию из JSON-файла.
 
@@ -31,7 +30,7 @@ def GetConfig(file_name: str = main_config_file_name,
   """
 
   # открываем файл конфигурации.
-  with open(file_name, "r", encoding=encoding) as config:
+  with open(file_name, encoding=encoding) as config:
     # загружаем конфигурацию из JSON.
     return json.load(config)
 

@@ -5,18 +5,19 @@ PubChem_download_toxicity/functions.py
 из PubChem, их фильтрации, преобразования и сохранения в CSV и SDF файлы.
 """
 
-from io import StringIO
 import json
+import urllib.parse
+from io import StringIO
+
 import numpy as np
 import requests
-import urllib.parse
 
+from Configurations.config import Config, config
 from Utils.dataframe_funcs import DedupedList
 from Utils.decorators import ReTry, time
-from Utils.files_funcs import os, pd, SaveMolfilesToSDF
-from Utils.verbose_logger import v_logger, LogMode
+from Utils.files_funcs import SaveMolfilesToSDF, os, pd
+from Utils.verbose_logger import LogMode, v_logger
 
-from Configurations.config import config, Config
 
 # конфигурация для скачивания токсичности.
 toxicity_config: Config = config["PubChem_download_toxicity"]
@@ -26,11 +27,9 @@ filtering_config: Config = toxicity_config["filtering"]
 
 
 @ReTry()
-def GetResponse(request_url: str,
-                stream: bool,
-                sleep_time: float | None =
-                toxicity_config["sleep_time"]
-                ) -> requests.Response:
+def GetResponse(
+  request_url: str, stream: bool, sleep_time: float | None = toxicity_config["sleep_time"]
+) -> requests.Response:
   """
   Отправляет GET-запрос по указанному URL, повторяет попытку в случае ошибки.
 
@@ -55,10 +54,9 @@ def GetResponse(request_url: str,
   return response
 
 
-def GetMolfileFromCID(cid: str,
-                      sleep_time: float | None =
-                      toxicity_config["sleep_time"]
-                      ) -> str:
+def GetMolfileFromCID(
+  cid: str, sleep_time: float | None = toxicity_config["sleep_time"]
+) -> str:
   """
   Возвращает molfile-строку из GET-запроса для соединения с cid из базы PubChem.
 
@@ -73,16 +71,18 @@ def GetMolfileFromCID(cid: str,
 
   # получаем molfile соединения из PubChem.
   molfile: str = GetResponse(
-      "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/CID/"
-      f"{cid}/record/SDF?record_type=2d",
-      True,
-      sleep_time).text
+    "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/CID/"
+    f"{cid}/record/SDF?record_type=2d",
+    True,
+    sleep_time,
+  ).text
 
-  v_logger.info(f"Return molfile (len: {len(molfile)}) for cid: {cid}.",
-                LogMode.VERBOSELY)
+  v_logger.info(
+    f"Return molfile (len: {len(molfile)}) for cid: {cid}.", LogMode.VERBOSELY
+  )
 
   # очищаем molfile от лишних символов.
-  return molfile[molfile.find("\n"):].replace("$$$$", "").rstrip()
+  return molfile[molfile.find("\n") :].replace("$$$$", "").rstrip()
 
 
 def GetDataFrameFromUrl(request_url: str, sleep_time: float) -> pd.DataFrame:
@@ -108,10 +108,7 @@ def GetDataFrameFromUrl(request_url: str, sleep_time: float) -> pd.DataFrame:
   return pd.read_csv(StringIO(res.content.decode(res.encoding)))
 
 
-def GetLinkFromSid(sid: int,
-                   collection: str,
-                   limit: int
-                   ) -> str:
+def GetLinkFromSid(sid: int, collection: str, limit: int) -> str:
   """
   Формируем URL для скачивания данных из PubChem SDQ API по SID (Structure ID).
 
@@ -145,21 +142,15 @@ def GetLinkFromSid(sid: int,
 
   # формируем словарь с параметрами запроса.
   query = {
-      "download": "*",
-      "collection": f"{collection}",
-      # "order": ["relevancescore,desc"],
-      "limit": f"{limit}",
-      "where": {
-          "ands": [
-              {"sid": f"{sid}"}
-          ]
-      }
+    "download": "*",
+    "collection": f"{collection}",
+    # "order": ["relevancescore,desc"],
+    "limit": f"{limit}",
+    "where": {"ands": [{"sid": f"{sid}"}]},
   }
 
   # формируем URL для запроса.
-  start = "https://pubchem.ncbi.nlm.nih.gov/sdq/sdqagent.cgi"\
-      "?infmt=json"\
-      "&outfmt=csv"
+  start = "https://pubchem.ncbi.nlm.nih.gov/sdq/sdqagent.cgi?infmt=json&outfmt=csv"
 
   return start + "&" + QueryDictToStr(query)
 
@@ -168,8 +159,7 @@ def GetLinkFromSid(sid: int,
 
 
 @ReTry(attempts_amount=1)
-def DownloadCompoundToxicity(compound_data: dict,
-                             page_folder_name: str):
+def DownloadCompoundToxicity(compound_data: dict, page_folder_name: str):
   """
   Скачиваем данные о токсичности соединения по информации из JSON PubChem
   и сохраняем их в CSV-файл.
@@ -188,8 +178,8 @@ def DownloadCompoundToxicity(compound_data: dict,
   # если CID отсутствует.
   except KeyError:
     v_logger.warning(
-        f"No 'cid' for 'sid': {compound_data["LinkedRecords"]["SID"][0]}"
-        f", skip.")
+      f"No 'cid' for 'sid': {compound_data['LinkedRecords']['SID'][0]}, skip."
+    )
     v_logger.info("-", LogMode.VERBOSELY)
 
     return
@@ -216,32 +206,27 @@ def DownloadCompoundToxicity(compound_data: dict,
 
   # проверяем тип запроса.
   if table_info["query_type"] != "sid":
-    v_logger.LogException(ValueError("Unknown query type at page "
-                                     f"{page_folder_name}"))
+    v_logger.LogException(ValueError(f"Unknown query type at page {page_folder_name}"))
 
   # получаем SID из данных таблицы.
   sid = int(table_info["query"])
 
   # проверяем соответствие SID.
   if primary_sid != sid:
-    v_logger.warning(f"Mismatch between 'primary_sid' ({primary_sid}) "
-                     f"and 'sid' ({sid}).")
+    v_logger.warning(f"Mismatch between 'primary_sid' ({primary_sid}) and 'sid' ({sid}).")
 
   # формируем имя файла.
   compound_name: str = f"compound_{sid}_toxicity"
 
   # формируем пути к файлам для разных единиц измерения.
-  compound_file_kg = f"{page_folder_name.format(unit_type="kg")}/"\
-      f"{compound_name}"
-  compound_file_m3 = f"{page_folder_name.format(unit_type="m3")}/"\
-      f"{compound_name}"
+  compound_file_kg = f"{page_folder_name.format(unit_type='kg')}/{compound_name}"
+  compound_file_m3 = f"{page_folder_name.format(unit_type='m3')}/{compound_name}"
 
   # если файл уже существует и скачивание пропущено, пропускаем.
-  if os.path.exists(f"{compound_file_kg}.csv") or\
-          os.path.exists(f"{compound_file_m3}.csv") and\
-          config["skip_downloaded"]:
-    v_logger.info(f"{compound_name} is already downloaded, skip.",
-                  LogMode.VERBOSELY)
+  if os.path.exists(f"{compound_file_kg}.csv") or (
+    os.path.exists(f"{compound_file_m3}.csv") and config["skip_downloaded"]
+  ):
+    v_logger.info(f"{compound_name} is already downloaded, skip.", LogMode.VERBOSELY)
     v_logger.info("-", LogMode.VERBOSELY)
 
     return
@@ -250,10 +235,10 @@ def DownloadCompoundToxicity(compound_data: dict,
 
   # получаем данные о токсичности из PubChem.
   acute_effects = GetDataFrameFromUrl(
-      GetLinkFromSid(sid=sid,
-                     collection=table_info["collection"],
-                     limit=toxicity_config["limit"]),
-      toxicity_config["sleep_time"]
+    GetLinkFromSid(
+      sid=sid, collection=table_info["collection"], limit=toxicity_config["limit"]
+    ),
+    toxicity_config["sleep_time"],
   )
 
   @ReTry()
@@ -270,13 +255,16 @@ def DownloadCompoundToxicity(compound_data: dict,
 
     # получаем молекулярный вес соединения из PubChem.
     return GetResponse(
-        "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/"
-        f"{cid}/property/MolecularWeight/txt",
-        True, None).text.strip()
+      "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/"
+      f"{cid}/property/MolecularWeight/txt",
+      True,
+      None,
+    ).text.strip()
 
-  def CalcMolecularWeight(df: pd.DataFrame,
-                          id_column: str,
-                          ) -> pd.DataFrame:
+  def CalcMolecularWeight(
+    df: pd.DataFrame,
+    id_column: str,
+  ) -> pd.DataFrame:
     """
     Вычисляет и добавляет столбец 'mw' (молекулярный вес) в pd.DataFrame.
 
@@ -301,14 +289,13 @@ def DownloadCompoundToxicity(compound_data: dict,
         # добавляем столбец с молекулярным весом в DataFrame.
         df["mw"] = mw
 
-        v_logger.info(f"Found 'mw' by '{id_column}'.",
-                      LogMode.VERBOSELY)
+        v_logger.info(f"Found 'mw' by '{id_column}'.", LogMode.VERBOSELY)
 
       # если молекулярный вес не найден.
       else:
         v_logger.warning(
-            "Could not retrieve molecular weight by "
-            f"'{id_column}' for {unique_ids[0]}.")
+          f"Could not retrieve molecular weight by '{id_column}' for {unique_ids[0]}."
+        )
 
     # если идентификаторы не найдены.
     elif len(unique_ids) == 0:
@@ -316,21 +303,18 @@ def DownloadCompoundToxicity(compound_data: dict,
 
     # если идентификаторов несколько.
     else:
-      v_logger.warning(
-          f"Non-unique 'mw' by {id_column} for {unique_ids[0]}.")
+      v_logger.warning(f"Non-unique 'mw' by {id_column} for {unique_ids[0]}.")
 
       # применяем функцию получения молекулярного веса к каждому id.
       df["mw"] = df[id_column].apply(GetMolecularWeightByCid)
 
       # если некоторые значения молекулярного веса не найдены.
       if df["mw"].isnull().any():
-        v_logger.warning(
-            f"Some 'mw' could not be retrieved by {id_column}.")
+        v_logger.warning(f"Some 'mw' could not be retrieved by {id_column}.")
 
     return df
 
-  def ExtractDoseAndTime(df: pd.DataFrame,
-                         valid_units: list[str]) -> pd.DataFrame:
+  def ExtractDoseAndTime(df: pd.DataFrame, valid_units: list[str]) -> pd.DataFrame:
     """
     Преобразует DataFrame с данными о дозировках, извлекая числовое
     значение, единицу измерения и период времени.
@@ -347,9 +331,9 @@ def DownloadCompoundToxicity(compound_data: dict,
 
     df = df.copy()
 
-    def ExtractDose(dose_str: str,
-                    mw: float
-                    ) -> tuple[float | None, str | None, str | None]:
+    def ExtractDose(
+      dose_str: str, mw: float
+    ) -> tuple[float | None, str | None, str | None]:
       """
       Извлекает дозу, единицу измерения и период времени из строки
       дозировки.
@@ -375,7 +359,9 @@ def DownloadCompoundToxicity(compound_data: dict,
 
       try:
         # если строка дозировки содержит не два элемента, возвращаем None.
-        if len(dose_str.split(" ")) != 2:
+        if len(dose_str.split(" ")) != len(
+          ["dose_amount_str", "dose_and_time"]
+        ):  # короче, != 2
           return None, None, None
 
         # разделяем строку на количество дозы и единицы измерения.
@@ -385,13 +371,12 @@ def DownloadCompoundToxicity(compound_data: dict,
 
       # если не удалось преобразовать количество дозы в число.
       except ValueError:
-        v_logger.warning(f"Unsupported dose string: {dose_str}",
-                         LogMode.VERBOSELY)
+        v_logger.warning(f"Unsupported dose string: {dose_str}", LogMode.VERBOSELY)
         return None, None, None
 
       # определяем, есть ли период времени.
       match dose_str.count("/"):
-        case 1:      # нету time period или это pp*/time
+        case 1:  # нету time period или это pp*/time
           # если строка начинается с "p", это "pp*/time".
           if dose_and_time.startswith("p"):
             dose_unit, time_per = dose_and_time.split("/")
@@ -399,7 +384,7 @@ def DownloadCompoundToxicity(compound_data: dict,
             dose_unit = dose_and_time
             time_per = None
 
-        case 2:      # есть time period
+        case 2:  # есть time period
           # извлекаем единицу измерения и период времени.
           dose_unit = "/".join(dose_and_time.split("/")[:-1])
           time_per = dose_and_time.split("/")[-1]
@@ -409,8 +394,9 @@ def DownloadCompoundToxicity(compound_data: dict,
 
       # если единица измерения не поддерживается.
       if dose_unit not in valid_units:
-        v_logger.warning(f"Unsupported dose_unit (non-valid): {dose_unit}",
-                         LogMode.VERBOSELY)
+        v_logger.warning(
+          f"Unsupported dose_unit (non-valid): {dose_unit}", LogMode.VERBOSELY
+        )
         return None, None, None
 
       unit_prefix: str = dose_unit
@@ -422,27 +408,26 @@ def DownloadCompoundToxicity(compound_data: dict,
 
         # если суффикс не поддерживается.
         if unit_suffix not in ("kg", "m3"):
-          v_logger.warning(f"Unsupported dose_unit (suffix): {dose_unit}",
-                           LogMode.VERBOSELY)
+          v_logger.warning(
+            f"Unsupported dose_unit (suffix): {dose_unit}", LogMode.VERBOSELY
+          )
           return None, None, None
 
       unit_prefix = unit_prefix.lower()
 
       # словарь с коэффициентами перевода единиц измерения.
       conversions: dict[str, float] = {
-          "mg": 1,
-          "gm": 1000,
-          "g": 1000,
-          "ng": 0.000001,
-          "ug": 0.001,
-
-          "ml": 1000,
-          "nl": 0.001,                   # 1000 * 0.000001
-          "ul": 1,                       # 1000 * 0.001
-
-          "ppm": 24.45 / mw,             # 1 ppm = 1 mg/m3 * 24.45/mw
-          "ppb": 0.001 * 24.45 / mw,     # 1 ppb = 0.001 ppm
-          "pph": 1 / 60 * 24.45 / mw,    # 1 pph = 1/60 ppm
+        "mg": 1,
+        "gm": 1000,
+        "g": 1000,
+        "ng": 0.000001,
+        "ug": 0.001,
+        "ml": 1000,
+        "nl": 0.001,  # 1000 * 0.000001
+        "ul": 1,  # 1000 * 0.001
+        "ppm": 24.45 / mw,  # 1 ppm = 1 mg/m3 * 24.45/mw
+        "ppb": 0.001 * 24.45 / mw,  # 1 ppb = 0.001 ppm
+        "pph": 1 / 60 * 24.45 / mw,  # 1 pph = 1/60 ppm
       }
 
       # переводим известные единицы к "mg/kg" и "mg/m3".
@@ -452,20 +437,20 @@ def DownloadCompoundToxicity(compound_data: dict,
 
       # если префикс не поддерживается.
       else:
-        v_logger.warning(f"Unsupported dose_unit (prefix): {dose_unit}",
-                         LogMode.VERBOSELY)
+        v_logger.warning(
+          f"Unsupported dose_unit (prefix): {dose_unit}", LogMode.VERBOSELY
+        )
         return None, None, None
 
       return num_dose, dose_unit, time_per
 
     # применяем функцию извлечения дозы к каждой строке DataFrame.
     df[["numeric_dose", "dose_units", "time_period"]] = df.apply(
-        lambda row: pd.Series(ExtractDose(row["dose"], row["mw"])),
-        axis=1)
+      lambda row: pd.Series(ExtractDose(row["dose"], row["mw"])), axis=1
+    )
 
     # удаляем исходный столбец "dose" и переименовываем новый.
-    df = df.drop(columns=["dose"]).rename(
-        columns={"numeric_dose": "dose"})
+    df = df.drop(columns=["dose"]).rename(columns={"numeric_dose": "dose"})
 
     return df
 
@@ -495,19 +480,21 @@ def DownloadCompoundToxicity(compound_data: dict,
 
     # сохраняем molfile в SDF-файл.
     SaveMolfilesToSDF(
-        data=pd.DataFrame({"cid": [cid],
-                           "molfile": [GetMolfileFromCID(cid)]}),
-        file_name=(
-            f"{toxicity_config["molfiles_folder_name"]}/"
-            f"{compound_name}_{unit_type}"),
-        molecule_id_column_name="cid",
-        extra_data=listed_df,
-        indexing_lists=True)
+      data=pd.DataFrame({"cid": [cid], "molfile": [GetMolfileFromCID(cid)]}),
+      file_name=(
+        f"{toxicity_config['molfiles_folder_name']}/{compound_name}_{unit_type}"
+      ),
+      molecule_id_column_name="cid",
+      extra_data=listed_df,
+      indexing_lists=True,
+    )
 
-  def SaveToxicityUnitSpecification(compound_file_unit: str,
-                                    unit_str: str,
-                                    valid_units: list[str],
-                                    acute_effects: pd.DataFrame):
+  def SaveToxicityUnitSpecification(
+    compound_file_unit: str,
+    unit_str: str,
+    valid_units: list[str],
+    acute_effects: pd.DataFrame,
+  ):
     """
     Фильтрует, преобразует и сохраняет данные о токсичности для указанного
     типа единиц измерения.
@@ -519,124 +506,117 @@ def DownloadCompoundToxicity(compound_data: dict,
         acute_effects (pd.DataFrame): DataFrame с данными о токсичности.
     """
 
-    v_logger.info(f"Filtering by {filtering_config[unit_str].keys()}...",
-                  LogMode.VERBOSELY)
+    v_logger.info(
+      f"Filtering by {list(filtering_config[unit_str].keys())}...", LogMode.VERBOSELY
+    )
 
     acute_effects_unit: pd.DataFrame = acute_effects.copy()
 
     # фильтрация данных по тем признакам, что есть в `filtering_config[unit_str]`
     for key in filtering_config[unit_str].keys():
       if len(filtering_config[unit_str][key]) != 0:
-        acute_effects_unit = acute_effects_unit[acute_effects_unit[key].isin(
-          filtering_config[unit_str][key])]
+        acute_effects_unit = acute_effects_unit[
+          acute_effects_unit[key].isin(filtering_config[unit_str][key])
+        ]
 
-    v_logger.success(f"Filtering by {filtering_config[unit_str].keys()}!",
-                     LogMode.VERBOSELY)
+    v_logger.success(
+      f"Filtering by {list(filtering_config[unit_str].keys())}!", LogMode.VERBOSELY
+    )
 
-    v_logger.info(f"Filtering 'dose' in {unit_str}...",
-                  LogMode.VERBOSELY)
+    v_logger.info(f"Filtering 'dose' in {unit_str}...", LogMode.VERBOSELY)
 
     # если DataFrame пустой, пропускаем.
     if acute_effects_unit.empty:
       v_logger.warning(
-          f"{compound_name}_{unit_str} is empty, no need saving, skip.",
-          LogMode.VERBOSELY)
+        f"{compound_name}_{unit_str} is empty, no need saving, skip.", LogMode.VERBOSELY
+      )
       return
 
     # если столбец "dose" присутствует.
     if "dose" in acute_effects_unit.columns:
       # извлекаем дозу, единицы измерения и время.
-      acute_effects_unit = ExtractDoseAndTime(acute_effects_unit,
-                                              valid_units)
+      acute_effects_unit = ExtractDoseAndTime(acute_effects_unit, valid_units)
 
       # преобразуем значения столбца "dose" в числовой формат.
       acute_effects_unit["dose"] = pd.to_numeric(
-          acute_effects_unit["dose"], errors="coerce")
+        acute_effects_unit["dose"], errors="coerce"
+      )
 
     # если столбец "dose" отсутствует.
     else:
-      v_logger.warning(f"No dose in {compound_name}_{unit_str}, skip.",
-                       LogMode.VERBOSELY)
+      v_logger.warning(f"No dose in {compound_name}_{unit_str}, skip.", LogMode.VERBOSELY)
       return
 
     # если DataFrame пустой, пропускаем.
     if acute_effects_unit.empty:
       v_logger.warning(
-          f"{compound_name}_{unit_str} is empty, no need saving, skip.",
-          LogMode.VERBOSELY)
+        f"{compound_name}_{unit_str} is empty, no need saving, skip.", LogMode.VERBOSELY
+      )
       return
 
     # если столбцы "dose" или "dose_units" отсутствуют.
-    if "dose" not in acute_effects_unit.columns or\
-            "dose_units" not in acute_effects_unit.columns:
+    if (
+      "dose" not in acute_effects_unit.columns
+      or "dose_units" not in acute_effects_unit.columns
+    ):
       v_logger.warning(
-          f"{compound_name}_{unit_str} misses 'dose' or 'dose_units'"
-          f", skip.",
-          LogMode.VERBOSELY)
+        f"{compound_name}_{unit_str} misses 'dose' or 'dose_units', skip.",
+        LogMode.VERBOSELY,
+      )
       return
 
-    v_logger.success(f"Filtering 'dose' in {unit_str}!",
-                     LogMode.VERBOSELY)
+    v_logger.success(f"Filtering 'dose' in {unit_str}!", LogMode.VERBOSELY)
 
-    v_logger.info(f"Adding 'pLD' to {compound_name}_{unit_str}...",
-                  LogMode.VERBOSELY)
+    v_logger.info(f"Adding 'pLD' to {compound_name}_{unit_str}...", LogMode.VERBOSELY)
 
     # вычисляем pLD.
     acute_effects_unit["pLD"] = -np.log10(
-        (acute_effects_unit["dose"] / acute_effects_unit["mw"]) / 1000000)
+      (acute_effects_unit["dose"] / acute_effects_unit["mw"]) / 1000000
+    )
 
-    v_logger.success(f"Adding 'pLD' to {compound_name}_{unit_str}!",
-                     LogMode.VERBOSELY)
+    v_logger.success(f"Adding 'pLD' to {compound_name}_{unit_str}!", LogMode.VERBOSELY)
 
-    v_logger.info(f"Saving {compound_name}_{unit_str} to .csv...",
-                  LogMode.VERBOSELY)
+    v_logger.info(f"Saving {compound_name}_{unit_str} to .csv...", LogMode.VERBOSELY)
 
     # заменяем пустые строки на NaN.
-    acute_effects_unit = acute_effects_unit.replace('', np.nan)
+    acute_effects_unit = acute_effects_unit.replace("", np.nan)
     # удаляем столбцы, состоящие только из NaN.
-    acute_effects_unit = acute_effects_unit.dropna(axis=1, how='all')
+    acute_effects_unit = acute_effects_unit.dropna(axis=1, how="all")
 
     # проверяем наличие дозы и единиц ее измерения.
-    if "dose" in acute_effects_unit.columns and\
-            "dose_units" in acute_effects_unit.columns:
+    if (
+      "dose" in acute_effects_unit.columns and "dose_units" in acute_effects_unit.columns
+    ):
       # оставляем только строки, в которых есть информация о дозе и
       # единицах измерения.
-      acute_effects_unit =\
-          acute_effects_unit[(acute_effects_unit['dose_units'].notna()
-                              ) & (
-              acute_effects_unit['dose'].notna())]
+      acute_effects_unit = acute_effects_unit[
+        (acute_effects_unit["dose_units"].notna()) & (acute_effects_unit["dose"].notna())
+      ]
 
     # если нет нужных столбцов.
     else:
       v_logger.warning(
-          f"{compound_name}_{unit_str} misses 'dose' or 'dose_units'"
-          f", skip.",
-          LogMode.VERBOSELY)
+        f"{compound_name}_{unit_str} misses 'dose' or 'dose_units', skip.",
+        LogMode.VERBOSELY,
+      )
       return
 
     # сохраняем DataFrame в CSV-файл.
-    acute_effects_unit.to_csv(f"{compound_file_unit}.csv",
-                              sep=";",
-                              index=False,
-                              mode="w")
+    acute_effects_unit.to_csv(f"{compound_file_unit}.csv", sep=";", index=False, mode="w")
 
-    v_logger.success(f"Saving {compound_name}_{unit_str} to .csv!",
-                     LogMode.VERBOSELY)
+    v_logger.success(f"Saving {compound_name}_{unit_str} to .csv!", LogMode.VERBOSELY)
 
     # если необходимо скачивать соединения в SDF.
     if toxicity_config["download_compounds_sdf"]:
-      v_logger.info(f"Saving {compound_name}_{unit_str} to .sdf...",
-                    LogMode.VERBOSELY)
+      v_logger.info(f"Saving {compound_name}_{unit_str} to .sdf...", LogMode.VERBOSELY)
 
       # создаем директорию для SDF-файлов.
-      os.makedirs(toxicity_config["molfiles_folder_name"],
-                  exist_ok=True)
+      os.makedirs(toxicity_config["molfiles_folder_name"], exist_ok=True)
 
       # сохраняем molfile в SDF-файл.
       SaveMolfileWithToxicityToSDF(acute_effects_unit, unit_str)
 
-      v_logger.success(f"Saving {compound_name}_{unit_str} to .sdf!",
-                       LogMode.VERBOSELY)
+      v_logger.success(f"Saving {compound_name}_{unit_str} to .sdf!", LogMode.VERBOSELY)
 
   v_logger.info("Adding 'mw'...", LogMode.VERBOSELY)
 
@@ -645,8 +625,7 @@ def DownloadCompoundToxicity(compound_data: dict,
 
   try:
     # преобразуем значения столбца "mw" в числовой формат.
-    acute_effects["mw"] = pd.to_numeric(acute_effects["mw"],
-                                        errors="coerce")
+    acute_effects["mw"] = pd.to_numeric(acute_effects["mw"], errors="coerce")
 
     v_logger.success("Adding 'mw'!", LogMode.VERBOSELY)
 
@@ -658,40 +637,34 @@ def DownloadCompoundToxicity(compound_data: dict,
   v_logger.info("~", LogMode.VERBOSELY)
 
   # сохраняем данные о токсичности для единиц измерения "kg".
-  SaveToxicityUnitSpecification(compound_file_unit=compound_file_kg,
-                                unit_str="kg",
-                                valid_units=["gm/kg",
-                                             "g/kg",
-
-                                             "mg/kg",
-                                             "ug/kg",
-                                             "ng/kg",
-
-                                             "mL/kg",
-                                             "uL/kg",
-                                             "nL/kg"],
-                                acute_effects=acute_effects)
+  SaveToxicityUnitSpecification(
+    compound_file_unit=compound_file_kg,
+    unit_str="kg",
+    valid_units=["gm/kg", "g/kg", "mg/kg", "ug/kg", "ng/kg", "mL/kg", "uL/kg", "nL/kg"],
+    acute_effects=acute_effects,
+  )
 
   v_logger.info("·", LogMode.VERBOSELY)
 
   # сохраняем данные о токсичности для единиц измерения "m3".
-  SaveToxicityUnitSpecification(compound_file_unit=compound_file_m3,
-                                unit_str="m3",
-                                valid_units=["gm/m3",
-                                             "g/m3",
-
-                                             "mg/m3",
-                                             "ug/m3",
-                                             "ng/m3",
-
-                                             "mL/m3",
-                                             "uL/m3",
-                                             "nL/m3",
-
-                                             "ppm",
-                                             "ppb",
-                                             "pph"],
-                                acute_effects=acute_effects)
+  SaveToxicityUnitSpecification(
+    compound_file_unit=compound_file_m3,
+    unit_str="m3",
+    valid_units=[
+      "gm/m3",
+      "g/m3",
+      "mg/m3",
+      "ug/m3",
+      "ng/m3",
+      "mL/m3",
+      "uL/m3",
+      "nL/m3",
+      "ppm",
+      "ppb",
+      "pph",
+    ],
+    acute_effects=acute_effects,
+  )
 
   v_logger.info("·", LogMode.VERBOSELY)
   v_logger.success(f"Downloading {compound_name}!", LogMode.VERBOSELY)

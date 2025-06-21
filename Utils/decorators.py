@@ -5,13 +5,13 @@ Utils/decorators.py
 предупреждений.
 """
 
-from functools import wraps
 import time
-from typing import Callable
 import warnings
+from collections.abc import Callable
+from functools import wraps
 
+from Configurations.config import Config, config
 from Utils.verbose_logger import v_logger
-from Configurations.config import config, Config
 
 
 def IgnoreWarnings(func: Callable) -> Callable:
@@ -44,10 +44,11 @@ def IgnoreWarnings(func: Callable) -> Callable:
 retry_config: Config = config["Utils"]["ReTry"]
 
 
-def ReTry(attempts_amount: int = retry_config["attempts_amount"],
-          exception_to_check: type[Exception] = Exception,
-          sleep_time: float = retry_config["sleep_time"]
-          ) -> Callable:
+def ReTry(
+  attempts_amount: int = retry_config["attempts_amount"],
+  exception_to_check: type[Exception] = Exception,
+  sleep_time: float = retry_config["sleep_time"],
+) -> Callable:
   """
   Повторяет попытки выполнения функции в случае возникновения исключения.
 
@@ -98,5 +99,6 @@ def ReTry(attempts_amount: int = retry_config["attempts_amount"],
 
     # возвращаем функцию-обертку.
     return Wrapper
+
   # возвращаем декоратор.
   return Decorate

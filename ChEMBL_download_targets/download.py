@@ -6,12 +6,10 @@ ChEMBL, используя конфигурацию из `config.json`.
 """
 
 from ChEMBL_download_targets.functions import *
-
+from Configurations.config import Config, config
 from Utils.decorators import IgnoreWarnings
 from Utils.files_funcs import IsFileInFolder, os
 from Utils.verbose_logger import LogMode
-
-from Configurations.config import config, Config
 
 
 @IgnoreWarnings
@@ -26,10 +24,9 @@ def DownloadChEMBLTargets():
   # получаем конфигурацию для скачивания активностей.
   activities_config: Config = config["ChEMBL_download_activities"]
 
-  v_logger.UpdateFormat(targets_config["logger_label"],
-                        targets_config["logger_color"])
+  v_logger.UpdateFormat(targets_config["logger_label"], targets_config["logger_color"])
 
-  v_logger.info(f"{"• " * 10} ChEMBL downloading for DrugDesign.")
+  v_logger.info(f"{'• ' * 10} ChEMBL downloading for DrugDesign.")
 
   # создаем директорию для результатов скачивания, если она не существует.
   os.makedirs(targets_config["results_folder_name"], exist_ok=True)
@@ -44,8 +41,8 @@ def DownloadChEMBLTargets():
 
   # если файлы не скачаны или их нет в папке.
   if not config["skip_downloaded"] or not IsFileInFolder(
-          targets_config["results_file_name"],
-          targets_config["results_folder_name"]):
+    targets_config["results_file_name"], targets_config["results_folder_name"]
+  ):
     # если скачиваем все мишени, очищаем список id.
     if targets_config["download_all"]:
       targets_config["id_list"] = []
@@ -56,9 +53,9 @@ def DownloadChEMBLTargets():
   # если файлы уже скачаны, пропускаем.
   else:
     v_logger.info(
-        f"{targets_config["results_file_name"]} is already "
-        f"downloaded, skip",
-        LogMode.VERBOSELY)
+      f"{targets_config['results_file_name']} is already downloaded, skip",
+      LogMode.VERBOSELY,
+    )
 
-  v_logger.info(f"{"• " * 10} ChEMBL downloading for DrugDesign!")
+  v_logger.info(f"{'• ' * 10} ChEMBL downloading for DrugDesign!")
   v_logger.info()

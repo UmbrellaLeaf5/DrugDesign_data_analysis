@@ -1,5 +1,6 @@
 {
   "editor.formatOnSave": true,
+  "ruff.configuration": "./ruff.toml",
   "cSpell.words": [
     "1xw5nFTVZdycSG4BhaoeludtCwJU0gsXI",
     "activ",
@@ -61,6 +62,7 @@
     "isin",
     "isna",
     "isnull",
+    "isort",
     "istartswith",
     "iterrows",
     "IUPAC",
